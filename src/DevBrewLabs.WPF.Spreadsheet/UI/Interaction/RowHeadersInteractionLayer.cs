@@ -20,7 +20,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             {
                 if (e.ClickCount == 2)
                 {
-                    SheetView.WorkSheet.AutoSizeRow(hitTest.Row);
+                    SheetView.AutoSizeRow(hitTest.Row);
                     SheetView.ViewPort.As<ViewPort>().CalculateVisibleRange();
                     SheetView.Spread.Invalidate();
                     return;

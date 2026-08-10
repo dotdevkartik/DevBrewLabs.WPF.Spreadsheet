@@ -289,7 +289,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
                     for (int row = SheetView.Selection.TopRow; row <= SheetView.Selection.BottomRow; row++)
                     {
-                        SheetView.WorkSheet.AutoSizeRow(row);
+                        SheetView.AutoSizeRow(row);
                     }
                     break;
 

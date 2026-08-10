@@ -2,7 +2,6 @@ using DevBrewLabs.Spreadsheet.Core;
 using DevBrewLabs.Spreadsheet.Data;
 using DevBrewLabs.Spreadsheet.Filtering;
 using DevBrewLabs.Spreadsheet.Sorting;
-using DevBrewLabs.Spreadsheet.Utils;
 using System;
 using System.Collections.Generic;
 
@@ -360,50 +359,6 @@ namespace DevBrewLabs.Spreadsheet
                 column + columnCount - 1 < ColumnCount;
         }
 
-        public void AutoSizeRow(int row)
-        {
-            if (row < 0 || row >= RowCount)
-                return;
-
-            int maxRequiredHeight = DefaultRowHeight;
-
-            for (int col = 0; col < ColumnCount; col++)
-            {
-                var value = DataStore.GetValue(row, col);
-                if (value == null)
-                    continue;
-
-                string text = value.ToString();
-                if (string.IsNullOrEmpty(text))
-                    continue;
-
-                string[] lines = TextUtils.GetLines(text);
-                if (lines.Length > 1)
-                {
-                    var cell = _cells.GetCell(row, col, false);
-                    var sheetColumn = _columns.GetItem(col);
-                    var sheetRow = _rows.GetItem(row);
-
-                    var style = _workBook.PickStyle(cell, sheetColumn, sheetRow, SheetRegion.Cells);
-                    if (!style.AllowMultiLineText)
-                        continue;
-
-                    double fontSize = style.FontSize;
-                    double fontLineHeight = Math.Max(fontSize + 2, Math.Round(fontSize * 1.3));
-                    int cellRequiredHeight = (int)Math.Ceiling(DefaultRowHeight + (lines.Length - 1) * fontLineHeight);
-                    if (cellRequiredHeight > maxRequiredHeight)
-                    {
-                        maxRequiredHeight = cellRequiredHeight;
-                    }
-                }
-            }
-
-            int currentHeight = Rows.GetRowHeight(row);
-            if (currentHeight != maxRequiredHeight)
-            {
-                Rows[row].Height = maxRequiredHeight;
-            }
-        }
 
         #region private
         internal struct RowSnapshot

@@ -192,7 +192,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 try
                 {
                     workSheet.Cells[gcTextBox.Row, gcTextBox.Column].Formula = gcTextBox.Text.Substring(1);
-                    workSheet.AutoSizeRow(gcTextBox.Row);
                 }
                 catch (CalcEngineException ex)
                 {
@@ -218,9 +217,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
                 var value = DataTypeConverter.ConvertType(gcTextBox.Text);
                 workSheet.Cells[gcTextBox.Row, gcTextBox.Column].Value = value;
-
-                workSheet.AutoSizeRow(gcTextBox.Row);
-
                 cellChangedAction.NewState.Value = value;
                 cellChangedAction.NewState.Row = gcTextBox.Row;
                 cellChangedAction.NewState.Column = gcTextBox.Column;

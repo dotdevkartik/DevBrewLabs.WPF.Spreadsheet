@@ -127,11 +127,6 @@ namespace DevBrewLabs.Spreadsheet
         /// <param name="columnCount"></param>
         /// <returns></returns>
         bool ContainsRange(int row, int column, int rowCount, int columnCount);
-        /// <summary>
-        /// Auto sizes the row height based on cell text content.
-        /// </summary>
-        /// <param name="row">The row index.</param>
-        void AutoSizeRow(int row);
 
         /// <summary>
         /// Sorts the complete worksheet.

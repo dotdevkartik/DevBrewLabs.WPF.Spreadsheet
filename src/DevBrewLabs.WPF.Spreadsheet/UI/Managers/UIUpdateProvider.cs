@@ -48,7 +48,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 {
                     case CellChangeType.Value:
                     case CellChangeType.Formula:
-                        worksheet.AutoSizeRow(row);
+                        if (sheetView.AutoSizeRows)
+                            sheetView.AutoSizeRow(row);
+                        if (sheetView.AutoSizeColumns)
+                            sheetView.AutoSizeColumn(column);
                         break;
                 }
 

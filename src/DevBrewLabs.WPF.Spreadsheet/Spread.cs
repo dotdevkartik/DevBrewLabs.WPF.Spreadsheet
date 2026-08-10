@@ -217,7 +217,6 @@ namespace DevBrewLabs.WPF.Spreadsheet
             TextOptions.SetTextRenderingMode(this, TextRenderingMode.ClearType);
             _workBook = new WorkBook("Book1", new UIUpdateProvider(this));
             UndoRedoManager = new UndoRedoManager(this);
-            AddDefaultStyles(_workBook);
             SheetViews = new SheetViewCollection(this);
             RenderEngine = new RenderEngine();
             SheetViewPane = new SheetViewPane(this);
@@ -353,42 +352,6 @@ namespace DevBrewLabs.WPF.Spreadsheet
         {
             SelectionBorderPen = new Pen(brush, thickness);
             SelectionBorderPen.Freeze();
-        }
-
-        private void AddDefaultStyles(WorkBook workBook)
-        {
-            var rowHeaderStyle = new DevBrewLabs.Spreadsheet.Styling.CellStyle
-            {
-                FontSize = 14,
-                HorizontalAlignment = CellHorizontalAlignment.Center,
-                BackColor = DevBrewLabs.Spreadsheet.Drawing.CellColor.Gray
-            };
-
-            workBook.AddNamedStyle(StyleKeys.DefaultRowHeaderStyleKey, rowHeaderStyle);
-
-            var columnHeaderStyle = new DevBrewLabs.Spreadsheet.Styling.CellStyle
-            {
-                FontSize = 14,
-                HorizontalAlignment = CellHorizontalAlignment.Center,
-                BackColor = DevBrewLabs.Spreadsheet.Drawing.CellColor.Gray
-            };
-
-            workBook.AddNamedStyle(StyleKeys.DefaultColumnHeaderStyleKey, columnHeaderStyle);
-
-            var sheetStyle = new DevBrewLabs.Spreadsheet.Styling.CellStyle
-            {
-                BackColor = DevBrewLabs.Spreadsheet.Drawing.CellColor.White
-            };
-
-            workBook.AddNamedStyle(StyleKeys.DefaultSheetStyleKey, sheetStyle);
-
-            var topLeftStyle = new DevBrewLabs.Spreadsheet.Styling.CellStyle
-            {
-                ForeColor = DevBrewLabs.Spreadsheet.Drawing.CellColor.LightGray
-            };
-            workBook.AddNamedStyle(StyleKeys.DefaultTopLeftStyleKey, topLeftStyle);
-
-            rowHeaderStyle.BackColor = topLeftStyle.BackColor = columnHeaderStyle.BackColor = DevBrewLabs.Spreadsheet.Drawing.CellColor.FromArgb(255, 240, 240, 240);
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)

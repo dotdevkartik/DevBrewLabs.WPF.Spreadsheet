@@ -1,4 +1,5 @@
 using DevBrewLabs.Spreadsheet;
+using DevBrewLabs.Spreadsheet.Utils;
 using DevBrewLabs.WPF.Spreadsheet.Rendering.Text;
 using DevBrewLabs.WPF.Spreadsheet.UI;
 using System;
@@ -64,6 +65,8 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public int ActiveColumn { get; internal set; }
         public CellRange Selection { get; }
         public IWorkSheet WorkSheet => _workSheet;
+        public bool AutoSizeRows { get; set; }
+        public bool AutoSizeColumns { get; set; }
         #endregion
 
         public SheetView(Spread spread, WorkSheet worksheet)
@@ -82,6 +85,8 @@ namespace DevBrewLabs.WPF.Spreadsheet
             _viewPort = new ViewPort(this);
             HeadersVisibility = HeadersVisibility.Both;
             Selection = new CellRange(0, 0);
+            AutoSizeRows = true;
+            AutoSizeColumns = true;
         }
 
         #region Public
@@ -146,6 +151,51 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public override string ToString()
         {
             return _workSheet.Name;
+        }
+
+        public void AutoSizeRow(int row)
+        {
+            if (row < 0 || row >= _workSheet.RowCount)
+                return;
+
+            int maxRequiredHeight = _workSheet.DefaultRowHeight;
+
+            for (int col = 0; col < _workSheet.ColumnCount; col++)
+            {
+                var value = _workSheet.DataStore.GetValue(row, col);
+                if (value == null)
+                    continue;
+
+                string text = value.ToString();
+                if (string.IsNullOrEmpty(text))
+                    continue;
+
+                string[] lines = TextUtils.GetLines(text);
+                if (lines.Length > 1)
+                {
+                    var cell = _cells.GetCell(row, col, false);
+                    var sheetColumn = _columns.GetItem(col);
+                    var sheetRow = _rows.GetItem(row);
+
+                    var style = _workBook.PickStyle(cell, sheetColumn, sheetRow, SheetRegion.Cells);
+                    if (!style.AllowMultiLineText)
+                        continue;
+
+                    double fontSize = style.FontSize;
+                    double fontLineHeight = Math.Max(fontSize + 2, Math.Round(fontSize * 1.3));
+                    int cellRequiredHeight = (int)Math.Ceiling(_workSheet.DefaultRowHeight + (lines.Length - 1) * fontLineHeight);
+                    if (cellRequiredHeight > maxRequiredHeight)
+                    {
+                        maxRequiredHeight = cellRequiredHeight;
+                    }
+                }
+            }
+
+            int currentHeight = _workSheet.Rows.GetRowHeight(row);
+            if (currentHeight != maxRequiredHeight)
+            {
+                _workSheet.Rows[row].Height = maxRequiredHeight;
+            }
         }
 
         public void AutoSizeColumn(int column)

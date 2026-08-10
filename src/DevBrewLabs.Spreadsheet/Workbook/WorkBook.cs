@@ -30,6 +30,44 @@ namespace DevBrewLabs.Spreadsheet
             _dataProvider = new WorkBookDataProvider(this);
             CalcEngine = new SheetCalcEngine(_dataProvider);
             StylePalette = new StylePalette();
+            AddDefaultStyles();
+        }
+
+        private void AddDefaultStyles()
+        {
+            var rowHeaderStyle = new CellStyle
+            {
+                FontSize = 14,
+                HorizontalAlignment = CellHorizontalAlignment.Center,
+                BackColor = Drawing.CellColor.Gray
+            };
+
+            AddNamedStyle(StyleKeys.DefaultRowHeaderStyleKey, rowHeaderStyle);
+
+            var columnHeaderStyle = new CellStyle
+            {
+                FontSize = 14,
+                HorizontalAlignment = CellHorizontalAlignment.Center,
+                BackColor = Drawing.CellColor.Gray
+            };
+
+            AddNamedStyle(StyleKeys.DefaultColumnHeaderStyleKey, columnHeaderStyle);
+
+            var sheetStyle = new CellStyle
+            {
+                BackColor = Drawing.CellColor.White,
+                AllowMultiLineText = true,
+            };
+
+            AddNamedStyle(StyleKeys.DefaultSheetStyleKey, sheetStyle);
+
+            var topLeftStyle = new CellStyle
+            {
+                ForeColor = Drawing.CellColor.LightGray
+            };
+            AddNamedStyle(StyleKeys.DefaultTopLeftStyleKey, topLeftStyle);
+
+            rowHeaderStyle.BackColor = topLeftStyle.BackColor = columnHeaderStyle.BackColor = Drawing.CellColor.FromArgb(255, 240, 240, 240);
         }
 
         internal WorkBook(string name, IUpdateProvider updateProvider) : this(name)
