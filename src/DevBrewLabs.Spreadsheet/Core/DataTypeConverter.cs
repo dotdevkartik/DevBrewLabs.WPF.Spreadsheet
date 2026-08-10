@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace DevBrewLabs.WPF.Spreadsheet
+namespace DevBrewLabs.Spreadsheet.Core
 {
     internal class DataTypeConverter
     {

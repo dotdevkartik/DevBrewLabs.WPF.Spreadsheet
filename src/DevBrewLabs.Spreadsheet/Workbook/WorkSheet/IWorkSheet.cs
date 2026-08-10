@@ -133,5 +133,30 @@ namespace DevBrewLabs.Spreadsheet
         /// </summary>
         /// <param name="options">Options for the sort operation.</param>
         void Sort(SortOptions options);
+
+        /// <summary>
+        /// Gets a style from the workbook style palette by ID.
+        /// </summary>
+        IStyle GetStyle(ushort styleId);
+
+        /// <summary>
+        /// Gets or adds a style to the workbook style palette.
+        /// </summary>
+        ushort GetOrAddStyle(IStyle style);
+
+        /// <summary>
+        /// Gets the formula for a specific cell.
+        /// </summary>
+        string GetCellFormula(int row, int column);
+
+        /// <summary>
+        /// Sets the formula for a specific cell.
+        /// </summary>
+        void SetCellFormula(int row, int column, string formula);
+
+        /// <summary>
+        /// Sets a raw string value to a cell, automatically inferring data types or formulas.
+        /// </summary>
+        void SetRawValue(int row, int column, string value);
     }
 }

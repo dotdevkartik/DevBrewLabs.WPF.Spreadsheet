@@ -35,7 +35,7 @@ namespace DevBrewLabs.Spreadsheet
             {
                 if (_name != value)
                 {
-                    ((WorkSheets)_workBook.WorkSheets).VerifySheetName(value);
+                    ((WorkSheets)_workBook.WorkSheets).VerifySheetName(value, this);
                     _name = value;
                 }
             }
@@ -149,6 +149,46 @@ namespace DevBrewLabs.Spreadsheet
                      SheetRegion.Cells,
                      new CellRange(startRow, startCol, rows, cols),
                       RangeChangeType.Value));
+        }
+
+        public IStyle GetStyle(ushort styleId)
+        {
+            if (styleId != StylePalette.DefaultStyleId)
+                return _workBook.StylePalette.GetStyle(styleId);
+            return null;
+        }
+
+        public ushort GetOrAddStyle(IStyle style)
+        {
+            return _workBook.StylePalette.GetOrAdd(style);
+        }
+
+        public string GetCellFormula(int row, int column)
+        {
+            return _workBook.CalcEngine.GetFormula(Name, row, column);
+        }
+
+        public void SetCellFormula(int row, int column, string formula)
+        {
+            _workBook.CalcEngine.SetFormula(Name, row, column, formula);
+        }
+
+        public void SetRawValue(int row, int column, string value)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                Cells[row, column].Value = null;
+                return;
+            }
+
+            if (value.StartsWith("="))
+            {
+                Cells[row, column].Formula = value;
+            }
+            else
+            {
+                Cells[row, column].Value = DataTypeConverter.ConvertType(value);
+            }
         }
 
         internal ColumnData GetColumnData(int column, bool createIfNotExists = true)

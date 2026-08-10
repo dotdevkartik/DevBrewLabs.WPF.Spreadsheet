@@ -1,4 +1,4 @@
-﻿using DevBrewLabs.Spreadsheet.CalcEngine;
+using DevBrewLabs.Spreadsheet.CalcEngine;
 using System;
 
 namespace DevBrewLabs.Spreadsheet
@@ -17,18 +17,7 @@ namespace DevBrewLabs.Spreadsheet
         public object[,] GetRangeValue(string sheetName, int rowIndex, int columnIndex, int rowCount, int columnCount)
         {
             var worksheet = _workBook.WorkSheets.GetSheet(sheetName);
-
-            var data = new object[rowCount, columnCount];
-
-            for (int row = 0; row < rowCount; row++)
-            {
-                for (int col = 0; col < columnCount; col++)
-                {
-                    data[row, col] = worksheet.DataStore.GetValue(rowIndex + row, columnIndex + col);
-                }
-            }
-
-            return data;
+            return worksheet.GetData(rowIndex, columnIndex, rowCount, columnCount);
         }
 
         public object GetValue(string sheetName, int rowIndex, int columnIndex)

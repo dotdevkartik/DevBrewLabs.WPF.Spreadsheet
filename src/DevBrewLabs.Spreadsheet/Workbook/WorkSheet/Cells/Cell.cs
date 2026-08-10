@@ -12,7 +12,6 @@ namespace DevBrewLabs.Spreadsheet
 
         private ColumnData ColData => _workSheet.GetColumnData(Column, true);
         private ColumnData ColDataReadOnly => _workSheet.GetColumnData(Column, false);
-        private IStylePalette Palette => _workSheet.WorkBook.StylePalette;
 
         public IFormatter Formatter
         {
@@ -71,7 +70,7 @@ namespace DevBrewLabs.Spreadsheet
         {
             get
             {
-                return _workSheet.WorkBook.CalcEngine.GetFormula(_workSheet.Name, Row, Column);
+                return _workSheet.GetCellFormula(Row, Column);
             }
             set
             {
@@ -85,7 +84,7 @@ namespace DevBrewLabs.Spreadsheet
                 if (value != null && Value != null)
                     Value = null;
 
-                _workSheet.WorkBook.CalcEngine.SetFormula(_workSheet.Name, Row, Column, value);
+                _workSheet.SetCellFormula(Row, Column, value);
 
                 _workSheet.OnCellChanged(new CellChangedEventArgs(
                       SheetRegion.Cells,
@@ -130,15 +129,13 @@ namespace DevBrewLabs.Spreadsheet
         {
             get
             {
-                if (ColDataReadOnly == null || Palette == null)
+                if (ColDataReadOnly == null)
                 {
                     return null;
                 }
 
                 ushort styleId = ColDataReadOnly.GetStyleId(Row);
-                if (styleId != StylePalette.DefaultStyleId)
-                    return Palette.GetStyle(styleId);
-                return null;
+                return _workSheet.GetStyle(styleId);
             }
             set
             {
@@ -149,7 +146,7 @@ namespace DevBrewLabs.Spreadsheet
                     return;
                 }
 
-                ushort styleId = Palette.GetOrAdd(value);
+                ushort styleId = _workSheet.GetOrAddStyle(value);
                 ColData.SetStyleId(Row, styleId);
 
                 _workSheet.OnCellChanged(new CellChangedEventArgs(

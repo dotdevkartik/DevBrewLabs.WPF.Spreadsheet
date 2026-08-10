@@ -86,7 +86,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             HeadersVisibility = HeadersVisibility.Both;
             Selection = new CellRange(0, 0);
             AutoSizeRows = true;
-            AutoSizeColumns = true;
+            AutoSizeColumns = false;
         }
 
         #region Public
@@ -166,28 +166,32 @@ namespace DevBrewLabs.WPF.Spreadsheet
                 if (value == null)
                     continue;
 
-                string text = value.ToString();
+                var cell = _cells.GetCell(row, col, false);
+                var sheetColumn = _columns.GetItem(col);
+                var sheetRow = _rows.GetItem(row);
+
+                var formatter = _workSheet.PickFormatter(cell, sheetColumn, sheetRow);
+                string text = formatter != null ? formatter.Format(value) : value.ToString();
+
                 if (string.IsNullOrEmpty(text))
                     continue;
 
-                string[] lines = TextUtils.GetLines(text);
-                if (lines.Length > 1)
+                var style = _workBook.PickStyle(cell, sheetColumn, sheetRow, SheetRegion.Cells);
+
+                string[] lines = style.AllowMultiLineText 
+                    ? TextUtils.GetLines(text) 
+                    : new[] { TextUtils.NormalizeToSingleLine(text) };
+
+                var metrics = Styling.WpfResourceCache.GetFontResources(style).GlyphMetrics;
+                double lineHeight = metrics != null ? metrics.Height * style.FontSize : style.FontSize * 1.3;
+                
+                // Add a small padding (4) so standard fonts (~16px) evaluate to ~20px 
+                // which is <= DefaultRowHeight (22), preventing unwanted resizing for single lines.
+                int cellRequiredHeight = (int)Math.Ceiling(lines.Length * lineHeight + 4);
+                
+                if (cellRequiredHeight > maxRequiredHeight)
                 {
-                    var cell = _cells.GetCell(row, col, false);
-                    var sheetColumn = _columns.GetItem(col);
-                    var sheetRow = _rows.GetItem(row);
-
-                    var style = _workBook.PickStyle(cell, sheetColumn, sheetRow, SheetRegion.Cells);
-                    if (!style.AllowMultiLineText)
-                        continue;
-
-                    double fontSize = style.FontSize;
-                    double fontLineHeight = Math.Max(fontSize + 2, Math.Round(fontSize * 1.3));
-                    int cellRequiredHeight = (int)Math.Ceiling(_workSheet.DefaultRowHeight + (lines.Length - 1) * fontLineHeight);
-                    if (cellRequiredHeight > maxRequiredHeight)
-                    {
-                        maxRequiredHeight = cellRequiredHeight;
-                    }
+                    maxRequiredHeight = cellRequiredHeight;
                 }
             }
 
@@ -208,14 +212,20 @@ namespace DevBrewLabs.WPF.Spreadsheet
             {
                 if(cellValue.Value != null)
                 {
-                    string text = cellValue.Value.ToString();
+                    var cell = _cells.GetCell(cellValue.Key, column, false);
+                    var sheetRow = _rows.GetItem(cellValue.Key);
+                    var formatter = _workSheet.PickFormatter(cell, sheetColumn, sheetRow);
+                    string text = formatter != null ? formatter.Format(cellValue.Value) : cellValue.Value.ToString();
+
                     if (string.IsNullOrEmpty(text))
                         continue;
 
-                    var style = _workBook.PickStyle(_cells.GetCell(cellValue.Key, column, false), sheetColumn, _rows.GetItem(cellValue.Key), SheetRegion.Cells);
-                    
-                    string[] lines = style.AllowMultiLineText ? TextUtils.GetLines(text) : new string[] { text };
-                    
+                    var style = _workBook.PickStyle(cell, sheetColumn, sheetRow, SheetRegion.Cells);
+
+                    string[] lines = style.AllowMultiLineText
+                     ? TextUtils.GetLines(text)
+                     : new[] { TextUtils.NormalizeToSingleLine(text) };
+
                     foreach (string line in lines)
                     {
                         var textWidth = TextMeasurer.MeasureWidth(line, style.FontSize, style != null ? Styling.WpfResourceCache.GetFontResources(style).GlyphMetrics : null);
