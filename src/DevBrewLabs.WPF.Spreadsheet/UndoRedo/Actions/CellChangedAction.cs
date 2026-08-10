@@ -1,15 +1,15 @@
-﻿namespace DevBrewLabs.WPF.Spreadsheet
+namespace DevBrewLabs.WPF.Spreadsheet
 {
     internal class CellChangedAction : SheetAction
     {
-        public State OldState { get; private set; }
-        public State NewState { get; private set; }
+        public CellEditState OldState { get; private set; }
+        public CellEditState NewState { get; private set; }
         public SheetView SheetView { get; set; }
 
         public CellChangedAction()
         {
-            OldState = new State();
-            NewState = new State();
+            OldState = new CellEditState();
+            NewState = new CellEditState();
         }
 
         public override void Undo()
@@ -22,7 +22,7 @@
             Execute(NewState);
         }
 
-        private void Execute(State state)
+        private void Execute(CellEditState state)
         {
             SheetView.WorkSheet.Cells[state.Row, state.Column].Value = state.Value;
             var selection = state.Selection;

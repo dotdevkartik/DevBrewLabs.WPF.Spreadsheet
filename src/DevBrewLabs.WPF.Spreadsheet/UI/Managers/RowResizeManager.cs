@@ -31,7 +31,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 _initialHeights[i] = workSheet.Rows.GetRowHeight(i);
             }
 
-            ResizeLine.Visibility = Visibility.Visible;
             Spread.SuspendUpdates = true;
         }
 
@@ -46,6 +45,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             ResizeLine.Y1 = ResizeLine.Y2 = Math.Max(0, currentLocation);
             ResizeLine.X1 = workSheet.RowHeaders.Width * zoom;
             ResizeLine.X2 = sheetView.Spread.SheetViewPane.ActualWidth;
+            ResizeLine.Visibility = Visibility.Visible;
 
             if (_initialHeights == null || _resizingRow < 0 || _resizingRow >= workSheet.RowCount)
                 return;
@@ -119,6 +119,32 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
         public void EndResizeRow()
         {
+            if (_initialHeights != null)
+            {
+                var sheetView = Spread.SheetViews.ActiveSheetView.As<SheetView>();
+                var workSheet = sheetView.WorkSheet;
+                
+                var action = new RowResizedAction { SheetView = sheetView };
+                bool hasChanges = false;
+                
+                for (int i = 0; i < workSheet.RowCount; i++)
+                {
+                    int oldHeight = _initialHeights[i];
+                    int newHeight = workSheet.Rows.GetRowHeight(i);
+                    if (oldHeight != newHeight)
+                    {
+                        action.OldHeights[i] = oldHeight;
+                        action.NewHeights[i] = newHeight;
+                        hasChanges = true;
+                    }
+                }
+                
+                if (hasChanges)
+                {
+                    Spread.UndoRedoManager.AddAction(action);
+                }
+            }
+
             _resizingRow = -1;
             _rowLocation = -1;
             _initialHeights = null;

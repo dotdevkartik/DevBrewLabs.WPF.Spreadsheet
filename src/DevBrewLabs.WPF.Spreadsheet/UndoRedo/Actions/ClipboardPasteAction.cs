@@ -1,15 +1,15 @@
-﻿namespace DevBrewLabs.WPF.Spreadsheet
+namespace DevBrewLabs.WPF.Spreadsheet
 {
     internal class ClipboardPasteAction : SheetAction
     {
-        public State OldState { get; private set; }
-        public State NewState { get; private set; }
+        public CellEditState OldState { get; private set; }
+        public CellEditState NewState { get; private set; }
         public SheetView SheetView { get; set; }
 
         public ClipboardPasteAction()
         {
-            OldState = new State();
-            NewState = new State();
+            OldState = new CellEditState();
+            NewState = new CellEditState();
         }
 
         public override void Redo()
@@ -22,7 +22,7 @@
             Execute(OldState);
         }
 
-        private void Execute(State state)
+        private void Execute(CellEditState state)
         {
             var data = (object[,])state.Value;
 
