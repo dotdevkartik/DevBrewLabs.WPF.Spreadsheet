@@ -208,10 +208,19 @@ namespace DevBrewLabs.WPF.Spreadsheet
             {
                 if(cellValue.Value != null)
                 {
-                    var style = _workBook.PickStyle(_cells.GetCell(cellValue.Key, column, false), sheetColumn, _rows.GetItem(cellValue.Key), SheetRegion.RowHeader);
-                    var wpfStyle = style;
-                    var textWidth = TextMeasurer.MeasureWidth(cellValue.Value.ToString(), style.FontSize, wpfStyle != null ? Styling.WpfResourceCache.GetFontResources(wpfStyle).GlyphMetrics : null);
-                    width = Math.Max(width, (int)Math.Ceiling(textWidth) + 11);
+                    string text = cellValue.Value.ToString();
+                    if (string.IsNullOrEmpty(text))
+                        continue;
+
+                    var style = _workBook.PickStyle(_cells.GetCell(cellValue.Key, column, false), sheetColumn, _rows.GetItem(cellValue.Key), SheetRegion.Cells);
+                    
+                    string[] lines = style.AllowMultiLineText ? TextUtils.GetLines(text) : new string[] { text };
+                    
+                    foreach (string line in lines)
+                    {
+                        var textWidth = TextMeasurer.MeasureWidth(line, style.FontSize, style != null ? Styling.WpfResourceCache.GetFontResources(style).GlyphMetrics : null);
+                        width = Math.Max(width, (int)Math.Ceiling(textWidth) + 11);
+                    }
                 }
             }
 
