@@ -1,4 +1,4 @@
-﻿using DevBrewLabs.Spreadsheet.Data;
+using DevBrewLabs.Spreadsheet.Data;
 using DevBrewLabs.Spreadsheet.Formatters;
 using System;
 using System.Collections.Generic;
@@ -29,7 +29,7 @@ namespace DevBrewLabs.Spreadsheet
         {
             get
             {
-                return GetCell(row, column, true);
+                return GetCell(row, column);
             }
         }
 
@@ -69,138 +69,72 @@ namespace DevBrewLabs.Spreadsheet
 
         public object Value
         {
-            get
-            {
-                return GetCell(Row, Column, false)?.Value;
-            }
-            set
-            {
-                ApplyToRange((range) => range.Value = value);
-            }
+            get { return _columnHeaders.GetValue(Row, Column); }
+            set { ApplyToRange((r, c) => _columnHeaders.SetValue(r, c, value)); }
         }
 
         public string Formula
         {
-            get
-            {
-                return GetCell(Row, Column, false)?.Formula;
-            }
-            set
-            {
-                ApplyToRange((range) => range.Formula = value);
-            }
+            get { return _columnHeaders.GetFormula(Row, Column); }
+            set { ApplyToRange((r, c) => _columnHeaders.SetFormula(r, c, value)); }
         }
 
         public IFormatter Formatter
         {
-            get
-            {
-                return GetCell(Row, Column, false)?.Formatter;
-            }
-            set
-            {
-                ApplyToRange((range) => range.Formatter = value);
-            }
+            get { return _columnHeaders.GetFormatter(Row, Column); }
+            set { ApplyToRange((r, c) => _columnHeaders.SetFormatter(r, c, value)); }
         }
 
         public string StyleName
         {
-            get
-            {
-                return GetCell(Row, Column, false)?.StyleName;
-            }
-            set
-            {
-                ApplyToRange((range) => range.StyleName = value);
-            }
+            get { return _columnHeaders.GetStyleName(Row, Column); }
+            set { ApplyToRange((r, c) => _columnHeaders.SetStyleName(r, c, value)); }
         }
 
         public IStyle Style
         {
-            get
-            {
-                return GetCell(Row, Column, false)?.Style;
-            }
-            set
-            {
-                ApplyToRange((range) => range.Style = value);
-            }
+            get { return _columnHeaders.GetStyle(Row, Column); }
+            set { ApplyToRange((r, c) => _columnHeaders.SetStyle(r, c, value)); }
         }
 
         public IRange ParentRange { get; private set; }
 
-        public DataMap DataMap
+        public IDataMap DataMap
         {
-            get
-            {
-                return GetCell(Row, Column, false)?.DataMap;
-            }
-            set
-            {
-                ApplyToRange((range) => range.DataMap = value);
-            }
+            get { return _columnHeaders.GetDataMap(Row, Column); }
+            set { ApplyToRange((r, c) => _columnHeaders.SetDataMap(r, c, value)); }
         }
 
         public ICellType CellType
         {
-            get
-            {
-                return GetCell(Row, Column, false)?.CellType;
-            }
-            set
-            {
-                ApplyToRange((range) => range.CellType = value);
-            }
+            get { return _columnHeaders.GetCellType(Row, Column); }
+            set { ApplyToRange((r, c) => _columnHeaders.SetCellType(r, c, value)); }
         }
 
-        public bool HasFormula => GetCell(Row, Column, false)?.HasFormula ?? false;
+        public bool HasFormula => _columnHeaders.HasFormula(Row, Column);
 
         public bool Locked
         {
-            get
-            {
-                return GetCell(Row, Column, false)?.Locked ?? false;
-            }
-            set
-            {
-                ApplyToRange((range) => range.Locked = value);
-            }
+            get { return _columnHeaders.GetLocked(Row, Column); }
+            set { ApplyToRange((r, c) => _columnHeaders.SetLocked(r, c, value)); }
         }
 
         public bool IsVisible
         {
-            get
-            {
-                return GetCell(Row, Column, false)?.IsVisible ?? true;
-            }
-            internal set
-            {
-                ApplyToRange((range) => ((ColumnHeaderCell)range).IsVisible = value);
-            }
+            get { return GetCell(Row, Column)?.IsVisible ?? true; }
+            internal set { ApplyToRange((r, c) => ((ColumnHeaderCell)GetCell(r, c)).IsVisible = value); }
         }
 
         public int RowSpan
         {
-            get
-            {
-                return GetCell(Row, Column, false)?.RowSpan ?? 1;
-            }
-            set
-            {
-                ApplyToRange((range) => range.RowSpan = value);
-            }
+            get { return _columnHeaders.GetRowSpan(Row, Column); }
+            set { ApplyToRange((r, c) => _columnHeaders.SetRowSpan(r, c, value)); }
         }
 
         public int ColumnSpan
         {
-            get
-            {
-                return GetCell(Row, Column, false)?.ColumnSpan ?? 1;
-            }
-            set
-            {
-                ApplyToRange((range) => range.ColumnSpan = value);
-            }
+            get { return _columnHeaders.GetColumnSpan(Row, Column); }
+            set { ApplyToRange((r, c) => _columnHeaders.SetColumnSpan(r, c, value)); }
         }
 
         public WorkSheet WorkSheet => _workSheet;
@@ -227,7 +161,7 @@ namespace DevBrewLabs.Spreadsheet
             _workSheet = parentRange._workSheet;
         }
 
-        internal ColumnHeaderCell GetCell(int row, int column, bool createIfNotExists)
+        private ColumnHeaderCell GetCell(int row, int column)
         {
             ValidateIndexes(row, column, 1, 1);
             long key = MakeKey(row, column);
@@ -239,67 +173,7 @@ namespace DevBrewLabs.Spreadsheet
                 return existingCell;
             }
 
-            var colData = _workSheet.GetColumnData(column, false);
-            if (colData != null && colData.HasRowData(row))
-            {
-                var cell = CreateCell(row, column);
-                return cell;
-            }
-            else if (createIfNotExists)
-            {
-                var cell = CreateCell(row, column);
-                return cell;
-            }
-
-            return null;
-        }
-
-        internal IEnumerable<KeyValuePair<int, object>> GetCellValues(int column)
-        {
-            var colData = _workSheet.GetColumnData(column, false);
-            if (colData != null)
-            {
-                for (int row = Row; row < Row + RowCount; row++)
-                {
-                    var val = colData.GetValue(row);
-                    if (val != null)
-                        yield return new KeyValuePair<int, object>(row, val);
-                }
-            }
-        }
-
-        internal void ClearCellStore()
-        {
-            _activeCellInstances.Clear();
-        }
-
-        internal void ClearColumnCells(int column)
-        {
-            var columnCells = _activeCellInstances.Where(x => GetColumn(x.Key) == column).ToList();
-
-            foreach (var cell in columnCells)
-            {
-                _activeCellInstances.Remove(cell.Key);
-            }
-        }
-
-        private ColumnHeaderCells GetRange(int row, int column, int rowCount, int columnCount)
-        {
-            ValidateIndexes(row, column, rowCount, columnCount);
-            return new ColumnHeaderCells(this, row, column, rowCount, columnCount);
-        }
-
-        private ColumnHeaderCell CreateCell(int row, int column)
-        {
-            long key = MakeKey(row, column);
-            if (_activeCellInstances.TryGetValue(key, out var cell))
-            {
-                cell.Row = row;
-                cell.Column = column;
-                return cell;
-            }
-
-            cell = new ColumnHeaderCell(this)
+            ColumnHeaderCell cell = new ColumnHeaderCell(this)
             {
                 Row = row,
                 Column = column
@@ -309,20 +183,28 @@ namespace DevBrewLabs.Spreadsheet
             return cell;
         }
 
+        internal void ClearCellStore()
+        {
+            _activeCellInstances.Clear();
+        }
 
+        private ColumnHeaderCells GetRange(int row, int column, int rowCount, int columnCount)
+        {
+            ValidateIndexes(row, column, rowCount, columnCount);
+            return new ColumnHeaderCells(this, row, column, rowCount, columnCount);
+        }
 
         private void ValidateIndexes(int row, int column, int rowCount, int columnCount)
         {
         }
 
-        private void ApplyToRange(Action<IRange> action)
+        private void ApplyToRange(Action<int, int> action)
         {
             for (int row = Row; row < Row + RowCount; row++)
             {
                 for (int column = Column; column < Column + ColumnCount; column++)
                 {
-                    var cell = GetCell(row, column, true);
-                    action(cell);
+                    action(row, column);
                 }
             }
         }

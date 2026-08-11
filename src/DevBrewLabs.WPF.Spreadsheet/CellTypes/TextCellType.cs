@@ -9,6 +9,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
 {
     public class TextCellType : BaseCellType
     {
+        public static BaseCellType Default { get; } = new TextCellType();
+
         internal override void DrawCell(DrawingContext context, object value, IStyle style, IFormatter formatter, Rect cellRect, RenderContext renderContext)
         {
             base.DrawCell(context, value, style, formatter, cellRect, renderContext);

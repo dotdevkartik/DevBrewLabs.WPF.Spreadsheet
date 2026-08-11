@@ -1,4 +1,5 @@
 using DevBrewLabs.Spreadsheet.CalcEngine.Parsers;
+using DevBrewLabs.Spreadsheet.Core;
 using DevBrewLabs.Spreadsheet.Data;
 using DevBrewLabs.Spreadsheet.Formatters;
 using System;
@@ -15,7 +16,7 @@ namespace DevBrewLabs.Spreadsheet
         private WorkSheet _workSheet;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private readonly Dictionary<long, Cell> _activeCellInstances;
+        private readonly Dictionary<long, Cell> _cellCollection;
 
         public IRange this[string name]
         {
@@ -38,7 +39,7 @@ namespace DevBrewLabs.Spreadsheet
         {
             get
             {
-                return GetCell(row, column, true);
+                return GetCell(row, column);
             }
         }
 
@@ -80,11 +81,11 @@ namespace DevBrewLabs.Spreadsheet
         {
             get
             {
-                return GetCell(Row, Column, false)?.Value;
+                return _workSheet.GetValue(Row, Column);
             }
             set
             {
-                ApplyToRange((range) => range.Value = value);
+                ApplyToRange((row, column) => _workSheet.SetValue(row, column, value));
             }
         }
 
@@ -92,11 +93,11 @@ namespace DevBrewLabs.Spreadsheet
         {
             get
             {
-                return GetCell(Row, Column, false)?.Formula;
+                return _workSheet.GetFormula(Row, Column);
             }
             set
             {
-                ApplyToRange((range) => range.Formula = value);
+                ApplyToRange((row, column) => _workSheet.SetFormula(row, column, value));
             }
         }
 
@@ -104,11 +105,11 @@ namespace DevBrewLabs.Spreadsheet
         {
             get
             {
-                return GetCell(Row, Column, false)?.Formatter;
+                return _workSheet.GetFormatter(Row, Column);
             }
             set
             {
-                ApplyToRange((range) => range.Formatter = value);
+                ApplyToRange((row, column) => _workSheet.SetFormatter(row, column, value));
             }
         }
 
@@ -116,11 +117,11 @@ namespace DevBrewLabs.Spreadsheet
         {
             get
             {
-                return GetCell(Row, Column, false)?.StyleName;
+                return _workSheet.GetStyleName(Row, Column);
             }
             set
             {
-                ApplyToRange((range) => range.StyleName = value);
+                ApplyToRange((row, column) => _workSheet.SetStyleName(row, column, value));
             }
         }
 
@@ -128,25 +129,25 @@ namespace DevBrewLabs.Spreadsheet
         {
             get
             {
-                return GetCell(Row, Column, false)?.Style;
+                return _workSheet.GetStyle(Row, Column);
             }
             set
             {
-                ApplyToRange((range) => range.Style = value);
+                ApplyToRange((row, column) => _workSheet.SetStyle(row, column, value));
             }
         }
 
         public IRange ParentRange { get; private set; }
 
-        public DataMap DataMap
+        public IDataMap DataMap
         {
             get
             {
-                return GetCell(Row, Column, false)?.DataMap;
+                return _workSheet.GetDataMap(Row, Column);
             }
             set
             {
-                ApplyToRange((range) => range.DataMap = value);
+                ApplyToRange((row, column) => _workSheet.SetDataMap(row, column, value));
             }
         }
 
@@ -154,37 +155,25 @@ namespace DevBrewLabs.Spreadsheet
         {
             get
             {
-                return GetCell(Row, Column, false)?.CellType;
+                return _workSheet.GetCellType(Row, Column);
             }
             set
             {
-                ApplyToRange((range) => range.CellType = value);
+                ApplyToRange((row, column) => _workSheet.SetCellType(row, column, value));
             }
         }
 
-        public bool HasFormula => GetCell(Row, Column, false)?.HasFormula ?? false;
+        public bool HasFormula => _workSheet.HasFormula(Row, Column);
 
         public bool Locked
         {
             get
             {
-                return GetCell(Row, Column, false)?.Locked ?? false;
+                return _workSheet.GetLocked(Row, Column);
             }
             set
             {
-                ApplyToRange((range) => range.Locked = value);
-            }
-        }
-
-        public bool IsVisible
-        {
-            get
-            {
-                return GetCell(Row, Column, false)?.IsVisible ?? true;
-            }
-            internal set
-            {
-                ApplyToRange((range) => ((Cell)range).IsVisible = value);
+                ApplyToRange((row, column) => _workSheet.SetLocked(row, column, value));
             }
         }
 
@@ -192,11 +181,11 @@ namespace DevBrewLabs.Spreadsheet
         {
             get
             {
-                return GetCell(Row, Column, false)?.RowSpan ?? 1;
+                return _workSheet.GetRowSpan(Row, Column);
             }
             set
             {
-                ApplyToRange((range) => range.RowSpan = value);
+                ApplyToRange((row, column) => _workSheet.SetRowSpan(row, column, value));
             }
         }
 
@@ -204,11 +193,11 @@ namespace DevBrewLabs.Spreadsheet
         {
             get
             {
-                return GetCell(Row, Column, false)?.ColumnSpan ?? 1;
+                return _workSheet.GetColumnSpan(Row, Column);
             }
             set
             {
-                ApplyToRange((range) => range.ColumnSpan = value);
+                ApplyToRange((row, column) => _workSheet.SetColumnSpan(row, column, value));
             }
         }
 
@@ -219,7 +208,7 @@ namespace DevBrewLabs.Spreadsheet
             _workSheet = parent;
             Row = Column = 0;
             _rowCount = _columnCount = -1;
-            _activeCellInstances = new Dictionary<long, Cell>();
+            _cellCollection = new Dictionary<long, Cell>();
         }
 
         internal Cells(Cells parentRange, int row, int column, int rowCount, int columnCount)
@@ -230,63 +219,54 @@ namespace DevBrewLabs.Spreadsheet
             Column = column;
             _rowCount = rowCount;
             _columnCount = columnCount;
-            _activeCellInstances = parentRange._activeCellInstances;
+            _cellCollection = parentRange._cellCollection;
             _workSheet = parentRange._workSheet;
         }
 
-        internal Cell GetCell(int row, int column, bool createIfNotExists)
+        private Cell GetCell(int row, int column)
         {
             ValidateIndexes(row, column, 1, 1);
             long key = MakeKey(row, column);
 
-            if (_activeCellInstances.TryGetValue(key, out var existingCell))
+            if (_cellCollection.TryGetValue(key, out var existingCell))
             {
                 existingCell.Row = row;
                 existingCell.Column = column;
                 return existingCell;
             }
 
-            var colData = _workSheet.GetColumnData(column, false);
-            if (colData != null && colData.HasRowData(row))
+            Cell cell = new Cell(this)
             {
-                var cell = CreateCell(row, column);
-                return cell;
-            }
-            else if (createIfNotExists)
-            {
-                var cell = CreateCell(row, column);
-                return cell;
-            }
+                Row = row,
+                Column = column
+            };
 
-            return null;
+            _cellCollection[key] = cell;
+            return cell;
         }
 
         internal IEnumerable<KeyValuePair<int, object>> GetCellValues(int column)
         {
-            var colData = _workSheet.GetColumnData(column, false);
-            if (colData != null)
+            for (int row = Row; row < Row + RowCount; row++)
             {
-                for (int row = Row; row < Row + RowCount; row++)
-                {
-                    var val = colData.GetValue(row);
-                    if (val != null)
-                        yield return new KeyValuePair<int, object>(row, val);
-                }
+                var val = _workSheet.GetValue(row, column);
+                if (val != null)
+                    yield return new KeyValuePair<int, object>(row, val);
             }
         }
 
-        internal void ClearCellStore()
+        internal void Clear()
         {
-            _activeCellInstances.Clear();
+            _cellCollection.Clear();
         }
 
         internal void ClearColumnCells(int column)
         {
-            var columnCells = _activeCellInstances.Where(x => GetColumn(x.Key) == column).ToList();
+            var columnCells = _cellCollection.Where(x => GetColumn(x.Key) == column).ToList();
 
             foreach(var cell in columnCells)
             {
-                _activeCellInstances.Remove(cell.Key);
+                _cellCollection.Remove(cell.Key);
             }
         }
 
@@ -296,47 +276,24 @@ namespace DevBrewLabs.Spreadsheet
             return new Cells(this, row, column, rowCount, columnCount);
         }
 
-        private Cell CreateCell(int row, int column)
-        {
-            long key = MakeKey(row, column);
-            if (_activeCellInstances.TryGetValue(key, out var cell))
-            {
-                cell.Row = row;
-                cell.Column = column;
-                return cell;
-            }
-
-            cell = new Cell(this)
-            {
-                Row = row,
-                Column = column
-            };
-
-            _activeCellInstances[key] = cell;
-            return cell;
-        }
-
-
-
         private void ValidateIndexes(int row, int column, int rowCount, int columnCount)
         {
         }
 
-        private void ApplyToRange(Action<IRange> action)
+        private void ApplyToRange(Action<int, int> action)
         {
             for (int row = Row; row < Row + RowCount; row++)
             {
                 for (int column = Column; column < Column + ColumnCount; column++)
                 {
-                    var cell = GetCell(row, column, true);
-                    action(cell);
+                    action(row, column);
                 }
             }
         }
 
         public void Dispose()
         {
-            ClearCellStore();
+            Clear();
         }
 
         private static long MakeKey(int row, int column)

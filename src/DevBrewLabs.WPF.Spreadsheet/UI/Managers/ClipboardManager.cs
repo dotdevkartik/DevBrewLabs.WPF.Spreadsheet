@@ -7,6 +7,8 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Windows;
+using System.Windows.Input;
+using DevBrewLabs.Spreadsheet.Core;
 
 namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 {
@@ -65,7 +67,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 {
                     var val = data[row, column];
                     var strVal = val != null ? val.ToString() : string.Empty;
-                    stringBuilder.Append(FormatTsvCell(strVal));
+                    stringBuilder.Append(SpreadsheetDataParser.FormatTsvCell(strVal));
 
                     if (column < range.ColumnCount - 1)
                         stringBuilder.Append(SheetUtils.Tab);
@@ -129,15 +131,15 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                     for (int column = 0; column < data.GetLength(1); column++)
                     {
                         var value = data[row, column];
-                        if (value is string strVal && strVal.StartsWith("=") && strVal.Length > 1)
+                        if (value is string strVal)
                         {
                             try
                             {
-                                workSheet.Cells[activeRow + row, activeColumn + column].Formula = strVal.Substring(1);
+                                workSheet.SetRawValue(activeRow + row, activeColumn + column, strVal);
                             }
                             catch
                             {
-                                workSheet.Cells[activeRow + row, activeColumn + column].Value = value;
+                                workSheet.Cells[activeRow + row, activeColumn + column].Value = strVal;
                             }
                         }
                         else
@@ -211,102 +213,26 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
             if (!string.IsNullOrEmpty(text))
             {
-                return ParseTextData(text, '\t');
+                return SpreadsheetDataParser.ParseTextData(text, '\t');
             }
 
             if (dataObject.GetDataPresent(DataFormats.CommaSeparatedValue))
             {
                 var csvObj = dataObject.GetData(DataFormats.CommaSeparatedValue);
                 if (csvObj is string csvText)
-                    return ParseTextData(csvText, ',');
+                    return SpreadsheetDataParser.ParseTextData(csvText, ',');
                 if (csvObj is Stream csvStream)
                 {
                     using (var reader = new StreamReader(csvStream, Encoding.UTF8))
                     {
-                        return ParseTextData(reader.ReadToEnd(), ',');
+                        return SpreadsheetDataParser.ParseTextData(reader.ReadToEnd(), ',');
                     }
                 }
             }
 
             return null;
         }
-
-        internal static object[,] ParseTextData(string text, char delimiter)
-        {
-            if (string.IsNullOrEmpty(text))
-                return null;
-
-            var lines = text.Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.None);
-            int lineCount = lines.Length;
-
-            if (lineCount > 1 && string.IsNullOrEmpty(lines[lineCount - 1]) && (text.EndsWith("\n") || text.EndsWith("\r")))
-            {
-                lineCount--;
-            }
-
-            if (lineCount == 0)
-                return null;
-
-            var parsedRows = new List<string[]>();
-            int maxColumns = 0;
-
-            for (int i = 0; i < lineCount; i++)
-            {
-                var rowCells = lines[i].Split(delimiter);
-                var cleanCells = new string[rowCells.Length];
-                for (int j = 0; j < rowCells.Length; j++)
-                {
-                    var cell = rowCells[j];
-                    if (cell.Length >= 2 && cell.StartsWith("\"") && cell.EndsWith("\""))
-                    {
-                        cell = cell.Substring(1, cell.Length - 2).Replace("\"\"", "\"");
-                    }
-                    cleanCells[j] = cell;
-                }
-
-                if (cleanCells.Length > maxColumns)
-                    maxColumns = cleanCells.Length;
-
-                parsedRows.Add(cleanCells);
-            }
-
-            if (maxColumns == 0)
-                return null;
-
-            var data = new object[parsedRows.Count, maxColumns];
-            for (int r = 0; r < parsedRows.Count; r++)
-            {
-                var rowCells = parsedRows[r];
-                for (int c = 0; c < maxColumns; c++)
-                {
-                    if (c < rowCells.Length)
-                    {
-                        var val = rowCells[c];
-                        data[r, c] = DataTypeConverter.ConvertType(val);
-                    }
-                    else
-                    {
-                        data[r, c] = null;
-                    }
-                }
-            }
-
-            return data;
-        }
-
-        private static string FormatTsvCell(string text)
-        {
-            if (string.IsNullOrEmpty(text))
-                return string.Empty;
-
-            if (text.Contains("\t") || text.Contains("\n") || text.Contains("\r") || text.Contains("\""))
-            {
-                return "\"" + text.Replace("\"", "\"\"") + "\"";
-            }
-
-            return text;
-        }
-
+        // Removed ParseTextData and FormatTsvCell as they are now in Core
         private static T ExecuteWithRetry<T>(Func<T> action)
         {
             for (int i = 0; i < MaxClipboardRetries; i++)

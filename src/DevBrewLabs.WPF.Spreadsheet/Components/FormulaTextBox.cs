@@ -138,21 +138,16 @@ namespace DevBrewLabs.WPF.Spreadsheet
         private void OnCellsSelectionChanged(object sender, CellsSelectionEventArgs e)
         {
             var workSheet = e.SheetView.WorkSheet;
-            var cell = ((Cells)workSheet.Cells).GetCell(e.SheetView.ActiveRow, e.SheetView.ActiveColumn, false);
 
-            if(cell == null)
+            var formula = workSheet.GetFormula(e.SheetView.ActiveRow, e.SheetView.ActiveColumn);
+            if (!string.IsNullOrEmpty(formula))
             {
-                var dataStore = workSheet.DataStore;
-                var value = dataStore.GetValue(e.SheetView.ActiveRow, e.SheetView.ActiveColumn);
-                _txtEditor.Text = value?.ToString();
-            }
-            else if(!string.IsNullOrEmpty(cell.Formula))
-            {
-                _txtEditor.Text = $"={cell.Formula}";
+                _txtEditor.Text = "=" + formula;
             }
             else
             {
-                _txtEditor.Text = cell.Value?.ToString();
+                var value = workSheet.GetValue(e.SheetView.ActiveRow, e.SheetView.ActiveColumn);
+                _txtEditor.Text = value?.ToString();
             }
 
             _txtEditor.ScrollToEnd();

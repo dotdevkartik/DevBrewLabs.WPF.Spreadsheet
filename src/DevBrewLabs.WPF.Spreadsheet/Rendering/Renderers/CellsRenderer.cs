@@ -11,7 +11,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
     {
         protected override void OnRender(DrawingContext context, int topRow, int leftColumn, int bottomRow, int rightColumn)
         {
-            var workSheet = SheetView.WorkSheet;
+            var workSheet = (WorkSheet)SheetView.WorkSheet;
             var workBook = (WorkBook)workSheet.WorkBook;
             var rows = (Rows)workSheet.Rows;
             var columns = (Columns)workSheet.Columns;
@@ -31,9 +31,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                 if (rowHeight == 0)
                     continue;
 
-                if (workSheet.FilterProvider.FilteredRows.ContainsKey(row))
-                    continue;
-
                 var sheetRow = rows.GetItem(row);
                 var rowLocation = rows.GetLocation(row);
                 var y = (rowLocation - viewport.TopRowLocation) * zoom;
@@ -50,29 +47,43 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                     var x = (columnLocation - viewport.LeftColumnLocation) * zoom;
                     var scaledColumnWidth = columnWidth * zoom;
 
-                    var cell = cells.GetCell(row, col, false);
                     var sheetColumn = columns.GetItem(col);
+                    var cellType = (BaseCellType)(workSheet.GetCellType(row, col) ?? sheetColumn?.CellType ?? TextCellType.Default);
+                    object value = workSheet.GetValue(row, col);
 
-                    var cellType = RenderingExtensions.GetCellType(cell, sheetColumn);
-
-                    object value = workSheet.DataStore.GetValue(row, col);
-
-                    if (cell == null && value == null && sheetColumn == null && sheetRow == null)
+                    if (value == null && sheetColumn == null && sheetRow == null)
                     {
-                        if (cellType is ButtonCellType)
-                            value = ((ButtonCellType)cellType).Text;
-                        else if (cellType is CheckBoxCellType) { }
-                           // value = false;
-                        else
-                            continue;
+                        switch (cellType)
+                        {
+                            case ButtonCellType buttonCellType:
+                                value = buttonCellType.Text;
+                                break;
+                            case CheckBoxCellType checkBoxCellType:
+                                //value = false;
+                                break;
+                            default:
+                                continue;
+                        }
                     }
 
                     var cellRect = new Rect(x, y, scaledColumnWidth - penThickness, scaledRowHeight - penThickness);
 
-                    var baseStyle = workBook.PickStyle(cell, sheetColumn, sheetRow, SheetRegion.Cells);
-                    var style = baseStyle;
+                    var style = workSheet.GetStyle(row, col);
 
-                    var formatter = workSheet.PickFormatter(cell, sheetColumn, sheetRow);
+                    if (style == null)
+                    {
+                        var styleName = workSheet.GetStyleName(row, col);
+                        if (!string.IsNullOrEmpty(styleName))
+                        {
+                            style = workBook.GetNamedStyle(styleName);
+                        }
+                        else
+                        {
+                            style = workBook.PickStyle(sheetColumn, sheetRow, SheetRegion.Cells);
+                        }
+                    }
+
+                    var formatter = workSheet.GetFormatter(row, col) ?? workSheet.PickFormatter(sheetColumn, sheetRow);
                     cellType.DrawCell(context, value, style, formatter, cellRect, renderContext);
                 }
             }

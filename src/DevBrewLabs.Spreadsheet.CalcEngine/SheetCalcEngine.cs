@@ -25,7 +25,7 @@ namespace DevBrewLabs.Spreadsheet.CalcEngine
     {
         private readonly FormulaEngine _formulaEngine;
         private readonly CalcEngineContext _engineContext;
-        private readonly IDataProvider _provider;
+        private readonly IDataAdapter _provider;
         private readonly IDependencyManager _dependencyManager;
 
         /// <inheritdoc />
@@ -35,7 +35,7 @@ namespace DevBrewLabs.Spreadsheet.CalcEngine
         /// Initializes a new instance of the <see cref="SheetCalcEngine"/> class.
         /// </summary>
         /// <param name="dataProvider">The data provider for accessing cell values and metadata.</param>
-        public SheetCalcEngine(IDataProvider dataProvider) 
+        public SheetCalcEngine(IDataAdapter dataProvider) 
             : this(dataProvider, new DependencyManager(dataProvider))
         {
         }
@@ -45,7 +45,7 @@ namespace DevBrewLabs.Spreadsheet.CalcEngine
         /// </summary>
         /// <param name="dataProvider">The data provider for accessing cell values and metadata.</param>
         /// <param name="dependencyManager">The dependency manager to use.</param>
-        internal SheetCalcEngine(IDataProvider dataProvider, IDependencyManager dependencyManager)
+        internal SheetCalcEngine(IDataAdapter dataProvider, IDependencyManager dependencyManager)
         {
             _provider = dataProvider ?? throw new ArgumentNullException(nameof(dataProvider));
             _dependencyManager = dependencyManager ?? throw new ArgumentNullException(nameof(dependencyManager));
@@ -60,9 +60,9 @@ namespace DevBrewLabs.Spreadsheet.CalcEngine
                     new CellRefTokenParser()
                 }
             };
-            
             _formulaEngine.ApplySettings(settings);
             _provider.ValueChanged += OnCellValueChanged;
+            _provider.FormulaChanged += OnFormulaChanged;
         }
 
         private void OnCellValueChanged(ValueChangedEventArgs args)
@@ -99,44 +99,47 @@ namespace DevBrewLabs.Spreadsheet.CalcEngine
         /// <inheritdoc />
         public object GetValue(string sheetName, int row, int column)
         {
-            if (!(_provider.GetMetaData(sheetName, row, column) is CalcCellMetaInfo metaInfo) || string.IsNullOrEmpty(metaInfo.Formula))
+            var formula = _provider.GetFormula(sheetName, row, column);
+            if (string.IsNullOrEmpty(formula))
             {
                 return null;
+            }
+
+            if (!(_provider.GetMetadata(sheetName, row, column) is CalcCellMetaInfo metaInfo))
+            {
+                metaInfo = new CalcCellMetaInfo { Dependents = new HashSet<CellRef>() };
+                _provider.SetMetadata(sheetName, row, column, metaInfo);
             }
 
             // Value not calculated yet, calculate value
             if (metaInfo.CalculatedValue == null)
             {
-                _engineContext.SetCurrentSheet(sheetName);
-                var result = _formulaEngine.Evaluate(GetPureFormula(metaInfo.Formula));
-                metaInfo.CalculatedValue = FormulaEngineConverter.ConvertToCalcValue(result);
+                if (metaInfo.IsEvaluating)
+                {
+                    return new CalcValue { Kind = CalcValueKind.Error, Value = "#REF!" };
+                }
+
+                metaInfo.IsEvaluating = true;
+                var prevSheet = _engineContext.CurrentSheetName;
+
+                try
+                {
+                    _engineContext.SetCurrentSheet(sheetName);
+                    var result = _formulaEngine.Evaluate(GetPureFormula(formula));
+                    metaInfo.CalculatedValue = FormulaEngineConverter.ConvertToCalcValue(result);
+                }
+                catch (Exception)
+                {
+                    metaInfo.CalculatedValue = new CalcValue { Kind = CalcValueKind.Error, Value = "#VALUE!" };
+                }
+                finally
+                {
+                    metaInfo.IsEvaluating = false;
+                    _engineContext.SetCurrentSheet(prevSheet);
+                }
             }
 
             return metaInfo.CalculatedValue;
-        }
-        
-        /// <inheritdoc />
-        public string GetFormula(string sheetName, int row, int column)
-        {
-            if (_provider.GetMetaData(sheetName, row, column) is CalcCellMetaInfo metaInfo)
-            {
-                return metaInfo.Formula;
-            }
-            return null;
-        }
-
-        /// <inheritdoc />
-        public void SetFormula(string sheetName, int row, int column, string formula)
-        {
-            var curFormula = GetFormula(sheetName, row, column);
-            
-            // Same as existing formula, no need to update
-            if (curFormula == formula)
-            {
-                return;
-            }
-            
-            SetFormulaImpl(sheetName, row, column, formula);
         }
 
         /// <summary>
@@ -177,8 +180,13 @@ namespace DevBrewLabs.Spreadsheet.CalcEngine
 
         #region Private Helper Methods
 
-        private void SetFormulaImpl(string sheetName, int row, int column, string formula)
+        private void OnFormulaChanged(FormulaChangedEventArgs args)
         {
+            var sheetName = args.SheetName;
+            var row = args.Row;
+            var column = args.Column;
+            var formula = args.NewFormula;
+
             if (string.IsNullOrEmpty(formula))
             {
                 ClearFormula(sheetName, row, column);
@@ -188,13 +196,14 @@ namespace DevBrewLabs.Spreadsheet.CalcEngine
             formula = formula.TrimStart('=');
 
             // Ensure meta info exists and get any existing dependents
-            CalcCellMetaInfo metaInfo = _provider.GetMetaData(sheetName, row, column) as CalcCellMetaInfo;
+            CalcCellMetaInfo metaInfo = _provider.GetMetadata(sheetName, row, column) as CalcCellMetaInfo;
             if (metaInfo == null)
             {
                 metaInfo = new CalcCellMetaInfo { Dependents = new HashSet<CellRef>() };
             }
 
-            metaInfo.Formula = formula;
+            var curCell = new CellRef(row, column, sheetName);
+            _dependencyManager.ClearDependencies(curCell);
 
             List<string> extractedVars;
             try
@@ -220,8 +229,6 @@ namespace DevBrewLabs.Spreadsheet.CalcEngine
             }
             metaInfo.Dependencies = dependencies;
 
-            var curCell = new CellRef(row, column, sheetName);
-
             if (dependencies.Count > 0)
             {
                 foreach (var dependency in dependencies)
@@ -237,17 +244,19 @@ namespace DevBrewLabs.Spreadsheet.CalcEngine
                 }
             }
 
-            _provider.SetMetaData(sheetName, row, column, metaInfo);
+            _provider.SetMetadata(sheetName, row, column, metaInfo);
             RecalculateCellImpl(sheetName, row, column);
         }
 
         private void ClearFormula(string sheetName, int row, int column)
         {
-            if (_provider.GetMetaData(sheetName, row, column) is CalcCellMetaInfo metaInfo)
+            var curCell = new CellRef(row, column, sheetName);
+            _dependencyManager.ClearDependencies(curCell);
+
+            if (_provider.GetMetadata(sheetName, row, column) is CalcCellMetaInfo metaInfo)
             {
-                metaInfo.Formula = null;
-                metaInfo.Dependencies?.Clear();
                 metaInfo.CalculatedValue = null;
+                metaInfo.Dependencies.Clear();
             }
 
             UpdateDependents(sheetName, row, column);
@@ -266,7 +275,7 @@ namespace DevBrewLabs.Spreadsheet.CalcEngine
             
             foreach (var dependent in dependents)
             {
-                if (_provider.GetMetaData(dependent.SheetName, dependent.Row, dependent.Column) is CalcCellMetaInfo metaInfo)
+                if (_provider.GetMetadata(dependent.SheetName, dependent.Row, dependent.Column) is CalcCellMetaInfo metaInfo)
                 {
                     metaInfo.CalculatedValue = null;
                 }
@@ -283,14 +292,21 @@ namespace DevBrewLabs.Spreadsheet.CalcEngine
 
         private void UpdateCellValue(string sheetName, int row, int column)
         {
-            if (!(_provider.GetMetaData(sheetName, row, column) is CalcCellMetaInfo metaInfo) || string.IsNullOrEmpty(metaInfo.Formula))
+            var formula = _provider.GetFormula(sheetName, row, column);
+            if (string.IsNullOrEmpty(formula))
             {
                 return;
             }
 
+            if (!(_provider.GetMetadata(sheetName, row, column) is CalcCellMetaInfo metaInfo))
+            {
+                metaInfo = new CalcCellMetaInfo { Dependents = new HashSet<CellRef>() };
+                _provider.SetMetadata(sheetName, row, column, metaInfo);
+            }
+
             // Has formula, update value
             _engineContext.SetCurrentSheet(sheetName);
-            var result = _formulaEngine.Evaluate(GetPureFormula(metaInfo.Formula));
+            var result = _formulaEngine.Evaluate(GetPureFormula(formula));
             var val = FormulaEngineConverter.ConvertToCalcValue(result);
             metaInfo.CalculatedValue = val;
         }

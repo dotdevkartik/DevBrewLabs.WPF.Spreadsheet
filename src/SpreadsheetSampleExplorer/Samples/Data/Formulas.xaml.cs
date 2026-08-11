@@ -1,5 +1,6 @@
 using DevBrewLabs.Spreadsheet;
 using DevBrewLabs.Spreadsheet.Drawing;
+using DevBrewLabs.Spreadsheet.Styling;
 using System.Windows.Controls;
 
 namespace SpreadsheetSampleExplorer.Samples
@@ -48,7 +49,7 @@ namespace SpreadsheetSampleExplorer.Samples
         private void SetupSalesSheet(IWorkSheet sheet)
         {
             // Section Header Style
-            var titleStyle = new DevBrewLabs.Spreadsheet.Styling.CellStyle();
+            var titleStyle = new CellStyle();
             titleStyle.FontSize = 14;
             titleStyle.FontWeight = CellFontWeight.Bold;
             titleStyle.ForeColor = CellColor.FromArgb(255, 16, 124, 65);
@@ -57,7 +58,7 @@ namespace SpreadsheetSampleExplorer.Samples
             sheet.Cells[0, 0].Style = titleStyle;
 
             // Table Header Style
-            var headerStyle = new DevBrewLabs.Spreadsheet.Styling.CellStyle();
+            var headerStyle = new CellStyle();
             headerStyle.FontWeight = CellFontWeight.Bold;
             headerStyle.BackColor = CellColor.FromArgb(255, 16, 124, 65); // Green Header
             headerStyle.ForeColor = CellColor.White;
@@ -104,7 +105,7 @@ namespace SpreadsheetSampleExplorer.Samples
 
             // Summary Row at Row 9 (0-indexed: 8)
             int summaryRow = 8;
-            var summaryStyle = new DevBrewLabs.Spreadsheet.Styling.CellStyle();
+            var summaryStyle = new CellStyle();
             summaryStyle.FontWeight = CellFontWeight.Bold;
 
             sheet.Cells[summaryRow, 0].Value = "Total / Overall";
@@ -119,7 +120,7 @@ namespace SpreadsheetSampleExplorer.Samples
             sheet.Cells[summaryRow, 4].Formula = "=SUM(E5:E8)"; // Total Tax (Col E)
             sheet.Cells[summaryRow, 4].Style = summaryStyle;
 
-            var grandTotalStyle = new DevBrewLabs.Spreadsheet.Styling.CellStyle();
+            var grandTotalStyle = new CellStyle();
             grandTotalStyle.FontWeight = CellFontWeight.Bold;
             grandTotalStyle.BackColor = CellColor.FromArgb(255, 230, 245, 235);
 
@@ -139,7 +140,7 @@ namespace SpreadsheetSampleExplorer.Samples
         private void SetupCostSheet(IWorkSheet sheet)
         {
             // Section Header Style
-            var titleStyle = new DevBrewLabs.Spreadsheet.Styling.CellStyle();
+            var titleStyle = new CellStyle();
             titleStyle.FontSize = 14;
             titleStyle.FontWeight = CellFontWeight.Bold;
             titleStyle.ForeColor = CellColor.FromArgb(255, 31, 78, 121);
@@ -148,7 +149,7 @@ namespace SpreadsheetSampleExplorer.Samples
             sheet.Cells[0, 0].Style = titleStyle;
 
             // Table Header Style
-            var headerStyle = new DevBrewLabs.Spreadsheet.Styling.CellStyle();
+            var headerStyle = new CellStyle();
             headerStyle.FontWeight = CellFontWeight.Bold;
             headerStyle.BackColor = CellColor.FromArgb(255, 31, 78, 121); // Blue Header
             headerStyle.ForeColor = CellColor.White;
@@ -191,7 +192,7 @@ namespace SpreadsheetSampleExplorer.Samples
 
             // Total OPEX Row at Row 9 in Excel (0-indexed: 8)
             int totalRow = 8;
-            var summaryStyle = new DevBrewLabs.Spreadsheet.Styling.CellStyle();
+            var summaryStyle = new CellStyle();
             summaryStyle.FontWeight = CellFontWeight.Bold;
 
             sheet.Cells[totalRow, 0].Value = "Total OPEX";
@@ -203,7 +204,7 @@ namespace SpreadsheetSampleExplorer.Samples
             sheet.Cells[totalRow, 4].Formula = "=SUM(E4:E8)"; // Q4 Total (Col E)
 
             // Grand Total OPEX (Col F)
-            var grandTotalStyle = new DevBrewLabs.Spreadsheet.Styling.CellStyle();
+            var grandTotalStyle = new CellStyle();
             grandTotalStyle.FontWeight = CellFontWeight.Bold;
             grandTotalStyle.BackColor = CellColor.FromArgb(255, 220, 230, 245);
 
@@ -224,7 +225,7 @@ namespace SpreadsheetSampleExplorer.Samples
         private void SetupSummarySheet(IWorkSheet sheet)
         {
             // Section Header Style
-            var titleStyle = new DevBrewLabs.Spreadsheet.Styling.CellStyle();
+            var titleStyle = new CellStyle();
             titleStyle.FontSize = 14;
             titleStyle.FontWeight = CellFontWeight.Bold;
 
@@ -232,7 +233,7 @@ namespace SpreadsheetSampleExplorer.Samples
             sheet.Cells[0, 0].Style = titleStyle;
 
             // Table Header Style
-            var headerStyle = new DevBrewLabs.Spreadsheet.Styling.CellStyle();
+            var headerStyle = new CellStyle();
             headerStyle.FontWeight = CellFontWeight.Bold;
             headerStyle.BackColor = CellColor.FromArgb(255, 70, 70, 70); // Dark Gray Header
             headerStyle.ForeColor = CellColor.White;
@@ -259,11 +260,11 @@ namespace SpreadsheetSampleExplorer.Samples
                 new object[] { "Active Region Count",       "=COUNT(RegionalSales!F5:F8)", "=COUNT('RegionalSales'!F5:F8)", "Cross-Sheet Aggregation: COUNT of regions" }
             };
 
-            var boldStyle = new DevBrewLabs.Spreadsheet.Styling.CellStyle();
+            var boldStyle = new CellStyle();
             boldStyle.FontWeight = CellFontWeight.Bold;
             boldStyle.BackColor = CellColor.FromArgb(255, 220, 245, 230);
 
-            var highlightStyle = new DevBrewLabs.Spreadsheet.Styling.CellStyle();
+            var highlightStyle = new CellStyle();
             highlightStyle.FontWeight = CellFontWeight.Bold;
             highlightStyle.BackColor = CellColor.FromArgb(255, 220, 245, 230);
 

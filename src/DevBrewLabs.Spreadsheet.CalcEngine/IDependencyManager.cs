@@ -30,5 +30,12 @@ namespace DevBrewLabs.Spreadsheet.CalcEngine
         /// <param name="column">The column index of the target cell.</param>
         /// <returns>A list of all dependent cells.</returns>
         IList<CellRef> GetDependentCells(string sheetName, int row, int column);
+
+        /// <summary>
+        /// Clears all dependencies (both single cell and range) where the given cell is the dependent.
+        /// Call this before assigning a new formula to a cell to prevent stale dependency leaks.
+        /// </summary>
+        /// <param name="dependentCell">The cell whose dependencies should be cleared.</param>
+        void ClearDependencies(CellRef dependentCell);
     }
 }

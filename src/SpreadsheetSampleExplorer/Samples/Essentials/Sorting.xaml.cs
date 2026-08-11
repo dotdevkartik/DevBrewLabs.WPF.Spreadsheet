@@ -1,6 +1,7 @@
 using DevBrewLabs.Spreadsheet;
 using DevBrewLabs.Spreadsheet.Drawing;
 using DevBrewLabs.Spreadsheet.Sorting;
+using DevBrewLabs.Spreadsheet.Styling;
 using System;
 using System.Windows;
 using System.Windows.Controls;
@@ -67,7 +68,7 @@ namespace SpreadsheetSampleExplorer.Samples
             string headerStyleName = "SortHeaderStyle";
             if (worksheet.WorkBook.GetNamedStyle(headerStyleName) == null)
             {
-                var style = new DevBrewLabs.Spreadsheet.Styling.CellStyle
+                var style = new CellStyle
                 {
                     BackColor = CellColor.FromArgb(255, 16, 124, 65), // #107C41 Excel Green
                     ForeColor = CellColor.White,

@@ -1,4 +1,5 @@
 using DevBrewLabs.Spreadsheet;
+using DevBrewLabs.Spreadsheet.Utils;
 using DevBrewLabs.WPF.Spreadsheet.Rendering.Text;
 using DevBrewLabs.WPF.Spreadsheet.UI;
 using System;
@@ -64,6 +65,8 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public int ActiveColumn { get; internal set; }
         public CellRange Selection { get; }
         public IWorkSheet WorkSheet => _workSheet;
+        public bool AutoSizeRows { get; set; }
+        public bool AutoSizeColumns { get; set; }
         #endregion
 
         public SheetView(Spread spread, WorkSheet worksheet)
@@ -82,6 +85,8 @@ namespace DevBrewLabs.WPF.Spreadsheet
             _viewPort = new ViewPort(this);
             HeadersVisibility = HeadersVisibility.Both;
             Selection = new CellRange(0, 0);
+            AutoSizeRows = true;
+            AutoSizeColumns = false;
         }
 
         #region Public
@@ -148,6 +153,54 @@ namespace DevBrewLabs.WPF.Spreadsheet
             return _workSheet.Name;
         }
 
+        public void AutoSizeRow(int row)
+        {
+            if (row < 0 || row >= _workSheet.RowCount)
+                return;
+
+            int maxRequiredHeight = _workSheet.DefaultRowHeight;
+
+            for (int col = 0; col < _workSheet.ColumnCount; col++)
+            {
+                var value = _workSheet.GetValue(row, col);
+                if (value == null)
+                    continue;
+
+                var sheetColumn = _columns.GetItem(col);
+                var sheetRow = _rows.GetItem(row);
+
+                var formatter = _workSheet.PickFormatter(sheetColumn, sheetRow);
+                string text = formatter != null ? formatter.Format(value) : value.ToString();
+
+                if (string.IsNullOrEmpty(text))
+                    continue;
+
+                var style = _workBook.PickStyle(sheetColumn, sheetRow, SheetRegion.Cells);
+
+                string[] lines = style.AllowMultiLineText 
+                    ? TextUtils.GetLines(text) 
+                    : new[] { TextUtils.NormalizeToSingleLine(text) };
+
+                var metrics = Styling.WpfResourceCache.GetFontResources(style).GlyphMetrics;
+                double lineHeight = metrics != null ? metrics.Height * style.FontSize : style.FontSize * 1.3;
+                
+                // Add a small padding (4) so standard fonts (~16px) evaluate to ~20px 
+                // which is <= DefaultRowHeight (22), preventing unwanted resizing for single lines.
+                int cellRequiredHeight = (int)Math.Ceiling(lines.Length * lineHeight + 4);
+                
+                if (cellRequiredHeight > maxRequiredHeight)
+                {
+                    maxRequiredHeight = cellRequiredHeight;
+                }
+            }
+
+            int currentHeight = _workSheet.Rows.GetRowHeight(row);
+            if (currentHeight != maxRequiredHeight)
+            {
+                _workSheet.Rows[row].Height = maxRequiredHeight;
+            }
+        }
+
         public void AutoSizeColumn(int column)
         {
             var sheetColumn = _columns.GetItem(column);
@@ -158,10 +211,24 @@ namespace DevBrewLabs.WPF.Spreadsheet
             {
                 if(cellValue.Value != null)
                 {
-                    var style = _workBook.PickStyle(_cells.GetCell(cellValue.Key, column, false), sheetColumn, _rows.GetItem(cellValue.Key), SheetRegion.RowHeader);
-                    var wpfStyle = style;
-                    var textWidth = TextMeasurer.MeasureWidth(cellValue.Value.ToString(), style.FontSize, wpfStyle != null ? Styling.WpfResourceCache.GetFontResources(wpfStyle).GlyphMetrics : null);
-                    width = Math.Max(width, (int)Math.Ceiling(textWidth) + 11);
+                    var sheetRow = _rows.GetItem(cellValue.Key);
+                    var formatter = _workSheet.PickFormatter(sheetColumn, sheetRow);
+                    string text = formatter != null ? formatter.Format(cellValue.Value) : cellValue.Value.ToString();
+
+                    if (string.IsNullOrEmpty(text))
+                        continue;
+
+                    var style = _workBook.PickStyle(sheetColumn, sheetRow, SheetRegion.Cells);
+
+                    string[] lines = style.AllowMultiLineText
+                     ? TextUtils.GetLines(text)
+                     : new[] { TextUtils.NormalizeToSingleLine(text) };
+
+                    foreach (string line in lines)
+                    {
+                        var textWidth = TextMeasurer.MeasureWidth(line, style.FontSize, style != null ? Styling.WpfResourceCache.GetFontResources(style).GlyphMetrics : null);
+                        width = Math.Max(width, (int)Math.Ceiling(textWidth) + 11);
+                    }
                 }
             }
 

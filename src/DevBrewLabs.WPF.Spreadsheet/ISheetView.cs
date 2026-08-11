@@ -85,6 +85,19 @@ namespace DevBrewLabs.WPF.Spreadsheet
         /// <param name="offset"></param>
         void ScrollToVerticalOffset(double offset);
         /// <summary>
+        /// Gets or sets whether to automatically resize rows on cell change.
+        /// </summary>
+        bool AutoSizeRows { get; set; }
+        /// <summary>
+        /// Gets or sets whether to automatically resize columns on cell change.
+        /// </summary>
+        bool AutoSizeColumns { get; set; }
+        /// <summary>
+        /// Auto sizes the row height based on cell text content.
+        /// </summary>
+        /// <param name="row">The row index.</param>
+        void AutoSizeRow(int row);
+        /// <summary>
         /// Autosize column.
         /// </summary>
         /// <param name="column"></param>

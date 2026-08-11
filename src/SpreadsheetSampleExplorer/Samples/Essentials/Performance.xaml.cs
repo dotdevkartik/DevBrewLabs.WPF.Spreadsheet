@@ -1,4 +1,6 @@
+using DevBrewLabs.Spreadsheet;
 using DevBrewLabs.Spreadsheet.Drawing;
+using DevBrewLabs.Spreadsheet.Styling;
 using System;
 using System.Diagnostics;
 using System.Windows;
@@ -87,12 +89,12 @@ namespace SpreadsheetSampleExplorer.Samples
                 string headerStyleName = "ScrollHeaderStyle";
                 if (worksheet.WorkBook.GetNamedStyle(headerStyleName) == null)
                 {
-                    var style = new DevBrewLabs.Spreadsheet.Styling.CellStyle
+                    var style = new CellStyle
                     {
                         BackColor = CellColor.FromArgb(255, 16, 124, 65), // #107C41 Excel Green
                         ForeColor = CellColor.White,
                         FontWeight = CellFontWeight.Bold,
-                        HorizontalAlignment = DevBrewLabs.Spreadsheet.CellHorizontalAlignment.Center
+                        HorizontalAlignment = CellHorizontalAlignment.Center
                     };
                     worksheet.WorkBook.AddNamedStyle(headerStyleName, style);
                 }

@@ -276,20 +276,16 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                     {
                         for (int column = SheetView.Selection.LeftColumn; column <= SheetView.Selection.RightColumn; column++)
                         {
-                            var cell = ((Cells)SheetView.WorkSheet.Cells).GetCell(row, column, false);
-
-                            if (cell != null && (cell.Value != null || cell.Formula != null))
-                            {
-                                cell.Value = null;
-                                cell.Formula = null;
-                            }
+                            var ws = (WorkSheet)SheetView.WorkSheet;
+                            ws.SetValue(row, column, null);
+                            ws.SetFormula(row, column, null);
                         }
                     }
                     SheetView.Spread.SuspendUpdates = false;
 
                     for (int row = SheetView.Selection.TopRow; row <= SheetView.Selection.BottomRow; row++)
                     {
-                        SheetView.WorkSheet.AutoSizeRow(row);
+                        SheetView.AutoSizeRow(row);
                     }
                     break;
 
@@ -507,14 +503,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 {
                     SetLeft(SheetView.Spread.EditingManager.ActiveEditor, activeCellRect.Left + 1);
                     SetTop(SheetView.Spread.EditingManager.ActiveEditor, activeCellRect.Top + 1);
-                }
-
-                if(workSheet.FilterProvider.FilterRange != null)
-                {
-                    var filterRange = workSheet.FilterProvider.FilterRange;
-                    
-                    
-
                 }
             }
 

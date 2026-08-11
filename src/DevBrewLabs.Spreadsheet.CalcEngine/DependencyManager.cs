@@ -6,19 +6,21 @@ namespace DevBrewLabs.Spreadsheet.CalcEngine
 {
     /// <summary>
     /// Implementation of <see cref="IDependencyManager"/> that manages cell dependencies 
-    /// using an <see cref="IDataProvider"/> to store and retrieve metadata.
+    /// using an <see cref="IDataAdapter"/> to store and retrieve metadata.
     /// </summary>
     internal class DependencyManager : IDependencyManager
     {
-        private readonly IDataProvider _provider;
+        private readonly IDataAdapter _provider;
+        private readonly Dictionary<string, List<(CellRangeRef Range, CellRef Dependent)>> _rangeDependencies;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DependencyManager"/> class.
         /// </summary>
         /// <param name="provider">The data provider used to store metadata.</param>
-        public DependencyManager(IDataProvider provider)
+        public DependencyManager(IDataAdapter provider)
         {
             _provider = provider ?? throw new ArgumentNullException(nameof(provider));
+            _rangeDependencies = new Dictionary<string, List<(CellRangeRef, CellRef)>>();
         }
 
         /// <inheritdoc />
@@ -42,11 +44,61 @@ namespace DevBrewLabs.Spreadsheet.CalcEngine
             if (dependentCell == null) throw new ArgumentNullException(nameof(dependentCell));
             if (targetRange == null) throw new ArgumentNullException(nameof(targetRange));
 
-            for (int r = targetRange.TopRow; r <= targetRange.BottomRow; r++)
+            string sheetName = string.IsNullOrEmpty(targetRange.SheetName) ? dependentCell.SheetName : targetRange.SheetName;
+
+            if (!_rangeDependencies.TryGetValue(sheetName, out var rangeList))
             {
-                for (int c = targetRange.LeftColumn; c <= targetRange.RightColumn; c++)
+                rangeList = new List<(CellRangeRef, CellRef)>();
+                _rangeDependencies[sheetName] = rangeList;
+            }
+
+            rangeList.Add((targetRange, dependentCell));
+        }
+
+        /// <inheritdoc />
+        public void ClearDependencies(CellRef dependentCell)
+        {
+            if (dependentCell == null) throw new ArgumentNullException(nameof(dependentCell));
+
+            if (_provider.GetMetadata(dependentCell.SheetName, dependentCell.Row, dependentCell.Column) is CalcCellMetaInfo metaInfo)
+            {
+                if (metaInfo.Dependencies != null)
                 {
-                    SetCellDependency(dependentCell, new CellRef(r, c, targetRange.SheetName));
+                    foreach (var dep in metaInfo.Dependencies)
+                    {
+                        if (dep is CellRef cellRef)
+                        {
+                            string targetSheet = string.IsNullOrEmpty(cellRef.SheetName) ? dependentCell.SheetName : cellRef.SheetName;
+                            var targetSet = GetDependencySet(targetSheet, cellRef.Row, cellRef.Column, false);
+                            
+                            if (targetSet != null)
+                            {
+                                var toRemove = new List<CellRef>();
+                                foreach (var c in targetSet)
+                                {
+                                    if (c.Row == dependentCell.Row && c.Column == dependentCell.Column && c.SheetName == dependentCell.SheetName)
+                                        toRemove.Add(c);
+                                }
+                                foreach (var c in toRemove) targetSet.Remove(c);
+                            }
+                        }
+                        else if (dep is CellRangeRef rangeRef)
+                        {
+                            string targetSheet = string.IsNullOrEmpty(rangeRef.SheetName) ? dependentCell.SheetName : rangeRef.SheetName;
+                            if (_rangeDependencies.TryGetValue(targetSheet, out var rangeList))
+                            {
+                                rangeList.RemoveAll(x => 
+                                    x.Dependent.Row == dependentCell.Row && 
+                                    x.Dependent.Column == dependentCell.Column && 
+                                    x.Dependent.SheetName == dependentCell.SheetName &&
+                                    x.Range.TopRow == rangeRef.TopRow &&
+                                    x.Range.BottomRow == rangeRef.BottomRow &&
+                                    x.Range.LeftColumn == rangeRef.LeftColumn &&
+                                    x.Range.RightColumn == rangeRef.RightColumn
+                                );
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -57,20 +109,26 @@ namespace DevBrewLabs.Spreadsheet.CalcEngine
             var dependents = new List<CellRef>();
             var dependentsSetQueue = new Queue<ISet<CellRef>>();
             
-            var dependentSet = GetDependencySet(sheetName, row, column, false);
-            if (dependentSet != null)
+            var initialSet = GetDependencySetForCell(sheetName, row, column);
+            if (initialSet != null && initialSet.Count > 0)
             {
-                dependentsSetQueue.Enqueue(dependentSet);
+                dependentsSetQueue.Enqueue(initialSet);
             }
+
+            var visited = new HashSet<string>();
 
             while (dependentsSetQueue.Count > 0)
             {
                 var currentSet = dependentsSetQueue.Dequeue();
                 foreach (var dependent in currentSet)
                 {
+                    string cellKey = $"{dependent.SheetName}!{dependent.Row},{dependent.Column}";
+                    if (!visited.Add(cellKey))
+                        continue;
+
                     dependents.Add(dependent);
-                    var nestedDependentSet = GetDependencySet(dependent.SheetName, dependent.Row, dependent.Column, false);
-                    if (nestedDependentSet != null)
+                    var nestedDependentSet = GetDependencySetForCell(dependent.SheetName, dependent.Row, dependent.Column);
+                    if (nestedDependentSet != null && nestedDependentSet.Count > 0)
                     {
                         dependentsSetQueue.Enqueue(nestedDependentSet);
                     }
@@ -80,12 +138,38 @@ namespace DevBrewLabs.Spreadsheet.CalcEngine
             return dependents;
         }
 
+        private ISet<CellRef> GetDependencySetForCell(string sheetName, int row, int column)
+        {
+            var result = new HashSet<CellRef>();
+
+            var exactSet = GetDependencySet(sheetName, row, column, false);
+            if (exactSet != null)
+            {
+                foreach (var dep in exactSet)
+                    result.Add(dep);
+            }
+
+            if (_rangeDependencies.TryGetValue(sheetName, out var rangeList))
+            {
+                foreach (var item in rangeList)
+                {
+                    if (row >= item.Range.TopRow && row <= item.Range.BottomRow &&
+                        column >= item.Range.LeftColumn && column <= item.Range.RightColumn)
+                    {
+                        result.Add(item.Dependent);
+                    }
+                }
+            }
+
+            return result;
+        }
+
         /// <summary>
         /// Retrieves the dependency set for a cell, optionally creating an empty set if it doesn't exist.
         /// </summary>
         private ISet<CellRef> GetDependencySet(string sheetName, int row, int column, bool createEmptySetIfNull)
         {
-            if (_provider.GetMetaData(sheetName, row, column) is CalcCellMetaInfo metaInfo)
+            if (_provider.GetMetadata(sheetName, row, column) is CalcCellMetaInfo metaInfo)
             {
                 if (metaInfo.Dependents == null && createEmptySetIfNull)
                 {
@@ -100,7 +184,7 @@ namespace DevBrewLabs.Spreadsheet.CalcEngine
                 {
                     Dependents = new HashSet<CellRef>()
                 };
-                _provider.SetMetaData(sheetName, row, column, metaInfo);
+                _provider.SetMetadata(sheetName, row, column, metaInfo);
                 return metaInfo.Dependents;
             }
 

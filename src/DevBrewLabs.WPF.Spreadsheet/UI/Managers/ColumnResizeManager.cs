@@ -30,8 +30,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             {
                 _initialWidths[i] = workSheet.Columns.GetColumnWidth(i);
             }
-
-            ResizeLine.Visibility = Visibility.Visible;
+            
             Spread.SuspendUpdates = true;
         }
 
@@ -46,6 +45,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             ResizeLine.X1 = ResizeLine.X2 = Math.Max(0, currentLocation);
             ResizeLine.Y1 = workSheet.ColumnHeaders.Height * zoom;
             ResizeLine.Y2 = sheetView.Spread.SheetViewPane.ActualHeight;
+            ResizeLine.Visibility = Visibility.Visible;
 
             if (_initialWidths == null || _resizingColumn < 0 || _resizingColumn >= workSheet.ColumnCount)
                 return;
@@ -119,6 +119,32 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
         public void EndResizeColumn()
         {
+            if (_initialWidths != null)
+            {
+                var sheetView = Spread.SheetViews.ActiveSheetView.As<SheetView>();
+                var workSheet = sheetView.WorkSheet;
+                
+                var action = new ColumnResizedAction { SheetView = sheetView };
+                bool hasChanges = false;
+                
+                for (int i = 0; i < workSheet.ColumnCount; i++)
+                {
+                    int oldWidth = _initialWidths[i];
+                    int newWidth = workSheet.Columns.GetColumnWidth(i);
+                    if (oldWidth != newWidth)
+                    {
+                        action.OldWidths[i] = oldWidth;
+                        action.NewWidths[i] = newWidth;
+                        hasChanges = true;
+                    }
+                }
+                
+                if (hasChanges)
+                {
+                    Spread.UndoRedoManager.AddAction(action);
+                }
+            }
+
             _resizingColumn = -1;
             _columnLocation = -1;
             _initialWidths = null;

@@ -1,8 +1,8 @@
-﻿using DevBrewLabs.Spreadsheet;
+using DevBrewLabs.Spreadsheet;
 
 namespace DevBrewLabs.WPF.Spreadsheet
 {
-    internal class State
+    internal class CellEditState
     {
         public int Row { get; set; }
         public int Column { get; set; }

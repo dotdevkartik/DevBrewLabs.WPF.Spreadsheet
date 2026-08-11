@@ -8,20 +8,6 @@ namespace DevBrewLabs.WPF.Spreadsheet
 {
     internal static class RenderingExtensions
     {
-        public static BaseCellType DefaultCellType { get; }
-
-        static RenderingExtensions()
-        {
-            DefaultCellType = new TextCellType();
-        }
-
-        internal static BaseCellType GetCellType(IRange cell, IColumn column)
-        {
-            return cell != null && cell.CellType != null ? (BaseCellType)cell.CellType :
-                                   column != null && column.CellType != null ?
-                                   (BaseCellType)column.CellType : DefaultCellType;
-        }
-
         internal static Rect ToCellCheckBoxRect(this Rect cellRect, Size checkBoxSize)
         {
             cellRect.X = cellRect.Left + cellRect.Width / 2 - checkBoxSize.Width / 2;

@@ -20,7 +20,7 @@ namespace DevBrewLabs.Spreadsheet
         public object Value { get; set; }
         public string Formula { get; set; }
         public ICellType CellType { get; set; }
-        public DataMap DataMap { get; set; }
+        public IDataMap DataMap { get; set; }
         public bool Locked { get; set; }
         public IFormatter Formatter { get; set; }
         public int RowSpan { get; set; }

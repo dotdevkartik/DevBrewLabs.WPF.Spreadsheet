@@ -86,14 +86,14 @@ namespace DevBrewLabs.Spreadsheet
         /// </summary>
         /// <param name="name"></param>
         /// <exception cref="ArgumentException"></exception>
-        internal void VerifySheetName(string name)
+        internal void VerifySheetName(string name, IWorkSheet currentSheet = null)
         {
             if (string.IsNullOrEmpty(name))
             {
                 throw new ArgumentException("Sheet name cannot be null or empty.");
             }
 
-            if (_sheets.Any(s => s.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
+            if (_sheets.Any(s => s != currentSheet && s.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
                 throw new ArgumentException($"Sheet with name '{name}' already exists.");
         }
 

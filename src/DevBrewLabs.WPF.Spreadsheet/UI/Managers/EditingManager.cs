@@ -6,6 +6,7 @@ using DevBrewLabs.WPF.Spreadsheet.UI.Interaction;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using DevBrewLabs.WPF.Spreadsheet.CellTypes;
 
 namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 {
@@ -37,28 +38,33 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             var cellRect = sheetView.ViewPort.GetCellRect(row, column);
             cellRect.X -= sheetView.ViewPort.As<ViewPort>().LeftColumnLocation;
             cellRect.Y -= sheetView.ViewPort.As<ViewPort>().TopRowLocation;
-            var cell = ((Cells)workSheet.Cells).GetCell(row, column, false);
-
-            if (cell != null && cell.Locked)
-                return;
 
             var sheetRow = ((Rows)workSheet.Rows).GetItem(row);
-            var cellType = RenderingExtensions.GetCellType(cell, sheetColumn);
+            var cellType = (BaseCellType)(workSheet.GetCellType(row, column)) ?? (BaseCellType)sheetColumn?.CellType ?? TextCellType.Default;
 
-            var style = ((WorkBook)workSheet.WorkBook).PickStyle(cell, sheetColumn, sheetRow, SheetRegion.Cells);
+            var style = workSheet.GetStyle(row, column);
+
+            if (style == null)
+            {
+                var styleName = workSheet.GetStyleName(row, column);
+                style = !string.IsNullOrEmpty(styleName)
+                    ? ((WorkBook)workSheet.WorkBook).GetNamedStyle(styleName)
+                    : ((WorkBook)workSheet.WorkBook).PickStyle(sheetColumn, sheetRow, SheetRegion.Cells);
+            }
             var editor = cellType.GetEditor(style);
             editor.SheetView = sheetView;
             ActiveEditor = editor;
 
-            if (cell != null && !string.IsNullOrEmpty(cell.Formula))
+            var formula = workSheet.GetFormula(row, column);
+            if (!string.IsNullOrEmpty(formula))
             {
-                editor.Text = $"={cell.Formula}";
+                editor.Text = formula;
             }
             else
             {
-                var value = workSheet.As<WorkSheet>().DataStore.GetValue(row, column);
-                var formatter = workSheet.PickFormatter(cell, sheetColumn, sheetRow);
-                editor.Text = formatter.Format(value);
+                var value = workSheet.GetValue(row, column);
+                var formatter = workSheet.PickFormatter(sheetColumn, sheetRow);
+                editor.Text = formatter?.Format(value) ?? value?.ToString() ?? "";
             }
 
             if (!UseCellValue)
@@ -91,11 +97,17 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 var cellRect = sheetView.ViewPort.GetCellRect(editor.Row, editor.Column);
                 cellRect.X -= viewPort.LeftColumnLocation;
                 cellRect.Y -= viewPort.TopRowLocation;
-
-                var cell = ((Cells)workSheet.Cells).GetCell(editor.Row, editor.Column, false);
                 var sheetColumn = ((Columns)workSheet.Columns).GetItem(editor.Column);
                 var sheetRow = ((Rows)workSheet.Rows).GetItem(editor.Row);
-                var style = ((WorkBook)workSheet.WorkBook).PickStyle(cell, sheetColumn, sheetRow, SheetRegion.Cells);
+                var style = workSheet.GetStyle(editor.Row, editor.Column);
+
+                if (style == null)
+                {
+                    var styleName = workSheet.GetStyleName(editor.Row, editor.Column);
+                    style = !string.IsNullOrEmpty(styleName)
+                        ? ((WorkBook)workSheet.WorkBook).GetNamedStyle(styleName)
+                        : ((WorkBook)workSheet.WorkBook).PickStyle(sheetColumn, sheetRow, SheetRegion.Cells);
+                }
 
                 var wpfStyle = style;
                 editor.FontSize = (wpfStyle?.FontSize ?? 14) * zoom;
@@ -162,15 +174,14 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
         {
             var workSheet = sheetView.WorkSheet;
             var cellChangedAction = new CellChangedAction() { SheetView = sheetView.As<SheetView>() };
-            cellChangedAction.OldState.Value = workSheet.DataStore.GetValue(numTextBox.Row, numTextBox.Column);
+            cellChangedAction.OldState.Value = workSheet.GetValue(numTextBox.Row, numTextBox.Column);
             cellChangedAction.OldState.Row = numTextBox.Row;
             cellChangedAction.OldState.Column = numTextBox.Column;
             cellChangedAction.OldState.Selection = sheetView.Selection.Clone();
 
-            var value = DataTypeConverter.ConvertType(numTextBox.Text);
-            workSheet.Cells[numTextBox.Row, numTextBox.Column].Value = value;
+            workSheet.SetRawValue(numTextBox.Row, numTextBox.Column, numTextBox.Text);
 
-            cellChangedAction.NewState.Value = value;
+            cellChangedAction.NewState.Value = workSheet.GetValue(numTextBox.Row, numTextBox.Column);
             cellChangedAction.NewState.Row = numTextBox.Row;
             cellChangedAction.NewState.Column = numTextBox.Column;
             cellChangedAction.NewState.Selection = sheetView.Selection.Clone();
@@ -187,47 +198,36 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
         private bool EndTextCellEdit(TextEditor gcTextBox, ISheetView sheetView, InteractionLayer layer)
         {
             var workSheet = sheetView.WorkSheet;
-            if (gcTextBox.Text.StartsWith("="))
+            var cellChangedAction = new CellChangedAction() { SheetView = sheetView.As<SheetView>() };
+            cellChangedAction.OldState.Value = workSheet.GetValue(gcTextBox.Row, gcTextBox.Column);
+            cellChangedAction.OldState.Row = gcTextBox.Row;
+            cellChangedAction.OldState.Column = gcTextBox.Column;
+            cellChangedAction.OldState.Selection = sheetView.Selection.Clone();
+
+            try
             {
-                try
-                {
-                    workSheet.Cells[gcTextBox.Row, gcTextBox.Column].Formula = gcTextBox.Text.Substring(1);
-                    workSheet.AutoSizeRow(gcTextBox.Row);
-                }
-                catch (CalcEngineException ex)
-                {
-                    sheetView.Spread.RaiseCalculationError(new CalcErrorEventArgs()
-                    {
-                        Exception = ex,
-                        Row = gcTextBox.Row,
-                        Column = gcTextBox.Column,
-                        Formula = gcTextBox.Text,
-                        SheetView = sheetView
-                    });
-                    ActiveEditor.Focus();
-                    return false;
-                }
+                workSheet.SetRawValue(gcTextBox.Row, gcTextBox.Column, gcTextBox.Text);
             }
-            else
+            catch (CalcEngineException ex)
             {
-                var cellChangedAction = new CellChangedAction() { SheetView = sheetView.As<SheetView>() };
-                cellChangedAction.OldState.Value = workSheet.DataStore.GetValue(gcTextBox.Row, gcTextBox.Column);
-                cellChangedAction.OldState.Row = gcTextBox.Row;
-                cellChangedAction.OldState.Column = gcTextBox.Column;
-                cellChangedAction.OldState.Selection = sheetView.Selection.Clone();
-
-                var value = DataTypeConverter.ConvertType(gcTextBox.Text);
-                workSheet.Cells[gcTextBox.Row, gcTextBox.Column].Value = value;
-
-                workSheet.AutoSizeRow(gcTextBox.Row);
-
-                cellChangedAction.NewState.Value = value;
-                cellChangedAction.NewState.Row = gcTextBox.Row;
-                cellChangedAction.NewState.Column = gcTextBox.Column;
-                cellChangedAction.NewState.Selection = sheetView.Selection.Clone();
-
-                Spread.UndoRedoManager.AddAction(cellChangedAction);
+                sheetView.Spread.RaiseCalculationError(new CalcErrorEventArgs()
+                {
+                    Exception = ex,
+                    Row = gcTextBox.Row,
+                    Column = gcTextBox.Column,
+                    Formula = gcTextBox.Text,
+                    SheetView = sheetView
+                });
+                ActiveEditor.Focus();
+                return false;
             }
+
+            // We add undo/redo regardless of formula or value to support full history
+            cellChangedAction.NewState.Value = workSheet.GetValue(gcTextBox.Row, gcTextBox.Column);
+            cellChangedAction.NewState.Row = gcTextBox.Row;
+            cellChangedAction.NewState.Column = gcTextBox.Column;
+            cellChangedAction.NewState.Selection = sheetView.Selection.Clone();
+            Spread.UndoRedoManager.AddAction(cellChangedAction);
 
             layer.Children.Remove(ActiveEditor);
             ActiveEditor.KeyDown -= OnEditorKeyDown;

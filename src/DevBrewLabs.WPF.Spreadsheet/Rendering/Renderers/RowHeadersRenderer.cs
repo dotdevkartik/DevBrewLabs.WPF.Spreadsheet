@@ -41,17 +41,24 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                     if (columnWidth == 0)
                         continue;
 
-                    var cell = cells.GetCell(row, col, false);
                     var sheetColumn = columns.GetItem(col);
                     var colLocation = columns.GetLocation(col);
                     var x = colLocation * zoom;
                     var scaledColumnWidth = columnWidth * zoom;
 
                     var cellRect = new Rect(x, y, scaledColumnWidth, scaledRowHeight);
-                    var baseStyle = workBook.PickStyle(cell, sheetColumn, sheetRow, SheetRegion.RowHeader);
-                    var style = baseStyle;
+                    var style = ((RowHeaders)workSheet.RowHeaders).GetStyle(row, col);
 
-                    DrawRowHeaderCell(context, row, cell, style, cellRect, renderContext);
+                    if (style == null)
+                    {
+                        var styleName = ((RowHeaders)workSheet.RowHeaders).GetStyleName(row, col);
+                        style = !string.IsNullOrEmpty(styleName)
+                            ? workBook.GetNamedStyle(styleName)
+                            : workBook.PickStyle(sheetColumn, sheetRow, SheetRegion.RowHeader);
+                    }
+                    var cellValue = ((RowHeaders)workSheet.RowHeaders).GetValue(row, col);
+
+                    DrawRowHeaderCell(context, row, cellValue, style, cellRect, renderContext);
                 }
             }
         }
@@ -65,12 +72,20 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
                 for (int row = topRow; row <= bottomRow; row++)
                 {
-                    var cell = cells.GetCell(row, col, false);
                     var sheetColumn = columns.GetItem(col);
                     var sheetRow = rows.GetItem(row);
-                    var style = ((WorkBook)workSheet.WorkBook).PickStyle(cell, sheetColumn, sheetRow, SheetRegion.RowHeader);
+                    var style = ((RowHeaders)workSheet.RowHeaders).GetStyle(row, col);
+
+                    if (style == null)
+                    {
+                        var styleName = ((RowHeaders)workSheet.RowHeaders).GetStyleName(row, col);
+                        style = !string.IsNullOrEmpty(styleName)
+                            ? ((WorkBook)workSheet.WorkBook).GetNamedStyle(styleName)
+                            : ((WorkBook)workSheet.WorkBook).PickStyle(sheetColumn, sheetRow, SheetRegion.RowHeader);
+                    }
+                    var cellValue = ((RowHeaders)workSheet.RowHeaders).GetValue(row, col);
                     var textWidth = TextMeasurer
-                        .MeasureWidth(cell != null && cell.Value != null ? cell.Value.ToString() : (row + 1).ToString(), style.FontSize, Styling.WpfResourceCache.GetFontResources(style).GlyphMetrics);
+                        .MeasureWidth(cellValue != null ? cellValue.ToString() : (row + 1).ToString(), style.FontSize, Styling.WpfResourceCache.GetFontResources(style).GlyphMetrics);
                     textWidth += 10;
 
                     if (textWidth > headerWidth || (textWidth < headerWidth && textWidth > defaultColumnWidth))
@@ -85,13 +100,13 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             }
         }
 
-        private void DrawRowHeaderCell(DrawingContext context, int row, IRange cell, IStyle style, Rect cellRect, RenderContext renderContext)
+        private void DrawRowHeaderCell(DrawingContext context, int row, object cellValue, IStyle style, Rect cellRect, RenderContext renderContext)
         {
             context.DrawRectangle(Styling.WpfResourceCache.GetBrush(style.BackColor), null, cellRect);
 
-            if (cell != null && cell.Value != null)
+            if (cellValue != null)
             {
-                TextRenderer.DrawText(context, cell.Value.ToString(), cellRect, style, renderContext);
+                TextRenderer.DrawText(context, cellValue.ToString(), cellRect, style, renderContext);
             }
             else
             {

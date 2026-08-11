@@ -1,4 +1,4 @@
-﻿namespace DevBrewLabs.WPF.Spreadsheet
+namespace DevBrewLabs.WPF.Spreadsheet
 {
     public abstract class SheetAction
     {

@@ -10,11 +10,13 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
         protected ResizeManagerBase(Spread spread) : base(spread)
         {
-            ResizeLine = new Line();
-            ResizeLine.Stroke = Brushes.Black;
-            ResizeLine.StrokeThickness = 0.75;
-            ResizeLine.StrokeDashArray = new DoubleCollection(new double[] { 5, 2 });
-            ResizeLine.Visibility = Visibility.Collapsed;
+            ResizeLine = new Line
+            {
+                Stroke = Brushes.Black,
+                StrokeThickness = 0.75,
+                StrokeDashArray = new DoubleCollection(new double[] { 5, 2 }),
+                Visibility = Visibility.Collapsed
+            };
         }
     }
 }

@@ -44,8 +44,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
 
             double scaledFontSize = style.FontSize * renderContext.Zoom;
 
-            string[] lines = style.AllowMultiLineText && text.IndexOf('\n') >= 0 
-                ? text.Split('\n') 
+            string[] lines = style.AllowMultiLineText 
+                ? TextUtils.GetLines(text) 
                 : new[] { text };
 
             // We pre-calculate total height to support Vertical alignment
@@ -54,8 +54,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
 
             for (int i = 0; i < lines.Length; i++)
             {
-                // Remove \r if present
-                string line = lines[i].TrimEnd('\r');
+                string line = lines[i];
                 layouts[i] = TextLayoutCache.GetOrCreate(line, availableWidth, scaledFontSize, style, renderContext, style.TextTrimming == CellTextTrimming.Character);
                 totalHeight += layouts[i].Height;
             }
