@@ -179,6 +179,13 @@ namespace DevBrewLabs.Spreadsheet
 
             _dataStore.SetValue(row, column, value);
 
+            var colData = _dataStore.GetColumnData(column, false);
+
+            if(colData != null)
+            {
+                colData.SetFormula(row, null);
+            }
+
             _workBook.RaiseValueChanged(new ValueChangedEventArgs()
             {
                 Row = row,
@@ -210,15 +217,16 @@ namespace DevBrewLabs.Spreadsheet
 
         public void SetFormula(int row, int column, string formula)
         {
-            var existingFormula = GetFormula(row, column);
+            var colData = _dataStore.GetColumnData(column, true);
+            var existingFormula = colData.GetFormula(row);
 
             if (existingFormula == formula)
             {
                 return;
             }
 
-            var colData = _dataStore.GetColumnData(column, true);
             colData.SetFormula(row, formula);
+            colData.SetValue(row, null);
 
             _workBook.RaiseFormulaChanged(new FormulaChangedEventArgs()
             {
