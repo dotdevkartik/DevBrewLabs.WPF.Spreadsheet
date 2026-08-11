@@ -47,8 +47,15 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                     var scaledColumnWidth = columnWidth * zoom;
 
                     var cellRect = new Rect(x, y, scaledColumnWidth, scaledRowHeight);
-                    var baseStyle = ((RowHeaders)workSheet.RowHeaders).GetStyle(row, col) ?? workBook.PickStyle(sheetColumn, sheetRow, SheetRegion.RowHeader);
-                    var style = baseStyle;
+                    var style = ((RowHeaders)workSheet.RowHeaders).GetStyle(row, col);
+
+                    if (style == null)
+                    {
+                        var styleName = ((RowHeaders)workSheet.RowHeaders).GetStyleName(row, col);
+                        style = !string.IsNullOrEmpty(styleName)
+                            ? workBook.GetNamedStyle(styleName)
+                            : workBook.PickStyle(sheetColumn, sheetRow, SheetRegion.RowHeader);
+                    }
                     var cellValue = ((RowHeaders)workSheet.RowHeaders).GetValue(row, col);
 
                     DrawRowHeaderCell(context, row, cellValue, style, cellRect, renderContext);
@@ -67,7 +74,15 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                 {
                     var sheetColumn = columns.GetItem(col);
                     var sheetRow = rows.GetItem(row);
-                    var style = ((RowHeaders)workSheet.RowHeaders).GetStyle(row, col) ?? ((WorkBook)workSheet.WorkBook).PickStyle(sheetColumn, sheetRow, SheetRegion.RowHeader);
+                    var style = ((RowHeaders)workSheet.RowHeaders).GetStyle(row, col);
+
+                    if (style == null)
+                    {
+                        var styleName = ((RowHeaders)workSheet.RowHeaders).GetStyleName(row, col);
+                        style = !string.IsNullOrEmpty(styleName)
+                            ? ((WorkBook)workSheet.WorkBook).GetNamedStyle(styleName)
+                            : ((WorkBook)workSheet.WorkBook).PickStyle(sheetColumn, sheetRow, SheetRegion.RowHeader);
+                    }
                     var cellValue = ((RowHeaders)workSheet.RowHeaders).GetValue(row, col);
                     var textWidth = TextMeasurer
                         .MeasureWidth(cellValue != null ? cellValue.ToString() : (row + 1).ToString(), style.FontSize, Styling.WpfResourceCache.GetFontResources(style).GlyphMetrics);

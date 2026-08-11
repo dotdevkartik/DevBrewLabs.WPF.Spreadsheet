@@ -67,7 +67,22 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                     }
 
                     var cellRect = new Rect(x, y, scaledColumnWidth - penThickness, scaledRowHeight - penThickness);
-                    var style = workSheet.GetStyle(row, col) ?? workBook.PickStyle(sheetColumn, sheetRow, SheetRegion.Cells);
+
+                    var style = workSheet.GetStyle(row, col);
+
+                    if (style == null)
+                    {
+                        var styleName = workSheet.GetStyleName(row, col);
+                        if (!string.IsNullOrEmpty(styleName))
+                        {
+                            style = workBook.GetNamedStyle(styleName);
+                        }
+                        else
+                        {
+                            style = workBook.PickStyle(sheetColumn, sheetRow, SheetRegion.Cells);
+                        }
+                    }
+
                     var formatter = workSheet.GetFormatter(row, col) ?? workSheet.PickFormatter(sheetColumn, sheetRow);
                     cellType.DrawCell(context, value, style, formatter, cellRect, renderContext);
                 }

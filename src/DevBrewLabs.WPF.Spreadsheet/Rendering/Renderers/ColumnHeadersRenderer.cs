@@ -43,8 +43,15 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
                     var cellRect = new Rect(x, y, scaledColumnWidth, scaledRowHeight);
 
-                    var baseStyle = ((ColumnHeaders)workSheet.ColumnHeaders).GetStyle(row, col) ?? workBook.PickStyle(sheetColumn, sheetRow, SheetRegion.ColumnHeader);
-                    var style = baseStyle;
+                    var style = ((ColumnHeaders)workSheet.ColumnHeaders).GetStyle(row, col);
+
+                    if (style == null)
+                    {
+                        var styleName = ((ColumnHeaders)workSheet.ColumnHeaders).GetStyleName(row, col);
+                        style = !string.IsNullOrEmpty(styleName)
+                            ? workBook.GetNamedStyle(styleName)
+                            : workBook.PickStyle(sheetColumn, sheetRow, SheetRegion.ColumnHeader);
+                    }
                     var cellValue = ((ColumnHeaders)workSheet.ColumnHeaders).GetValue(row, col);
 
                     DrawColumnHeaderCell(context, row, col, cellValue, style, cellRect, renderContext);

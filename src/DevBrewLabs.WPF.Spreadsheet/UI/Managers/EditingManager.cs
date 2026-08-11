@@ -42,7 +42,15 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             var sheetRow = ((Rows)workSheet.Rows).GetItem(row);
             var cellType = (BaseCellType)(workSheet.GetCellType(row, column)) ?? (BaseCellType)sheetColumn?.CellType ?? TextCellType.Default;
 
-            var style = ((WorkBook)workSheet.WorkBook).PickStyle(sheetColumn, sheetRow, SheetRegion.Cells);
+            var style = workSheet.GetStyle(row, column);
+
+            if (style == null)
+            {
+                var styleName = workSheet.GetStyleName(row, column);
+                style = !string.IsNullOrEmpty(styleName)
+                    ? ((WorkBook)workSheet.WorkBook).GetNamedStyle(styleName)
+                    : ((WorkBook)workSheet.WorkBook).PickStyle(sheetColumn, sheetRow, SheetRegion.Cells);
+            }
             var editor = cellType.GetEditor(style);
             editor.SheetView = sheetView;
             ActiveEditor = editor;
@@ -91,7 +99,15 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 cellRect.Y -= viewPort.TopRowLocation;
                 var sheetColumn = ((Columns)workSheet.Columns).GetItem(editor.Column);
                 var sheetRow = ((Rows)workSheet.Rows).GetItem(editor.Row);
-                var style = ((WorkBook)workSheet.WorkBook).PickStyle(sheetColumn, sheetRow, SheetRegion.Cells);
+                var style = workSheet.GetStyle(editor.Row, editor.Column);
+
+                if (style == null)
+                {
+                    var styleName = workSheet.GetStyleName(editor.Row, editor.Column);
+                    style = !string.IsNullOrEmpty(styleName)
+                        ? ((WorkBook)workSheet.WorkBook).GetNamedStyle(styleName)
+                        : ((WorkBook)workSheet.WorkBook).PickStyle(sheetColumn, sheetRow, SheetRegion.Cells);
+                }
 
                 var wpfStyle = style;
                 editor.FontSize = (wpfStyle?.FontSize ?? 14) * zoom;
