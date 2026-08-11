@@ -7,18 +7,8 @@ namespace DevBrewLabs.Spreadsheet
         /// <summary>
         /// Gets the style according to the priority.
         /// </summary>
-        public static IStyle PickStyle(this IWorkBook workBook, IRange cell, IColumn column, IRow row, SheetRegion region)
+        public static IStyle PickStyle(this IWorkBook workBook, IColumn column, IRow row, SheetRegion region)
         {
-            if (cell != null && cell.Style != null)
-            {
-                return cell.Style;
-            }
-
-            if (cell != null && !string.IsNullOrEmpty(cell.StyleName))
-            {
-                return workBook.GetNamedStyle(cell.StyleName);
-            }
-
             if (column != null && !string.IsNullOrEmpty(column.StyleName))
             {
                 return workBook.GetNamedStyle(column.StyleName);
@@ -48,13 +38,8 @@ namespace DevBrewLabs.Spreadsheet
         /// <summary>
         /// Gets the formatter according to the priority.
         /// </summary>
-        public static IFormatter PickFormatter(this IWorkSheet sheet, IRange cell, IColumn column, IRow row)
+        public static IFormatter PickFormatter(this IWorkSheet sheet, IColumn column, IRow row)
         {
-            if (cell != null && cell.Formatter != null)
-            {
-                return cell.Formatter;
-            }
-
             if (column != null && column.Formatter != null)
             {
                 return column.Formatter;

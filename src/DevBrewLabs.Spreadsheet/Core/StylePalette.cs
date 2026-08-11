@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace DevBrewLabs.Spreadsheet.Core
@@ -39,7 +40,7 @@ namespace DevBrewLabs.Spreadsheet.Core
         public ushort GetOrAdd(IStyle style)
         {
             if (style == null)
-                return DefaultStyleId;
+                throw new ArgumentNullException(nameof(style));
 
             if (_styleToIdMap.TryGetValue(style, out var existingId))
                 return existingId;

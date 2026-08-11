@@ -9,12 +9,17 @@ namespace DevBrewLabs.Spreadsheet.CalcEngine.Evaluator
     /// </summary>
     public class CalcEngineContext : IEngineContext
     {
-        private readonly IDataProvider _dataProvider;
+        private readonly IDataAdapter _dataProvider;
         private string _currentSheetName;
 
-        public CalcEngineContext(IDataProvider dataProvider)
+        public CalcEngineContext(IDataAdapter dataProvider)
         {
             _dataProvider = dataProvider;
+        }
+
+        public string CurrentSheetName
+        {
+            get { return _currentSheetName; }
         }
 
         public void SetCurrentSheet(string sheetName)

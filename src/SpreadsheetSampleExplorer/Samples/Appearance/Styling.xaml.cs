@@ -1,6 +1,7 @@
 using DevBrewLabs.Spreadsheet;
 using DevBrewLabs.Spreadsheet.Data;
 using DevBrewLabs.Spreadsheet.Drawing;
+using DevBrewLabs.Spreadsheet.Styling;
 using DevBrewLabs.WPF.Spreadsheet;
 using SpreadsheetSampleExplorer.Data;
 using System;
@@ -93,7 +94,7 @@ namespace SpreadsheetSampleExplorer.Samples
             string headerStyleName = "HeaderStyle_" + themeKey + "_" + alignment.ToString();
             if (worksheet.WorkBook.GetNamedStyle(headerStyleName) == null)
             {
-                var headerStyle = new DevBrewLabs.Spreadsheet.Styling.CellStyle
+                var headerStyle = new CellStyle
                 {
                     BackColor = headerBg,
                     ForeColor = headerFg,
@@ -113,7 +114,7 @@ namespace SpreadsheetSampleExplorer.Samples
 
             if (worksheet.WorkBook.GetNamedStyle(altRowStyleName) == null)
             {
-                var rowStyle = new DevBrewLabs.Spreadsheet.Styling.CellStyle
+                var rowStyle = new CellStyle
                 {
                     BackColor = altRowBg,
                     ForeColor = altRowFg
@@ -123,7 +124,7 @@ namespace SpreadsheetSampleExplorer.Samples
 
             if (worksheet.WorkBook.GetNamedStyle(normalRowStyleName) == null)
             {
-                var normalStyle = new DevBrewLabs.Spreadsheet.Styling.CellStyle
+                var normalStyle = new CellStyle
                 {
                     BackColor = CellColor.White,
                     ForeColor = altRowFg

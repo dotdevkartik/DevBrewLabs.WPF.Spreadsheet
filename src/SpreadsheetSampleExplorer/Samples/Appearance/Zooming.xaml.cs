@@ -31,13 +31,12 @@ namespace SpreadsheetSampleExplorer.Samples
             sheet.ColumnCount = 100;
             sheet.RowCount = 200;
 
-            var dataStore = sheet.DataStore;
-            dataStore.SetValue(0, 0, "Quarter");
-            dataStore.SetValue(0, 1, "Region");
-            dataStore.SetValue(0, 2, "Sales Rep");
-            dataStore.SetValue(0, 3, "Revenue ($)");
-            dataStore.SetValue(0, 4, "Target ($)");
-            dataStore.SetValue(0, 5, "Status");
+            sheet.SetValue(0, 0, "Quarter");
+            sheet.SetValue(0, 1, "Region");
+            sheet.SetValue(0, 2, "Sales Rep");
+            sheet.SetValue(0, 3, "Revenue ($)");
+            sheet.SetValue(0, 4, "Target ($)");
+            sheet.SetValue(0, 5, "Status");
 
             string[] regions = { "North", "South", "East", "West" };
             string[] reps = { "Alice Smith", "Bob Jones", "Carol Vance", "David Miller", "Eva Green" };
@@ -45,14 +44,14 @@ namespace SpreadsheetSampleExplorer.Samples
             Random rand = new Random(42);
             for (int r = 1; r <= 20; r++)
             {
-                dataStore.SetValue(r, 0, $"Q{(r % 4) + 1}");
-                dataStore.SetValue(r, 1, regions[rand.Next(regions.Length)]);
-                dataStore.SetValue(r, 2, reps[rand.Next(reps.Length)]);
+                sheet.SetValue(r, 0, $"Q{(r % 4) + 1}");
+                sheet.SetValue(r, 1, regions[rand.Next(regions.Length)]);
+                sheet.SetValue(r, 2, reps[rand.Next(reps.Length)]);
                 int rev = rand.Next(15000, 95000);
                 int tgt = rand.Next(20000, 80000);
-                dataStore.SetValue(r, 3, rev);
-                dataStore.SetValue(r, 4, tgt);
-                dataStore.SetValue(r, 5, rev >= tgt ? "Met Target" : "Under Target");
+                sheet.SetValue(r, 3, rev);
+                sheet.SetValue(r, 4, tgt);
+                sheet.SetValue(r, 5, rev >= tgt ? "Met Target" : "Under Target");
             }
 
             spread.Invalidate();

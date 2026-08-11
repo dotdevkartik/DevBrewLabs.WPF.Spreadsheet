@@ -3,8 +3,9 @@ using DevBrewLabs.WPF.Spreadsheet.UI;
 using System;
 using System.Windows;
 using System.Windows.Media;
+using DevBrewLabs.Spreadsheet.Drawing;
 
-namespace DevBrewLabs.WPF.Spreadsheet.Rendering
+namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
 {
     internal class ColumnHeaderGridLinesRenderer : Renderer
     {
@@ -98,7 +99,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             var rectWidth = Math.Abs(line2X - line1X) + 1.0;
             var gapRect = new Rect(rectLeft, rowLocation, rectWidth, rowHeight);
 
-            if (defaultStyle != null && defaultStyle.BackColor != DevBrewLabs.Spreadsheet.Drawing.CellColor.Transparent)
+            if (defaultStyle != null && defaultStyle.BackColor != CellColor.Transparent)
             {
                 context.DrawRectangle(Styling.WpfResourceCache.GetBrush(defaultStyle.BackColor), null, gapRect);
             }

@@ -95,7 +95,7 @@ namespace DevBrewLabs.Spreadsheet
 
         private void OnDataMapChanged()
         {
-            _parent.WorkSheet.ClearColumnCells(Parent.GetColumnIndex(this));
+            
         }
 
         public void Dispose()

@@ -162,21 +162,20 @@ namespace DevBrewLabs.WPF.Spreadsheet
 
             for (int col = 0; col < _workSheet.ColumnCount; col++)
             {
-                var value = _workSheet.DataStore.GetValue(row, col);
+                var value = _workSheet.GetValue(row, col);
                 if (value == null)
                     continue;
 
-                var cell = _cells.GetCell(row, col, false);
                 var sheetColumn = _columns.GetItem(col);
                 var sheetRow = _rows.GetItem(row);
 
-                var formatter = _workSheet.PickFormatter(cell, sheetColumn, sheetRow);
+                var formatter = _workSheet.PickFormatter(sheetColumn, sheetRow);
                 string text = formatter != null ? formatter.Format(value) : value.ToString();
 
                 if (string.IsNullOrEmpty(text))
                     continue;
 
-                var style = _workBook.PickStyle(cell, sheetColumn, sheetRow, SheetRegion.Cells);
+                var style = _workBook.PickStyle(sheetColumn, sheetRow, SheetRegion.Cells);
 
                 string[] lines = style.AllowMultiLineText 
                     ? TextUtils.GetLines(text) 
@@ -212,15 +211,14 @@ namespace DevBrewLabs.WPF.Spreadsheet
             {
                 if(cellValue.Value != null)
                 {
-                    var cell = _cells.GetCell(cellValue.Key, column, false);
                     var sheetRow = _rows.GetItem(cellValue.Key);
-                    var formatter = _workSheet.PickFormatter(cell, sheetColumn, sheetRow);
+                    var formatter = _workSheet.PickFormatter(sheetColumn, sheetRow);
                     string text = formatter != null ? formatter.Format(cellValue.Value) : cellValue.Value.ToString();
 
                     if (string.IsNullOrEmpty(text))
                         continue;
 
-                    var style = _workBook.PickStyle(cell, sheetColumn, sheetRow, SheetRegion.Cells);
+                    var style = _workBook.PickStyle(sheetColumn, sheetRow, SheetRegion.Cells);
 
                     string[] lines = style.AllowMultiLineText
                      ? TextUtils.GetLines(text)

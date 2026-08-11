@@ -1,14 +1,15 @@
 using System;
+using DevBrewLabs.Spreadsheet.Drawing;
 
 namespace DevBrewLabs.WPF.Spreadsheet.Styling
 {
     internal readonly struct FontCacheKey : IEquatable<FontCacheKey>
     {
         public string FontFamily { get; }
-        public DevBrewLabs.Spreadsheet.Drawing.CellFontWeight FontWeight { get; }
-        public DevBrewLabs.Spreadsheet.Drawing.CellFontStyle FontStyle { get; }
+        public CellFontWeight FontWeight { get; }
+        public CellFontStyle FontStyle { get; }
 
-        public FontCacheKey(string fontFamily, DevBrewLabs.Spreadsheet.Drawing.CellFontWeight weight, DevBrewLabs.Spreadsheet.Drawing.CellFontStyle style)
+        public FontCacheKey(string fontFamily, CellFontWeight weight, CellFontStyle style)
         {
             FontFamily = fontFamily;
             FontWeight = weight;

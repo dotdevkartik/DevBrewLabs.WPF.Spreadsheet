@@ -1,4 +1,5 @@
 using DevBrewLabs.Spreadsheet.Drawing;
+using DevBrewLabs.Spreadsheet.Styling;
 using System;
 using System.Collections.Generic;
 using System.Windows;
@@ -55,7 +56,7 @@ namespace SpreadsheetSampleExplorer.Samples
             // Title Style
             if (workBook.GetNamedStyle("TitleStyle") == null)
             {
-                var titleStyle = new DevBrewLabs.Spreadsheet.Styling.CellStyle
+                var titleStyle = new CellStyle
                 {
                     FontSize = 14,
                     FontWeight = CellFontWeight.Bold,
@@ -67,7 +68,7 @@ namespace SpreadsheetSampleExplorer.Samples
             // Table Header Style (Teal Header)
             if (workBook.GetNamedStyle("HeaderStyle") == null)
             {
-                var headerStyle = new DevBrewLabs.Spreadsheet.Styling.CellStyle
+                var headerStyle = new CellStyle
                 {
                     FontWeight = CellFontWeight.Bold,
                     BackColor = CellColor.FromArgb(255, 15, 118, 110),
@@ -79,7 +80,7 @@ namespace SpreadsheetSampleExplorer.Samples
             // Total Label Style
             if (workBook.GetNamedStyle("TotalLabelStyle") == null)
             {
-                var totalLabelStyle = new DevBrewLabs.Spreadsheet.Styling.CellStyle
+                var totalLabelStyle = new CellStyle
                 {
                     FontWeight = CellFontWeight.Bold
                 };
@@ -89,7 +90,7 @@ namespace SpreadsheetSampleExplorer.Samples
             // Summary Totals Style
             if (workBook.GetNamedStyle("SummaryStyle") == null)
             {
-                var summaryStyle = new DevBrewLabs.Spreadsheet.Styling.CellStyle
+                var summaryStyle = new CellStyle
                 {
                     FontWeight = CellFontWeight.Bold,
                     BackColor = CellColor.FromArgb(255, 240, 253, 244),
@@ -101,7 +102,7 @@ namespace SpreadsheetSampleExplorer.Samples
             // Real-time Gain Style (Emerald Green)
             if (workBook.GetNamedStyle("GainStyle") == null)
             {
-                var gainStyle = new DevBrewLabs.Spreadsheet.Styling.CellStyle
+                var gainStyle = new CellStyle
                 {
                     FontWeight = CellFontWeight.Bold,
                     ForeColor = CellColor.FromArgb(255, 16, 185, 129),
@@ -113,7 +114,7 @@ namespace SpreadsheetSampleExplorer.Samples
             // Real-time Loss Style (Rose Red)
             if (workBook.GetNamedStyle("LossStyle") == null)
             {
-                var lossStyle = new DevBrewLabs.Spreadsheet.Styling.CellStyle
+                var lossStyle = new CellStyle
                 {
                     FontWeight = CellFontWeight.Bold,
                     ForeColor = CellColor.FromArgb(255, 239, 68, 68),

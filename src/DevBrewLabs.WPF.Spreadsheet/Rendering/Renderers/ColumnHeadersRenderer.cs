@@ -36,7 +36,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                     if (columnWidth == 0)
                         continue;
 
-                    var cell = cells.GetCell(row, col, false);
                     var sheetColumn = columns.GetItem(col);
                     var colLocation = columns.GetLocation(col);
                     var x = (colLocation - viewport.LeftColumnLocation) * zoom;
@@ -44,20 +43,21 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
                     var cellRect = new Rect(x, y, scaledColumnWidth, scaledRowHeight);
 
-                    var baseStyle = workBook.PickStyle(cell, sheetColumn, sheetRow, SheetRegion.ColumnHeader);
+                    var baseStyle = ((ColumnHeaders)workSheet.ColumnHeaders).GetStyle(row, col) ?? workBook.PickStyle(sheetColumn, sheetRow, SheetRegion.ColumnHeader);
                     var style = baseStyle;
+                    var cellValue = ((ColumnHeaders)workSheet.ColumnHeaders).GetValue(row, col);
 
-                    DrawColumnHeaderCell(context, row, col, cell, style, cellRect, renderContext);
+                    DrawColumnHeaderCell(context, row, col, cellValue, style, cellRect, renderContext);
                 }
             }
         }
 
-        private void DrawColumnHeaderCell(DrawingContext context, int row, int column, IRange cell, IStyle style, Rect cellRect, RenderContext renderContext)
+        private void DrawColumnHeaderCell(DrawingContext context, int row, int column, object cellValue, IStyle style, Rect cellRect, RenderContext renderContext)
         {
             context.DrawRectangle(Styling.WpfResourceCache.GetBrush(style.BackColor), null, cellRect);
-            if (cell != null && cell.Value != null)
+            if (cellValue != null)
             {
-                TextRenderer.DrawText(context, cell.Value.ToString(), cellRect, style, renderContext);
+                TextRenderer.DrawText(context, cellValue.ToString(), cellRect, style, renderContext);
             }
             else
             {

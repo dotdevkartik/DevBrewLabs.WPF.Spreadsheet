@@ -103,30 +103,20 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
             if (row == -1 || col == -1)
                 return new Rect();
 
-            Cell cell = null;
-            Cells cells = (Cells)_workSheet.Cells;
-
             if (row > 0)
             {
                 int temp = row - 1;
-                cell = cells.GetCell(temp, col, false);
-                while (cell != null && cell.RowSpan > 1)
+                int rowSpanTemp = _workSheet.GetRowSpan(temp, col);
+                while (rowSpanTemp > 1 && temp > row - rowSpanTemp)
                 {
                     temp--;
-                    cell = cells.GetCell(temp, col, false);
+                    rowSpanTemp = _workSheet.GetRowSpan(temp, col);
                 }
                 row = temp + 1;
-                cell = cells.GetCell(row, col, false);
             }
 
-            int rowSpan = 1;
-            int colSpan = 1;
-
-            if (cell != null)
-            {
-                rowSpan = cell.RowSpan;
-                colSpan = cell.ColumnSpan;
-            }
+            int rowSpan = _workSheet.GetRowSpan(row, col);
+            int colSpan = _workSheet.GetColumnSpan(row, col);
 
             var colLocation = _columns.GetLocation(col);
             var rowLocation = _rows.GetLocation(row);

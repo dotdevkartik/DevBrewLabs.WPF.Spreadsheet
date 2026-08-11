@@ -61,7 +61,7 @@ namespace DevBrewLabs.Spreadsheet
         /// <summary>
         /// Gets or sets the data map.
         /// </summary>
-        DataMap DataMap { get; set; }
+        IDataMap DataMap { get; set; }
         /// <summary>
         /// Gets or sets whether the cell is locked.
         /// </summary>
@@ -70,10 +70,6 @@ namespace DevBrewLabs.Spreadsheet
         /// Gets or sets the cell formatter.
         /// </summary>
         IFormatter Formatter { get; set; }
-        /// <summary>
-        /// Gets whether this range is visible or not.
-        /// </summary>
-        bool IsVisible { get; }
         /// <summary>
         /// Gets or sets the row span for this cell.
         /// </summary>

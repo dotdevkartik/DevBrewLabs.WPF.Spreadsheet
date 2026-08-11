@@ -7,6 +7,8 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Windows;
+using System.Windows.Input;
+using DevBrewLabs.Spreadsheet.Core;
 
 namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 {
@@ -65,7 +67,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 {
                     var val = data[row, column];
                     var strVal = val != null ? val.ToString() : string.Empty;
-                    stringBuilder.Append(DevBrewLabs.Spreadsheet.Core.SpreadsheetDataParser.FormatTsvCell(strVal));
+                    stringBuilder.Append(SpreadsheetDataParser.FormatTsvCell(strVal));
 
                     if (column < range.ColumnCount - 1)
                         stringBuilder.Append(SheetUtils.Tab);
@@ -211,19 +213,19 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
             if (!string.IsNullOrEmpty(text))
             {
-                return DevBrewLabs.Spreadsheet.Core.SpreadsheetDataParser.ParseTextData(text, '\t');
+                return SpreadsheetDataParser.ParseTextData(text, '\t');
             }
 
             if (dataObject.GetDataPresent(DataFormats.CommaSeparatedValue))
             {
                 var csvObj = dataObject.GetData(DataFormats.CommaSeparatedValue);
                 if (csvObj is string csvText)
-                    return DevBrewLabs.Spreadsheet.Core.SpreadsheetDataParser.ParseTextData(csvText, ',');
+                    return SpreadsheetDataParser.ParseTextData(csvText, ',');
                 if (csvObj is Stream csvStream)
                 {
                     using (var reader = new StreamReader(csvStream, Encoding.UTF8))
                     {
-                        return DevBrewLabs.Spreadsheet.Core.SpreadsheetDataParser.ParseTextData(reader.ReadToEnd(), ',');
+                        return SpreadsheetDataParser.ParseTextData(reader.ReadToEnd(), ',');
                     }
                 }
             }

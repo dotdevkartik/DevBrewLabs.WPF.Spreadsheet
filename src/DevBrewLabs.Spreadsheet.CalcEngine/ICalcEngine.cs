@@ -30,23 +30,6 @@ namespace DevBrewLabs.Spreadsheet.CalcEngine
         /// <returns>The computed value of the cell, or null if empty or uncalculated.</returns>
         object GetValue(string sheetName, int row, int column);
 
-        /// <summary>
-        /// Sets a formula for a specific cell, updating its dependencies and triggering recalculations.
-        /// </summary>
-        /// <param name="sheetName">The name of the sheet.</param>
-        /// <param name="row">The row index of the cell.</param>
-        /// <param name="column">The column index of the cell.</param>
-        /// <param name="formula">The formula string to set.</param>
-        void SetFormula(string sheetName, int row, int column, string formula);
-
-        /// <summary>
-        /// Gets the raw formula string set in a specific cell.
-        /// </summary>
-        /// <param name="sheetName">The name of the sheet.</param>
-        /// <param name="row">The row index of the cell.</param>
-        /// <param name="column">The column index of the cell.</param>
-        /// <returns>The formula string, or null if no formula is present.</returns>
-        string GetFormula(string sheetName, int row, int column);
 
         /// <summary>
         /// Registers a custom formula to be available within the calculation engine.

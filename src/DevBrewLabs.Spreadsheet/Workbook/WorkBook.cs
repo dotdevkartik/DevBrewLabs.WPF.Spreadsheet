@@ -8,7 +8,7 @@ namespace DevBrewLabs.Spreadsheet
 {
     internal class WorkBook : IWorkBook
     {
-        private WorkBookDataProvider _dataProvider;
+        private WorkbookAdapter _dataProvider;
         private IUpdateProvider _updateProvider;
         private Dictionary<string, CellStyle> _namedStyles;
 
@@ -17,7 +17,6 @@ namespace DevBrewLabs.Spreadsheet
         public ICalcEngine CalcEngine { get; private set; }
         public IStylePalette StylePalette { get; private set; }
         internal IUpdateProvider UpdateProvider => _updateProvider;
-        internal WorkBookDataProvider DataProvider => _dataProvider;
 
         public WorkBook(string name)
         {
@@ -27,7 +26,7 @@ namespace DevBrewLabs.Spreadsheet
             Name = name;
             WorkSheets = new WorkSheets(this);
             _namedStyles = new Dictionary<string, CellStyle>();
-            _dataProvider = new WorkBookDataProvider(this);
+            _dataProvider = new WorkbookAdapter(this);
             CalcEngine = new SheetCalcEngine(_dataProvider);
             StylePalette = new StylePalette();
             AddDefaultStyles();
@@ -105,5 +104,75 @@ namespace DevBrewLabs.Spreadsheet
             _namedStyles = null;
             _dataProvider = null;
         }
+
+        #region adapter
+        internal void RaiseValueChanged(ValueChangedEventArgs args)
+        {
+           _dataProvider.RaiseValueChanged(args);
+        }
+
+        internal void RaiseFormulaChanged(FormulaChangedEventArgs args)
+        {
+            _dataProvider.RaiseFormulaChanged(args);
+        }
+
+        private class WorkbookAdapter : IDataAdapter, IDisposable
+        {
+            private WorkBook _workBook;
+
+            public event ValueChangedEventHandler ValueChanged;
+            public event FormulaChangedEventHandler FormulaChanged;
+
+            public WorkbookAdapter(WorkBook workBook)
+            {
+                _workBook = workBook;
+            }
+
+            public object[,] GetRangeValue(string sheetName, int rowIndex, int columnIndex, int rowCount, int columnCount)
+            {
+                var worksheet = _workBook.WorkSheets.GetSheet(sheetName);
+                return worksheet.GetData(rowIndex, columnIndex, rowCount, columnCount);
+            }
+
+            public object GetValue(string sheetName, int rowIndex, int columnIndex)
+            {
+                var worksheet = _workBook.WorkSheets.GetSheet(sheetName);
+                return worksheet.GetValue(rowIndex, columnIndex);
+            }
+
+            public void SetMetadata(string sheetName, int row, int column, object data)
+            {
+                var worksheet = (WorkSheet)_workBook.WorkSheets.GetSheet(sheetName);
+                worksheet.SetMetadata(row, column, data);
+            }
+
+            public object GetMetadata(string sheetName, int row, int column)
+            {
+                var worksheet = (WorkSheet)_workBook.WorkSheets.GetSheet(sheetName);
+                return worksheet.GetMetadata(row, column);
+            }
+
+            public string GetFormula(string sheetName, int row, int column)
+            {
+                var worksheet = _workBook.WorkSheets.GetSheet(sheetName);
+                return worksheet.GetFormula(row, column);
+            }
+
+            internal void RaiseValueChanged(ValueChangedEventArgs args)
+            {
+                ValueChanged?.Invoke(args);
+            }
+
+            internal void RaiseFormulaChanged(FormulaChangedEventArgs args)
+            {
+                FormulaChanged?.Invoke(args);
+            }
+
+            public void Dispose()
+            {
+                _workBook = null;
+            }
+        }
+        #endregion
     }
 }

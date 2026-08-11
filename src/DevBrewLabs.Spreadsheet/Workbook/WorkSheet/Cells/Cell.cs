@@ -1,5 +1,3 @@
-using DevBrewLabs.Spreadsheet.Core;
-using DevBrewLabs.Spreadsheet.Data;
 using DevBrewLabs.Spreadsheet.Formatters;
 using System;
 
@@ -10,29 +8,15 @@ namespace DevBrewLabs.Spreadsheet
         private Cells _parentRange;
         private WorkSheet _workSheet;
 
-        private ColumnData ColData => _workSheet.GetColumnData(Column, true);
-        private ColumnData ColDataReadOnly => _workSheet.GetColumnData(Column, false);
-
         public IFormatter Formatter
         {
             get
             {
-                if (ColDataReadOnly == null)
-                {
-                    return null;
-                }
-                return ColDataReadOnly.GetFormatter(Row);
+                return _workSheet.GetFormatter(Row, Column);
             }
             set
             {
-                var oldValue = Formatter;
-
-                if (oldValue == value)
-                {
-                    return;
-                }
-
-                ColData.SetFormatter(Row, value);
+                _workSheet.SetFormatter(Row, Column, value);
             }
         }
 
@@ -40,29 +24,11 @@ namespace DevBrewLabs.Spreadsheet
         {
             get
             {
-                return _workSheet.DataStore.GetValue(Row, Column);
+                return _workSheet.GetValue(Row, Column);
             }
             set
             {
-                var oldValue = Value;
-
-                if (oldValue == value)
-                {
-                    return;
-                }
-
-                if (HasFormula && value != null)
-                    Formula = null;
-
-                _workSheet.DataStore.SetValue(Row, Column, value);
-
-                _workSheet.OnCellChanged(new CellChangedEventArgs(
-                       SheetRegion.Cells,
-                       Row,
-                       Column,
-                       oldValue,
-                       value,
-                       CellChangeType.Value));
+                _workSheet.SetValue(Row, Column, value);
             }
         }
 
@@ -70,29 +36,11 @@ namespace DevBrewLabs.Spreadsheet
         {
             get
             {
-                return _workSheet.GetCellFormula(Row, Column);
+                return _workSheet.GetFormula(Row, Column);
             }
             set
             {
-                var oldValue = Formula;
-
-                if (oldValue == value)
-                {
-                    return;
-                }
-
-                if (value != null && Value != null)
-                    Value = null;
-
-                _workSheet.SetCellFormula(Row, Column, value);
-
-                _workSheet.OnCellChanged(new CellChangedEventArgs(
-                      SheetRegion.Cells,
-                      Row,
-                      Column,
-                      oldValue,
-                      value,
-                      CellChangeType.Formula));
+                _workSheet.SetFormula(Row, Column, value);
             }
         }
 
@@ -100,28 +48,11 @@ namespace DevBrewLabs.Spreadsheet
         {
             get
             {
-                if (ColDataReadOnly != null)
-                    return ColDataReadOnly.GetStyleName(Row);
-
-                return null;
+                return _workSheet.GetStyleName(Row, Column);
             }
             set
             {
-                var oldStyleName = StyleName;
-
-                if (oldStyleName == value)
-                {
-                    return;
-                }
-
-                ColData.SetStyleName(Row, value);
-                _workSheet.OnCellChanged(new CellChangedEventArgs(
-                    SheetRegion.Cells,
-                    Row,
-                    Column,
-                    oldStyleName,
-                    value,
-                    CellChangeType.Style));
+                _workSheet.SetStyleName(Row, Column, value);
             }
         }
 
@@ -129,50 +60,23 @@ namespace DevBrewLabs.Spreadsheet
         {
             get
             {
-                if (ColDataReadOnly == null)
-                {
-                    return null;
-                }
-
-                ushort styleId = ColDataReadOnly.GetStyleId(Row);
-                return _workSheet.GetStyle(styleId);
+                return _workSheet.GetStyle(Row, Column);
             }
             set
             {
-                var oldStyle = Style;
-
-                if (oldStyle == value)
-                {
-                    return;
-                }
-
-                ushort styleId = _workSheet.GetOrAddStyle(value);
-                ColData.SetStyleId(Row, styleId);
-
-                _workSheet.OnCellChanged(new CellChangedEventArgs(
-                       SheetRegion.Cells,
-                       Row,
-                       Column,
-                       oldStyle,
-                       value,
-                       CellChangeType.Style));
+                _workSheet.SetStyle(Row, Column, value);
             }
         }
 
-        public DataMap DataMap
+        public IDataMap DataMap
         {
             get
             {
-                if (ColDataReadOnly == null)
-                {
-                    return null;
-                }
-
-                return ColDataReadOnly.GetDataMap(Row) as DataMap;
+                return _workSheet.GetDataMap(Row, Column);
             }
             set
             {
-                ColData.SetDataMap(Row, value);
+                _workSheet.SetDataMap(Row, Column, value);
             }
         }
 
@@ -180,16 +84,11 @@ namespace DevBrewLabs.Spreadsheet
         {
             get
             {
-                if (ColDataReadOnly == null)
-                {
-                    return null;
-                }
-
-                return ColDataReadOnly.GetCellType(Row);
+                return _workSheet.GetCellType(Row, Column);
             }
             set
             {
-                ColData.SetCellType(Row, value);
+                _workSheet.SetCellType(Row, Column, value);
             }
         }
 
@@ -197,16 +96,11 @@ namespace DevBrewLabs.Spreadsheet
         {
             get
             {
-                if (ColDataReadOnly == null)
-                {
-                    return false;
-                }
-
-                return ColDataReadOnly.GetLocked(Row);
+                return _workSheet.GetLocked(Row, Column);
             }
             set
             {
-                ColData.SetLocked(Row, value);
+                _workSheet.SetLocked(Row, Column, value);
             }
         }
 
@@ -214,22 +108,11 @@ namespace DevBrewLabs.Spreadsheet
         {
             get
             {
-                if (ColDataReadOnly == null)
-                {
-                    return 0;
-                }
-                return ColDataReadOnly.GetRowSpan(Row);
+                return _workSheet.GetRowSpan(Row, Column);
             }
             set
             {
-                var oldValue = RowSpan;
-
-                if (oldValue == value)
-                {
-                    return;
-                }
-
-                ColData.SetRowSpan(Row, value);
+                _workSheet.SetRowSpan(Row, Column, value);
             }
         }
 
@@ -237,28 +120,17 @@ namespace DevBrewLabs.Spreadsheet
         {
             get
             {
-                if (ColDataReadOnly == null)
-                {
-                    return 0;
-                }
-                return ColDataReadOnly.GetColumnSpan(Row);
+                 return _workSheet.GetColumnSpan(Row, Column);
             }
             set
             {
-                var oldValue = ColumnSpan;
-
-                if (oldValue == value)
-                {
-                    return;
-                }
-
-                ColData.SetColumnSpan(Row, value);
+                _workSheet.SetColumnSpan(Row, Column, value);
             }
         }
 
         public int RowCount => 1;
         public int ColumnCount => 1;
-        internal object MetaData { get; set; }
+
         public int Row { get; set; }
         public int Column { get; set; }
         public bool HasFormula => !string.IsNullOrEmpty(Formula);
@@ -281,7 +153,7 @@ namespace DevBrewLabs.Spreadsheet
             Value = null;
             Formula = null;
             Formatter = null;
-            MetaData = null;
+
             DataMap = null;
             _parentRange = null;
             CellType = null;

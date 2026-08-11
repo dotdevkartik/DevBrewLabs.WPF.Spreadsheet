@@ -3,15 +3,16 @@ using DevBrewLabs.WPF.Spreadsheet.Rendering.Text;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Media;
+using DevBrewLabs.Spreadsheet.Drawing;
 
 namespace DevBrewLabs.WPF.Spreadsheet.Styling
 {
     internal static class WpfResourceCache
     {
-        private static readonly Dictionary<DevBrewLabs.Spreadsheet.Drawing.CellColor, Brush> _brushCache = new Dictionary<DevBrewLabs.Spreadsheet.Drawing.CellColor, Brush>();
+        private static readonly Dictionary<CellColor, Brush> _brushCache = new Dictionary<CellColor, Brush>();
         private static readonly Dictionary<FontCacheKey, WpfFontResources> _fontCache = new Dictionary<FontCacheKey, WpfFontResources>();
 
-        public static Brush GetBrush(DevBrewLabs.Spreadsheet.Drawing.CellColor color)
+        public static Brush GetBrush(CellColor color)
         {
             if (!_brushCache.TryGetValue(color, out Brush brush))
             {
@@ -44,31 +45,31 @@ namespace DevBrewLabs.WPF.Spreadsheet.Styling
             return resources;
         }
 
-        internal static FontFamily ToWpfFontFamily(DevBrewLabs.Spreadsheet.Drawing.CellFontFamily fontFamily)
+        internal static FontFamily ToWpfFontFamily(CellFontFamily fontFamily)
         {
             return new FontFamily(fontFamily.FamilyName);
         }
 
-        internal static FontWeight ToWpfFontWeight(DevBrewLabs.Spreadsheet.Drawing.CellFontWeight weight)
+        internal static FontWeight ToWpfFontWeight(CellFontWeight weight)
         {
             switch (weight)
             {
-                case DevBrewLabs.Spreadsheet.Drawing.CellFontWeight.Bold:
+                case CellFontWeight.Bold:
                     return FontWeights.Bold;
-                case DevBrewLabs.Spreadsheet.Drawing.CellFontWeight.Normal:
+                case CellFontWeight.Normal:
                     return FontWeights.Normal;
                 default:
                     return FontWeights.Regular;
             }
         }
 
-        internal static FontStyle ToWpfFontStyle(DevBrewLabs.Spreadsheet.Drawing.CellFontStyle style)
+        internal static FontStyle ToWpfFontStyle(CellFontStyle style)
         {
             switch (style)
             {
-                case DevBrewLabs.Spreadsheet.Drawing.CellFontStyle.Italic:
+                case CellFontStyle.Italic:
                     return FontStyles.Italic;
-                case DevBrewLabs.Spreadsheet.Drawing.CellFontStyle.Oblique:
+                case CellFontStyle.Oblique:
                     return FontStyles.Oblique;
                 default:
                     return FontStyles.Normal;

@@ -1,6 +1,8 @@
 using DevBrewLabs.Spreadsheet;
 using System;
 using System.Windows.Threading;
+using System.Windows.Media;
+using DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers;
 
 namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 {
