@@ -177,7 +177,7 @@ namespace DevBrewLabs.Spreadsheet
         {
             var existingValue = GetValue(row, column);
 
-            if (existingValue == value)
+            if (existingValue != null && existingValue.Equals(value))
             {
                 return;
             }
@@ -516,7 +516,7 @@ namespace DevBrewLabs.Spreadsheet
             }
             else
             {
-                Cells[row, column].Value = DataTypeConverter.ConvertType(value);
+                SetValue(row, column, DataTypeConverter.ConvertType(value));
             }
         }
 
