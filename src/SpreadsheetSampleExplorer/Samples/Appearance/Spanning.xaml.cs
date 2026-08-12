@@ -65,11 +65,9 @@ namespace SpreadsheetSampleExplorer.Samples
             var selection = sheetView.Selection;
             if (selection.RowCount > 1 || selection.ColumnCount > 1)
             {
-                var workSheet = sheetView.WorkSheet;
-                
                 try
                 {
-                    workSheet.AddSpan(selection.TopRow, selection.LeftColumn, selection.RowCount, selection.ColumnCount);
+                    spreadMain.SelectionManager.MergeSelection();
                     spreadMain.Invalidate();
                 }
                 catch (System.InvalidOperationException ex)
@@ -81,20 +79,8 @@ namespace SpreadsheetSampleExplorer.Samples
 
         private void btnUnmerge_Click(object sender, RoutedEventArgs e)
         {
-            var sheetView = spreadMain.SheetViews.ActiveSheetView;
-            var selection = sheetView.Selection;
-            var workSheet = sheetView.WorkSheet;
-            
-            // We just unmerge the anchor cell if the selection starts on it
-            if (workSheet.HasSpans)
-            {
-                var anchor = workSheet.GetSpanCellRange(selection.TopRow, selection.LeftColumn);
-                if (anchor != default)
-                {
-                    workSheet.RemoveSpan(anchor.TopRow, anchor.LeftColumn);
-                    spreadMain.Invalidate();
-                }
-            }
+            spreadMain.SelectionManager.UnmergeSelection();
+            spreadMain.Invalidate();
         }
     }
 }

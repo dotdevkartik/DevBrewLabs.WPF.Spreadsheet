@@ -1,4 +1,4 @@
-﻿using DevBrewLabs.Spreadsheet;
+using DevBrewLabs.Spreadsheet;
 
 namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 {
@@ -42,5 +42,15 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
         /// </summary>
         /// <param name="range"></param>
         void SelectRange(int row, int column, int rowCount, int columnCount);
+        
+        /// <summary>
+        /// Merges the currently selected cells.
+        /// </summary>
+        void MergeSelection();
+
+        /// <summary>
+        /// Unmerges the currently selected cells.
+        /// </summary>
+        void UnmergeSelection();
     }
 }

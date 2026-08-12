@@ -126,5 +126,63 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             if (columnHeadersInteractionLayer != null && columnHeadersInteractionLayer.IsLoaded)
                 columnHeadersInteractionLayer.InvalidateVisual();
         }
+
+        public void MergeSelection()
+        {
+            var sheetView = Spread.SheetViews.ActiveSheetView.As<SheetView>();
+            var selection = sheetView.Selection;
+            var workSheet = sheetView.WorkSheet;
+
+            if (selection.RowCount > 1 || selection.ColumnCount > 1)
+            {
+                var action = new SpanChangedAction()
+                {
+                    SheetView = sheetView,
+                    Row = selection.TopRow,
+                    Column = selection.LeftColumn,
+                    OldRowSpan = workSheet.GetRowSpan(selection.TopRow, selection.LeftColumn),
+                    OldColumnSpan = workSheet.GetColumnSpan(selection.TopRow, selection.LeftColumn),
+                    NewRowSpan = selection.RowCount,
+                    NewColumnSpan = selection.ColumnCount,
+                    OldValues = new object[selection.RowCount, selection.ColumnCount]
+                };
+
+                for (int r = 0; r < selection.RowCount; r++)
+                {
+                    for (int c = 0; c < selection.ColumnCount; c++)
+                    {
+                        action.OldValues[r, c] = workSheet.GetValue(selection.TopRow + r, selection.LeftColumn + c);
+                    }
+                }
+
+                workSheet.AddSpan(selection.TopRow, selection.LeftColumn, selection.RowCount, selection.ColumnCount);
+                Spread.UndoRedoManager.AddAction(action);
+            }
+        }
+
+        public void UnmergeSelection()
+        {
+            var sheetView = Spread.SheetViews.ActiveSheetView.As<SheetView>();
+            var selection = sheetView.Selection;
+            var workSheet = sheetView.WorkSheet;
+
+            var anchor = workSheet.GetSpanCellRange(selection.TopRow, selection.LeftColumn);
+            if (anchor != default)
+            {
+                var action = new SpanChangedAction()
+                {
+                    SheetView = sheetView,
+                    Row = anchor.TopRow,
+                    Column = anchor.LeftColumn,
+                    OldRowSpan = anchor.RowCount,
+                    OldColumnSpan = anchor.ColumnCount,
+                    NewRowSpan = 1,
+                    NewColumnSpan = 1
+                };
+
+                workSheet.RemoveSpan(anchor.TopRow, anchor.LeftColumn);
+                Spread.UndoRedoManager.AddAction(action);
+            }
+        }
     }
 }
