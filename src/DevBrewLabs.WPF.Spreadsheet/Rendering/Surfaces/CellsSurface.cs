@@ -40,7 +40,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             hitTestInfo.ActualHitTestPoint = hitPoint;
             var rows = _workSheet.Rows.As<Rows>();
             var columns = _workSheet.Columns.As<Columns>();
-            var viewRange = sheetView.ViewPort.ViewRange;
+            var viewRange = _viewPort.ViewRange;
 
             double zoom = sheetView != null && sheetView.ZoomFactor > 0 ? sheetView.ZoomFactor : 1.0;
             var point = new Point(hitPoint.X / zoom + _viewPort.LeftColumnLocation, 
@@ -65,7 +65,21 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                         if (point.X >= colLocation && point.X < colLocation + columnWidth)
                         {
                             hitTestInfo.Column = col;
+                            hitTestInfo.Row = row;
                             x = colLocation;
+                            y = rowLocation;
+
+                            var anchor = _workSheet.GetSpanCellRange(hitTestInfo.Row, hitTestInfo.Column);
+                            if (anchor != default)
+                            {
+                                hitTestInfo.Row = anchor.TopRow;
+                                hitTestInfo.Column = anchor.LeftColumn;
+                                var cellRect = _viewPort.GetCellRect(hitTestInfo.Row, hitTestInfo.Column);
+                                x = cellRect.X;
+                                y = cellRect.Y;
+                                columnWidth = cellRect.Width;
+                                rowHeight = cellRect.Height;
+                            }
 
                             if (sheetView.Selection.RightColumn == hitTestInfo.Column && sheetView.Selection.BottomRow == hitTestInfo.Row)
                             {

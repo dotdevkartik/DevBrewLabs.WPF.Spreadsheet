@@ -104,6 +104,15 @@ namespace SpreadsheetSampleExplorer
 
             // Category: APPEARANCE & STYLING
             _samplesSideBar.RegisterSample(
+                "Spanning",
+                "Cell Spanning",
+                "Merge and unmerge cells, spanning multiple rows and columns.",
+                "APPEARANCE & STYLING",
+                "M3 3h18v18H3V3zm16 16V5H5v14h14zm-4-4H9v-4h6v4z",
+                typeof(Spanning)
+            );
+
+            _samplesSideBar.RegisterSample(
                 "Styling",
                 "Grid Styling & Themes",
                 "Custom cell background colors, borders, fonts, and gridlines.",

@@ -1,4 +1,4 @@
-﻿using DevBrewLabs.Spreadsheet;
+using DevBrewLabs.Spreadsheet;
 
 namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 {
@@ -12,6 +12,15 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
         public void SelectCell(int row, int col)
         {
             var sheetView = Spread.SheetViews.ActiveSheetView.As<SheetView>();
+            var workSheet = (WorkSheet)sheetView.WorkSheet;
+            
+            var anchor = workSheet.GetSpanCellRange(row, col);
+            if (anchor != default)
+            {
+                row = anchor.TopRow;
+                col = anchor.LeftColumn;
+            }
+
             sheetView.ActiveRow = row;
             sheetView.ActiveColumn = col;
             SelectRange(row, col, 1, 1);
@@ -58,37 +67,39 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
         {
             var sheetView = Spread.SheetViews.ActiveSheetView.As<SheetView>();
             var selection = sheetView.Selection;
-            var workSheet = sheetView.WorkSheet;
+            var workSheet = (WorkSheet)sheetView.WorkSheet;
 
             if (!workSheet.ContainsRange(row, column, rowCount, columnCount))
                 return;
+
+            int targetRow = row;
+            int targetCol = column;
+            int targetRowCount = rowCount;
+            int targetColCount = columnCount;
 
             switch (sheetView.SelectionMode)
             {
                 case SelectionMode.Column:
                 case SelectionMode.Columns:
-                    selection.TopRow = 0;
-                    selection.LeftColumn = column;
-                    selection.RowCount = workSheet.RowCount;
-                    selection.ColumnCount = columnCount;
+                    targetRow = 0;
+                    targetCol = column;
+                    targetRowCount = workSheet.RowCount;
+                    targetColCount = columnCount;
                     break;
 
                 case SelectionMode.Row:
                 case SelectionMode.Rows:
-                    selection.TopRow = row;
-                    selection.LeftColumn = 0;
-                    selection.RowCount = rowCount;
-                    selection.ColumnCount = workSheet.ColumnCount;
-                    break;
-
-                case SelectionMode.CellRange:
-                case SelectionMode.Cell:
-                    selection.TopRow = row;
-                    selection.LeftColumn = column;
-                    selection.RowCount = rowCount;
-                    selection.ColumnCount = columnCount;
+                    targetRow = row;
+                    targetCol = 0;
+                    targetRowCount = rowCount;
+                    targetColCount = workSheet.ColumnCount;
                     break;
             }
+
+            var targetRange = new CellRange(targetRow, targetCol, targetRowCount, targetColCount);
+            targetRange = workSheet.ExpandSpanRange(targetRange);
+
+            sheetView.SetSelection(targetRange);
 
             sheetView.Spread.RaiseCellsSelectionChanged(new CellsSelectionEventArgs()
             {

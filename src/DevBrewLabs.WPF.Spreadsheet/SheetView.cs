@@ -17,6 +17,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         private Cells _cells;
         private Columns _columns;
         private double _zoomFactor = 1.0;
+        private CellRange _selection;
 
         public event EventHandler<ZoomChangedEventArgs> ZoomChanged;
 
@@ -63,7 +64,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public Spread Spread { get; }
         public int ActiveRow { get; internal set; }
         public int ActiveColumn { get; internal set; }
-        public CellRange Selection { get; }
+        public CellRange Selection => _selection;
         public IWorkSheet WorkSheet => _workSheet;
         public bool AutoSizeRows { get; set; }
         public bool AutoSizeColumns { get; set; }
@@ -84,7 +85,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             ScrollPosition = new Point(0, 0);
             _viewPort = new ViewPort(this);
             HeadersVisibility = HeadersVisibility.Both;
-            Selection = new CellRange(0, 0);
+            _selection = new CellRange(0, 0);
             AutoSizeRows = true;
             AutoSizeColumns = false;
         }
@@ -144,6 +145,11 @@ namespace DevBrewLabs.WPF.Spreadsheet
             if (HeadersVisibility == HeadersVisibility.Column || HeadersVisibility == HeadersVisibility.Both)
                 return _workSheet.ColumnHeaders.Height;
             else return 0;
+        }
+
+        internal void SetSelection(CellRange range)
+        {
+            _selection = range;
         }
 
         #endregion

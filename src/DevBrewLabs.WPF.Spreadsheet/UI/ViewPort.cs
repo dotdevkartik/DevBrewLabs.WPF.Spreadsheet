@@ -11,10 +11,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
         private WorkSheet _workSheet;
         private Rows _rows;
         private Columns _columns;
+        private CellRange _viewRange;
 
         public double TopRowLocation { get; private set; }
         public double LeftColumnLocation { get; private set; }
-        public CellRange ViewRange { get; private set; }
+        public CellRange ViewRange => _viewRange;
         public bool IsEmpty => GetIsEmpty();
         public Rect ActualBounds => _actualBounds;
 
@@ -24,7 +25,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
             _workSheet = (WorkSheet)sheetView.WorkSheet;
             _rows = _workSheet.Rows.As<Rows>();
             _columns = _workSheet.Columns.As<Columns>();
-            ViewRange = new CellRange(0, 0, 0, 0);
+            _viewRange = new CellRange(0, 0, 0, 0);
         }
 
         internal CellRange ShrinkRangeToViewPort(CellRange range)
@@ -103,20 +104,17 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
             if (row == -1 || col == -1)
                 return new Rect();
 
-            if (row > 0)
-            {
-                int temp = row - 1;
-                int rowSpanTemp = _workSheet.GetRowSpan(temp, col);
-                while (rowSpanTemp > 1 && temp > row - rowSpanTemp)
-                {
-                    temp--;
-                    rowSpanTemp = _workSheet.GetRowSpan(temp, col);
-                }
-                row = temp + 1;
-            }
+            int rowSpan = 1;
+            int colSpan = 1;
 
-            int rowSpan = _workSheet.GetRowSpan(row, col);
-            int colSpan = _workSheet.GetColumnSpan(row, col);
+            var spanRange = _workSheet.GetSpanCellRange(row, col);
+            if (spanRange != default)
+            {
+                row = spanRange.TopRow;
+                col = spanRange.LeftColumn;
+                rowSpan = spanRange.RowCount;
+                colSpan = spanRange.ColumnCount;
+            }
 
             var colLocation = _columns.GetLocation(col);
             var rowLocation = _rows.GetLocation(row);
@@ -136,9 +134,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
             }
 
             return new Rect(colLocation, rowLocation, width, height);
-
-            //return new Rect(_columns.GetLocation(col), _rows.GetLocation(row),
-            //    _columns.GetColumnWidth(col), _rows.GetRowHeight(row));
         }
 
         /// <summary>
@@ -155,7 +150,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
             {
                 if (IsRowVisible(row))
                 {
-                    ViewRange.RowCount = row - ViewRange.TopRow + 1;
+                    SetRowCount(row - _viewRange.TopRow + 1);
                 }
                 else
                     break;
@@ -164,7 +159,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
             for (int col = ViewRange.LeftColumn; col < _workSheet.ColumnCount; col++)
             {
                 if (IsColumnVisible(col))
-                    ViewRange.ColumnCount = col - ViewRange.LeftColumn + 1;
+                    SetColumnCount(col - _viewRange.LeftColumn + 1);
                 else
                     break;
             }
@@ -188,7 +183,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
 
                 TopRowLocation = _sheetView.Spread.ScrollMode == SheetScrollMode.Pixel
                     ? _sheetView.ScrollPosition.Y : rowLocation;
-                ViewRange.TopRow = targetRow;
+                SetTopRow(targetRow);
                 return;
             }
 
@@ -201,7 +196,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
                     {
                         TopRowLocation = _sheetView.Spread.ScrollMode == SheetScrollMode.Pixel 
                             ? _sheetView.ScrollPosition.Y : rowLocation;
-                        ViewRange.TopRow = row;                      
+                        SetTopRow(row);
                         break;
                     }
                 }
@@ -215,7 +210,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
                     {
                         TopRowLocation = _sheetView.Spread.ScrollMode == SheetScrollMode.Pixel
                             ? _sheetView.ScrollPosition.Y : rowLocation;
-                        ViewRange.TopRow = row;
+                        SetTopRow(row);
                         break;
                     }
                 }
@@ -240,7 +235,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
 
                 LeftColumnLocation = _sheetView.Spread.ScrollMode == SheetScrollMode.Pixel
                     ? _sheetView.ScrollPosition.X : colLocation;
-                ViewRange.LeftColumn = targetCol;
+                SetLeftColumn(targetCol);
                 return;
             }
 
@@ -253,7 +248,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
                     {
                         LeftColumnLocation = _sheetView.Spread.ScrollMode == SheetScrollMode.Pixel
                             ? _sheetView.ScrollPosition.X : colLocation;
-                        ViewRange.LeftColumn = col;
+                        SetLeftColumn(col);
                         break;
                     }
                 }
@@ -267,7 +262,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
                     {
                         LeftColumnLocation = _sheetView.Spread.ScrollMode == SheetScrollMode.Pixel
                             ? _sheetView.ScrollPosition.X : colLocation;
-                        ViewRange.LeftColumn = col;
+                        SetLeftColumn(col);
                         break;
                     }
                 }
@@ -294,6 +289,26 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
         {
             return _sheetView.ScrollPosition.X >= colLocation &&
                 _sheetView.ScrollPosition.X < colLocation + _columns.GetColumnWidth(column);    
+        }
+
+        public void SetTopRow(int row)
+        {
+            _viewRange.SetTopRow(row);
+        }
+
+        public void SetLeftColumn(int column)
+        {
+            _viewRange.SetLeftColumn(column);
+        }
+
+        public void SetRowCount(int rowCount)
+        {
+            _viewRange.SetRowCount(rowCount);
+        }
+
+        public void SetColumnCount(int columnCount)
+        {
+            _viewRange.SetColumnCount(columnCount);
         }
 
         private bool GetIsEmpty()

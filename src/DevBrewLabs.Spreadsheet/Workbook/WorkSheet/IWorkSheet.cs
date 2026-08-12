@@ -27,6 +27,26 @@ namespace DevBrewLabs.Spreadsheet
         /// Gets the parent workbook.
         /// </summary>
         IWorkBook WorkBook { get; }
+        
+        /// <summary>
+        /// Gets the span range for the specified cell, or null if the cell is not part of a span.
+        /// </summary>
+        CellRange GetSpanCellRange(int row, int column);
+
+        /// <summary>
+        /// Expands the given cell range to fully include any intersecting spans.
+        /// </summary>
+        CellRange ExpandSpanRange(CellRange range);
+
+        /// <summary>
+        /// Gets a value indicating whether there are any merged spans in this sheet.
+        /// </summary>
+        bool HasSpans { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the specified cell is covered by a span (and is not the anchor).
+        /// </summary>
+        bool IsCovered(int row, int column);
 
         /// <summary>
         /// Gets or sets name for this sheet.
@@ -229,6 +249,16 @@ namespace DevBrewLabs.Spreadsheet
         /// Sets the column span for a specific cell.
         /// </summary>
         void SetColumnSpan(int row, int column, int columnSpan);
+
+        /// <summary>
+        /// Adds a merged span.
+        /// </summary>
+        void AddSpan(int row, int column, int rowCount, int columnCount);
+
+        /// <summary>
+        /// Removes a merged span.
+        /// </summary>
+        void RemoveSpan(int row, int column);
 
         /// <summary>
         /// Sets a raw string value to a cell, automatically inferring data types or formulas.

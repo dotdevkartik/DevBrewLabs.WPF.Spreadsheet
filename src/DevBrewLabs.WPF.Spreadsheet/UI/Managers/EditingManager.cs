@@ -27,7 +27,14 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 return;
 
             var sheetView = Spread.SheetViews.ActiveSheetView;
-            var workSheet = sheetView.WorkSheet;
+            var workSheet = (WorkSheet)sheetView.WorkSheet;
+
+            var anchor = workSheet.GetSpanCellRange(row, column);
+            if (anchor != default)
+            {
+                row = anchor.TopRow;
+                column = anchor.LeftColumn;
+            }
 
             var sheetColumn = ((Columns)workSheet.Columns).GetItem(column);
 

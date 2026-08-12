@@ -96,21 +96,24 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
         private void MoveDownCellSelection()
         {
             var workSheet = SheetView.WorkSheet;
-            if (SheetView.ActiveRow == workSheet.RowCount - 1)
+            int rowSpan = Math.Max(1, workSheet.GetRowSpan(SheetView.ActiveRow, SheetView.ActiveColumn));
+            int nextRow = SheetView.ActiveRow + rowSpan;
+
+            if (nextRow >= workSheet.RowCount)
                 return;
 
-            if (SheetView.ActiveRow + 1 >= SheetView.ViewPort.ViewRange.BottomRow)
+            if (nextRow >= SheetView.ViewPort.ViewRange.BottomRow)
             {
-                double renderedRowHeight = SheetView.GetRowRenderedHeight(SheetView.ActiveRow + 1);
-                var rowRect = SheetView.ViewPort.GetRowRect(SheetView.ActiveRow + 1);
+                double renderedRowHeight = SheetView.GetRowRenderedHeight(nextRow);
+                var rowRect = SheetView.ViewPort.GetRowRect(nextRow);
 
                 if (renderedRowHeight < rowRect.Height)
                 {
-                    SheetView.Spread.ScrollToRow(SheetView, SheetView.ViewPort.ViewRange.TopRow + 1);
+                    SheetView.Spread.ScrollToRow(SheetView, SheetView.ViewPort.ViewRange.TopRow + rowSpan);
                 }
             }
 
-            SheetView.Spread.SelectionManager.SelectCell(SheetView.ActiveRow + 1, SheetView.ActiveColumn);
+            SheetView.Spread.SelectionManager.SelectCell(nextRow, SheetView.ActiveColumn);
         }
 
         private void MoveUpCellSelection()
@@ -135,21 +138,24 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
         private void MoveRightCellSelection()
         {
             var workSheet = SheetView.WorkSheet;
-            if (SheetView.ActiveColumn == workSheet.ColumnCount - 1)
+            int colSpan = Math.Max(1, workSheet.GetColumnSpan(SheetView.ActiveRow, SheetView.ActiveColumn));
+            int nextCol = SheetView.ActiveColumn + colSpan;
+
+            if (nextCol >= workSheet.ColumnCount)
                 return;
 
-            if (SheetView.ActiveColumn + 1 >= SheetView.ViewPort.ViewRange.RightColumn)
+            if (nextCol >= SheetView.ViewPort.ViewRange.RightColumn)
             {
-                double renderedColumnWidth = SheetView.GetColumnRenderedWidth(SheetView.ActiveColumn + 1);
-                var colRect = SheetView.ViewPort.GetColumnRect(SheetView.ActiveColumn + 1);
+                double renderedColumnWidth = SheetView.GetColumnRenderedWidth(nextCol);
+                var colRect = SheetView.ViewPort.GetColumnRect(nextCol);
 
                 if (renderedColumnWidth < colRect.Width)
                 {
-                    SheetView.Spread.ScrollToColumn(SheetView, SheetView.ViewPort.ViewRange.LeftColumn + 1);
+                    SheetView.Spread.ScrollToColumn(SheetView, SheetView.ViewPort.ViewRange.LeftColumn + colSpan);
                 }
             }
 
-            SheetView.Spread.SelectionManager.SelectCell(SheetView.ActiveRow, SheetView.ActiveColumn + 1);
+            SheetView.Spread.SelectionManager.SelectCell(SheetView.ActiveRow, nextCol);
         }
 
         private void MoveLeftCellSelection()

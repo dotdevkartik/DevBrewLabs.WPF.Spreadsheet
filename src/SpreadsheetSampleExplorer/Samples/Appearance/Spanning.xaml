@@ -1,0 +1,26 @@
+<UserControl x:Class="SpreadsheetSampleExplorer.Samples.Spanning"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:sheets="http://schemas.devbrewlabs.com/2026/wpf/spreadsheet"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="950">
+    <Grid Margin="2">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="#FAFAFA" BorderBrush="#E4E4E7" BorderThickness="1" Padding="10,6" Margin="0,0,0,6">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <Button x:Name="btnMerge" Content="Merge Cells" Padding="10,4" Margin="0,0,10,0" Click="btnMerge_Click"/>
+                <Button x:Name="btnUnmerge" Content="Unmerge Cells" Padding="10,4" Click="btnUnmerge_Click"/>
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Row="1" BorderThickness="1" BorderBrush="#E4E4E7" Background="White">
+            <sheets:Spread x:Name="spreadMain"/>
+        </Border>
+    </Grid>
+</UserControl>
