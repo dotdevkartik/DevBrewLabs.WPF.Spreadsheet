@@ -80,13 +80,12 @@ namespace DevBrewLabs.Spreadsheet.CalcEngine.Utils
                 case TypeCode.UInt16:
                 case TypeCode.UInt32:
                 case TypeCode.UInt64:
-                    kind = CalcValueKind.Number;
-                    break;
                 case TypeCode.Single:
                 case TypeCode.Double:
                 case TypeCode.Decimal:
-                    kind = CalcValueKind.Float;
+                    kind = CalcValueKind.Number;
                     break;
+
                 case TypeCode.DateTime:
                     kind = CalcValueKind.Date;
                     break;

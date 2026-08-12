@@ -61,6 +61,9 @@ namespace DevBrewLabs.Spreadsheet
             }
         }
 
+        public bool HasSpans => _spanManager.HasSpans;
+
+
         public IRows Rows => _rows;
         public IColumns Columns => _columns;
         public IRange Cells => _cells;
@@ -404,8 +407,6 @@ namespace DevBrewLabs.Spreadsheet
         {
             return _spanManager.ExpandRange(range);
         }
-
-        public bool HasSpans => _spanManager.HasSpans;
 
         public bool IsCovered(int row, int column)
         {

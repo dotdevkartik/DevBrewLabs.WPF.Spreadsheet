@@ -3,7 +3,6 @@
     public enum CalcValueKind
     {
         Number,
-        Float,
         Bool,
         Unknown,
         Date,

@@ -61,6 +61,7 @@ namespace DevBrewLabs.Spreadsheet.Core
 
         public void SetValue(int row, object value)
         {
+            value = DataTypeConverter.ConvertType(value);
             if (value == null) _values.Remove(row);
             else _values.SetValue(row, value);
         }
