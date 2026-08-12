@@ -111,10 +111,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
         private void RefreshInteractionLayers()
         {
-            var cellsInteractionLayer = Spread.SheetViewPane.CellsRegion.GetInteractionLayer();
+            var cellsInteractionLayer = Spread.SheetViewPane.CellsRegion.GetInteractionLayer() as UI.Interaction.CellsInteractionLayer;
 
             if (cellsInteractionLayer != null && cellsInteractionLayer.IsLoaded)
-                cellsInteractionLayer.InvalidateVisual();
+                cellsInteractionLayer.UpdateSelectionRects();
 
             var rowHeadersInteractionLayer = Spread.SheetViewPane.RowHeadersRegion.GetInteractionLayer();
 

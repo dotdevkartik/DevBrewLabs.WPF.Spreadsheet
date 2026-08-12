@@ -1,5 +1,6 @@
 using DevBrewLabs.Spreadsheet;
 using DevBrewLabs.WPF.Spreadsheet.UI;
+using System;
 using System.Windows;
 using System.Windows.Media;
 
@@ -46,6 +47,22 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             var point = new Point(hitPoint.X / zoom + _viewPort.LeftColumnLocation, 
                 hitPoint.Y / zoom + _viewPort.TopRowLocation);
 
+            // Fast path for DragFill handle hit test
+            if (sheetView.Selection.RightColumn >= 0 && sheetView.Selection.BottomRow >= 0)
+            {
+                var brCellRect = _viewPort.GetCellRect(sheetView.Selection.BottomRow, sheetView.Selection.RightColumn);
+                if (Math.Abs(point.X - brCellRect.BottomRight.X) <= _dragFillOffset &&
+                    Math.Abs(point.Y - brCellRect.BottomRight.Y) <= _dragFillOffset)
+                {
+                    hitTestInfo.Element = VisualElement.DragFill;
+                    hitTestInfo.Row = sheetView.Selection.BottomRow;
+                    hitTestInfo.Column = sheetView.Selection.RightColumn;
+                    hitTestInfo.Position = new Point(brCellRect.X - _viewPort.LeftColumnLocation, 
+                        brCellRect.Y - _viewPort.TopRowLocation);
+                    return hitTestInfo;
+                }
+            }
+
             double x = 0, y = 0;
 
             for (int row = viewRange.TopRow; row <= viewRange.BottomRow; row++)
@@ -79,13 +96,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                                 y = cellRect.Y;
                                 columnWidth = cellRect.Width;
                                 rowHeight = cellRect.Height;
-                            }
-
-                            if (sheetView.Selection.RightColumn == hitTestInfo.Column && sheetView.Selection.BottomRow == hitTestInfo.Row)
-                            {
-                                if (point.X > x + columnWidth - _dragFillOffset && point.Y > y + rowHeight - _dragFillOffset
-                                    && point.X <= x + columnWidth && point.Y <= y + rowHeight)
-                                    hitTestInfo.Element = VisualElement.DragFill;
                             }
 
                             break;
