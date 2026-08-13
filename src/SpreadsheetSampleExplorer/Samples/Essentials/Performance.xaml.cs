@@ -41,7 +41,7 @@ namespace SpreadsheetSampleExplorer.Samples
 
             int colCount = 10;
 
-            _txtTotalTime.Text = "...";
+            _txtTotalTime.Text = "Preparing data...";
 
             // Dispatch to allow UI updates before running the benchmark loop
             Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
@@ -120,8 +120,10 @@ namespace SpreadsheetSampleExplorer.Samples
                     double loadMs = swEngine.Elapsed.TotalMilliseconds;
                     double renderMs = swRender.Elapsed.TotalMilliseconds;
                     double totalMs = swTotal.Elapsed.TotalMilliseconds;
+                    
+                    double spreadLoadMs = totalMs - prepMs;
 
-                    _txtTotalTime.Text = $"{totalMs:N0} ms";
+                    _txtTotalTime.Text = $"{spreadLoadMs:N0} ms";
                     _txtCellCount.Text = $"{rowCount:N0} rows × {colCount} cols ({rowCount * colCount:N0} cells)";
                 }));
             }));
