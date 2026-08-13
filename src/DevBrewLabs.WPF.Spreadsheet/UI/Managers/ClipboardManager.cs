@@ -13,7 +13,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
     /// Enterprise-grade clipboard manager handling copy, paste, Win32 clipboard locking retries,
     /// internal data objects, TSV/CSV format parsing, formula insertion, and undo/redo integration.
     /// </summary>
-    public class ClipboardManager
+    internal class ClipboardManager
     {
         private readonly Spread _spread;
         private const int MaxClipboardRetries = 5;
