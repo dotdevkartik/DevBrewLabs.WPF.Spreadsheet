@@ -2,16 +2,15 @@ using DevBrewLabs.Spreadsheet;
 
 namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 {
-    internal class SelectionManager : UIManager, ISelectionManager
+    internal class SelectionManager : UIManager
     {
         public SelectionManager(Spread spread) : base(spread)
         {
            
         }
 
-        public void SelectCell(int row, int col)
+        public void SelectCell(ISheetView sheetView, int row, int col)
         {
-            var sheetView = Spread.SheetViews.ActiveSheetView.As<SheetView>();
             var workSheet = (WorkSheet)sheetView.WorkSheet;
             
             var anchor = workSheet.GetSpanCellRange(row, col);
@@ -21,51 +20,46 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 col = anchor.LeftColumn;
             }
 
-            sheetView.ActiveRow = row;
-            sheetView.ActiveColumn = col;
-            SelectRange(row, col, 1, 1);
+            ((SheetView)sheetView).ActiveRow = row;
+            ((SheetView)sheetView).ActiveColumn = col;
+            SelectRange(sheetView, row, col, 1, 1);
         }
 
-        public void SelectColumn(int column)
+        public void SelectColumn(ISheetView sheetView, int column)
         {
-            var sheetView = Spread.SheetViews.ActiveSheetView.As<SheetView>();
             var workSheet = sheetView.WorkSheet;
-            sheetView.ActiveRow = 0;
-            sheetView.ActiveColumn = column;
-            SelectRange(0, column, workSheet.RowCount, 1);
+            ((SheetView)sheetView).ActiveRow = 0;
+            ((SheetView)sheetView).ActiveColumn = column;
+            SelectRange(sheetView, 0, column, workSheet.RowCount, 1);
         }
 
-        public void SelectColumns(int column, int count)
+        public void SelectColumns(ISheetView sheetView, int column, int count)
         {
-            var sheetView = Spread.SheetViews.ActiveSheetView.As<SheetView>();
             var workSheet = sheetView.WorkSheet;
-            SelectRange(0, column, workSheet.RowCount, count);
+            SelectRange(sheetView, 0, column, workSheet.RowCount, count);
         }
 
-        public void SelectRow(int row)
+        public void SelectRow(ISheetView sheetView, int row)
         {
-            var sheetView = Spread.SheetViews.ActiveSheetView.As<SheetView>();
             var workSheet = sheetView.WorkSheet;
-            sheetView.ActiveRow = row;
-            sheetView.ActiveColumn = 0;
-            SelectRange(row, 0, 1, workSheet.ColumnCount);
+            ((SheetView)sheetView).ActiveRow = row;
+            ((SheetView)sheetView).ActiveColumn = 0;
+            SelectRange(sheetView, row, 0, 1, workSheet.ColumnCount);
         }
 
-        public void SelectRows(int row, int count)
+        public void SelectRows(ISheetView sheetView, int row, int count)
         {
-            var sheetView = Spread.SheetViews.ActiveSheetView.As<SheetView>();
             var workSheet = sheetView.WorkSheet;
-            SelectRange(row, 0, count, workSheet.ColumnCount);
+            SelectRange(sheetView, row, 0, count, workSheet.ColumnCount);
         }
 
-        public void SelectRange(CellRange range)
+        public void SelectRange(ISheetView sheetView, CellRange range)
         {
-            SelectRange(range.TopRow, range.LeftColumn, range.RowCount, range.ColumnCount);
+            SelectRange(sheetView, range.TopRow, range.LeftColumn, range.RowCount, range.ColumnCount);
         }
 
-        public void SelectRange(int row, int column, int rowCount, int columnCount)
+        public void SelectRange(ISheetView sheetView, int row, int column, int rowCount, int columnCount)
         {
-            var sheetView = Spread.SheetViews.ActiveSheetView.As<SheetView>();
             var selection = sheetView.Selection;
             var workSheet = (WorkSheet)sheetView.WorkSheet;
 
@@ -99,17 +93,18 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             var targetRange = new CellRange(targetRow, targetCol, targetRowCount, targetColCount);
             targetRange = workSheet.ExpandSpanRange(targetRange);
 
-            sheetView.SetSelection(targetRange);
+            ((SheetView)sheetView).SetSelection(targetRange);
 
             sheetView.Spread.RaiseCellsSelectionChanged(new CellsSelectionEventArgs()
             {
                 SheetView = sheetView,
                 Selection = sheetView.Selection
             });
+
             RefreshInteractionLayers();
         }
 
-        private void RefreshInteractionLayers()
+        public void RefreshInteractionLayers()
         {
             var cellsInteractionLayer = Spread.SheetViewPane.CellsRegion.GetInteractionLayer() as UI.Interaction.CellsInteractionLayer;
 
@@ -125,64 +120,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
             if (columnHeadersInteractionLayer != null && columnHeadersInteractionLayer.IsLoaded)
                 columnHeadersInteractionLayer.InvalidateVisual();
-        }
-
-        public void MergeSelection()
-        {
-            var sheetView = Spread.SheetViews.ActiveSheetView.As<SheetView>();
-            var selection = sheetView.Selection;
-            var workSheet = sheetView.WorkSheet;
-
-            if (selection.RowCount > 1 || selection.ColumnCount > 1)
-            {
-                var action = new SpanChangedAction()
-                {
-                    SheetView = sheetView,
-                    Row = selection.TopRow,
-                    Column = selection.LeftColumn,
-                    OldRowSpan = workSheet.GetRowSpan(selection.TopRow, selection.LeftColumn),
-                    OldColumnSpan = workSheet.GetColumnSpan(selection.TopRow, selection.LeftColumn),
-                    NewRowSpan = selection.RowCount,
-                    NewColumnSpan = selection.ColumnCount,
-                    OldValues = new object[selection.RowCount, selection.ColumnCount]
-                };
-
-                for (int r = 0; r < selection.RowCount; r++)
-                {
-                    for (int c = 0; c < selection.ColumnCount; c++)
-                    {
-                        action.OldValues[r, c] = workSheet.GetValue(selection.TopRow + r, selection.LeftColumn + c);
-                    }
-                }
-
-                workSheet.AddSpan(selection.TopRow, selection.LeftColumn, selection.RowCount, selection.ColumnCount);
-                Spread.UndoRedoManager.AddAction(action);
-            }
-        }
-
-        public void UnmergeSelection()
-        {
-            var sheetView = Spread.SheetViews.ActiveSheetView.As<SheetView>();
-            var selection = sheetView.Selection;
-            var workSheet = sheetView.WorkSheet;
-
-            var anchor = workSheet.GetSpanCellRange(selection.TopRow, selection.LeftColumn);
-            if (anchor != default)
-            {
-                var action = new SpanChangedAction()
-                {
-                    SheetView = sheetView,
-                    Row = anchor.TopRow,
-                    Column = anchor.LeftColumn,
-                    OldRowSpan = anchor.RowCount,
-                    OldColumnSpan = anchor.ColumnCount,
-                    NewRowSpan = 1,
-                    NewColumnSpan = 1
-                };
-
-                workSheet.RemoveSpan(anchor.TopRow, anchor.LeftColumn);
-                Spread.UndoRedoManager.AddAction(action);
-            }
         }
     }
 }

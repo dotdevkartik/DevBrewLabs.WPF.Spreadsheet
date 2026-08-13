@@ -14,9 +14,17 @@ namespace DevBrewLabs.WPF.Spreadsheet
     /// <summary>
     /// Represents view for a workbook.
     /// </summary>
-    public class Spread : Control, IDisposable
+    public partial class Spread : Control, IDisposable
     {
-        internal const double GridLineThickness = 0.25;
+        private ZoomManager _zoomManager;
+        private ClipboardManager _clipboardManager;
+        private SelectionManager _selectionManager;
+        private EditingManager _editingManager;
+        private RenderEngine _renderEngine;
+        private SheetViewPane _sheetViewPane;
+        private SheetTabControl _sheetTabControl;
+        private UndoRedoManager _undoRedoManager;
+        private WorkBook _workBook;
 
         #region Dependency Properties
         public static readonly DependencyProperty ScrollBarStyleProperty;
@@ -31,12 +39,14 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public static readonly DependencyProperty IsSelectionAnimationEnabledProperty;
 
         public static readonly DependencyProperty ZoomFactorProperty;
+        public static readonly DependencyProperty AllowZoomingProperty;
 
         static Spread()
         {
             DefaultStyleKeyProperty.OverrideMetadata(typeof(Spread), new FrameworkPropertyMetadata(typeof(Spread)));
             ZoomFactorProperty = DependencyProperty.Register("ZoomFactor", typeof(double), typeof(Spread),
                 new FrameworkPropertyMetadata(1.0, OnZoomFactorChanged, CoerceZoomFactor));
+            AllowZoomingProperty = DependencyProperty.Register("AllowZooming", typeof(bool), typeof(Spread), new PropertyMetadata(true));
             ScrollModeProperty = DependencyProperty.Register("ScrollMode", typeof(SheetScrollMode), typeof(Spread),
                 new PropertyMetadata(SheetScrollMode.Item));
             SelectionBackgroundProperty = DependencyProperty.Register("SelectionBackground", typeof(Brush), typeof(Spread),
@@ -157,10 +167,16 @@ namespace DevBrewLabs.WPF.Spreadsheet
             get { return (double)GetValue(ZoomFactorProperty); }
             set { SetValue(ZoomFactorProperty, value); }
         }
-        #endregion
 
-        private SheetTabControl _tabControl;
-        private WorkBook _workBook;
+        /// <summary>
+        /// Gets or sets a value indicating whether zooming via UI interactions (like mouse wheel) is allowed.
+        /// </summary>
+        public bool AllowZooming
+        {
+            get { return (bool)GetValue(AllowZoomingProperty); }
+            set { SetValue(AllowZoomingProperty, value); }
+        }
+        #endregion
 
         /// <summary>
         /// Fires when cell selection changes.
@@ -174,33 +190,10 @@ namespace DevBrewLabs.WPF.Spreadsheet
         /// Fires when sheet zoom factor changes.
         /// </summary>
         public event EventHandler<ZoomChangedEventArgs> ZoomChanged;
-        internal RenderEngine RenderEngine { get; }
-        internal SheetViewPane SheetViewPane { get; }
-        internal SheetTabControl SheetTabControl => _tabControl;
-        internal FormulaTextBox FormulaTextBox { get; set; }
-        internal Pen GridLinePen { get; private set; }
-        internal Pen SelectionBorderPen { get; private set; }
-        internal double PixelPerDip { get; set; }
         /// <summary>
-        /// Gets the undo/redo manager.
-        /// </summary>
-        public UndoRedoManager UndoRedoManager { get; private set; }
-        /// <summary>
-        /// Gets the workbook.
+        ///  Gets the workbook.
         /// </summary>
         public IWorkBook WorkBook => _workBook;
-        /// <summary>
-        /// Gets the editing manager.
-        /// </summary>
-        public IEditingManager EditingManager { get; }
-        /// <summary>
-        /// Gets the selection manager.
-        /// </summary>
-        public ISelectionManager SelectionManager { get; }
-        /// <summary>
-        /// Gets the clipboard manager.
-        /// </summary>
-        public IClipboardManager ClipboardManager { get; }
         /// <summary>
         /// Gets the sheetview collection.
         /// </summary>
@@ -221,17 +214,16 @@ namespace DevBrewLabs.WPF.Spreadsheet
             }
         }
 
-        #region ctor
         public Spread()
         {
             UseLayoutRounding = true;
             TextOptions.SetTextFormattingMode(this, TextFormattingMode.Display);
             TextOptions.SetTextRenderingMode(this, TextRenderingMode.ClearType);
             _workBook = new WorkBook("Book1", new UIUpdateProvider(this));
-            UndoRedoManager = new UndoRedoManager(this);
+            _undoRedoManager = new UndoRedoManager(this);
             SheetViews = new SheetViewCollection(this);
-            RenderEngine = new RenderEngine();
-            SheetViewPane = new SheetViewPane(this);
+            _renderEngine = new RenderEngine();
+            _sheetViewPane = new SheetViewPane(this);
             ScrollMode = SheetScrollMode.Item;
             SelectionBorderBrush = new SolidColorBrush(Color.FromRgb(16, 124, 65));
             BorderBrush = new SolidColorBrush(Color.FromRgb(209, 213, 219));
@@ -241,15 +233,14 @@ namespace DevBrewLabs.WPF.Spreadsheet
             PixelPerDip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
             var workSheet = WorkBook.WorkSheets.AddSheet("Sheet1");
             WorkBook.WorkSheets.ActiveSheet = workSheet;
-            EditingManager = new EditingManager(this);
-            SelectionManager = new SelectionManager(this);
-            ClipboardManager = new ClipboardManager(this);
-            SelectionManager.SelectCell(0, 0);
+            _editingManager = new EditingManager(this);
+            _selectionManager = new SelectionManager(this);
+            _clipboardManager = new ClipboardManager(this);
+            _zoomManager = new ZoomManager(this);
+            SelectCell(0, 0);
             Loaded += OnLoaded;
         }
-        #endregion
 
-        #region Public Methods
         /// <summary>
         /// Hittest the spread at specific point.
         /// </summary>
@@ -309,6 +300,118 @@ namespace DevBrewLabs.WPF.Spreadsheet
             SheetTabControl.HScrollBar.Value = ((Columns)workSheet.Columns).GetLocation(column);
         }
 
+        /// <summary>
+        /// Undo last operation.
+        /// </summary>
+        public void Undo()
+        {
+            _undoRedoManager.Undo();
+        }
+
+        /// <summary>
+        /// Redo last operation.
+        /// </summary>
+        public void Redo()
+        {
+            _undoRedoManager.Redo();
+        }
+
+        /// <summary>
+        /// Starts editing the cell at provided index.
+        /// </summary>
+        /// <param name="row"></param>
+        /// <param name="column"></param>
+        public void BeginEdit(int row, int column)
+        {
+            _editingManager.BeginEdit(SheetViews.ActiveSheetView, row, column);
+        }
+
+        /// <summary>
+        /// Ends editing.
+        /// </summary>
+        /// <param name="commitChanges">Save changes to cell</param>
+        public void EndEdit(bool commitChanges)
+        {
+            _editingManager.EndEdit(commitChanges);
+        }
+
+        public void SelectCell(int row, int col)
+        {
+            SheetViews.ActiveSheetView.SelectCell(row, col);
+        }
+
+        public void SelectColumn(int column)
+        {
+            SheetViews.ActiveSheetView.SelectColumn(column);
+        }
+
+        public void SelectColumns(int column, int count)
+        {
+            SheetViews.ActiveSheetView.SelectColumns(column, count);
+        }
+
+        public void SelectRow(int row)
+        {
+            SheetViews.ActiveSheetView.SelectRow(row);
+        }
+
+        public void SelectRows(int row, int count)
+        {
+            SheetViews.ActiveSheetView.SelectRows(row, count);
+        }
+
+        public void SelectRange(CellRange range)
+        {
+            SheetViews.ActiveSheetView.SelectRange(range);
+        }
+
+        public void SelectRange(int row, int column, int rowCount, int columnCount)
+        {
+            SheetViews.ActiveSheetView.SelectRange(row, column, rowCount, columnCount);
+        }
+
+        public void Copy()
+        {
+            SheetViews.ActiveSheetView.Copy();
+        }
+
+        public void Paste()
+        {
+            SheetViews.ActiveSheetView.Paste();
+        }
+
+        public void CopyRange(CellRange range)
+        {
+            SheetViews.ActiveSheetView.CopyRange(range);
+        }
+
+        public void MergeRange(CellRange range)
+        {
+            SheetViews.ActiveSheetView.MergeRange(range);
+        }
+
+        public void UnmergeRange(CellRange range)
+        {
+            SheetViews.ActiveSheetView.UnmergeRange(range);
+        }
+
+        public void ZoomIn()
+        {
+            _zoomManager.ZoomIn();
+        }
+
+        public void ZoomOut()
+        {
+            _zoomManager.ZoomOut();
+        }
+
+        /// <summary>
+        /// Invalidates the provided sheet region.
+        /// </summary>
+        /// <param name="rowHeaders"></param>
+        /// <param name="columnHeaders"></param>
+        /// <param name="cells"></param>
+        /// <param name="topLeft"></param>
         public void Invalidate(bool rowHeaders = true, bool columnHeaders = true, bool cells = true, bool topLeft = true)
         {
             var pane = SheetViewPane;
@@ -340,10 +443,6 @@ namespace DevBrewLabs.WPF.Spreadsheet
                 pane.TopLeftRegion.InvalidateVisual();
         }
 
-
-        #endregion
-
-        #region Private Methods
         /// <summary>
         /// Updates the grid line pen.
         /// </summary>
@@ -370,9 +469,38 @@ namespace DevBrewLabs.WPF.Spreadsheet
         {
             Invalidate();
         }
-        #endregion
 
-        #region Internal Methods
+        /// <summary>
+        /// Disposes the resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Loaded -= OnLoaded;
+            WorkBook.Dispose();
+            SheetTabControl.Dispose();
+            SheetViewPane.Dispose();
+            RenderEngine.Dispose();
+        }
+    }
+
+    #region Internals
+    public partial class Spread
+    {
+        internal const double GridLineThickness = 0.25;
+        internal double PixelPerDip { get; set; }
+
+        internal EditingManager EditingManager => _editingManager;
+        internal SelectionManager SelectionManager => _selectionManager;
+        internal ClipboardManager ClipboardManager => _clipboardManager;
+        internal ZoomManager ZoomManager => _zoomManager;
+        internal RenderEngine RenderEngine => _renderEngine;
+        internal SheetViewPane SheetViewPane => _sheetViewPane;
+        internal SheetTabControl SheetTabControl => _sheetTabControl;
+        internal UndoRedoManager UndoRedoManager => _undoRedoManager;
+        internal FormulaTextBox FormulaTextBox { get; set; }
+        internal Pen GridLinePen { get; private set; }
+        internal Pen SelectionBorderPen { get; private set; }
+
         internal void RaiseCellsSelectionChanged(CellsSelectionEventArgs args)
         {
             CellsSelectionChanged?.Invoke(this, args);
@@ -382,9 +510,12 @@ namespace DevBrewLabs.WPF.Spreadsheet
         {
             CalculationError?.Invoke(this, args);
         }
-        #endregion
+    }
+    #endregion
 
-        #region Overrides
+    #region Overrides
+    public partial class Spread
+    {
         protected override void OnPreviewKeyDown(KeyEventArgs e)
         {
             base.OnPreviewKeyDown(e);
@@ -402,7 +533,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
                         break;
 
                     case Key.A:
-                        SelectionManager.SelectRange(((Cells)activeSheetView.WorkSheet.Cells).AsCellRange());
+                        SelectionManager.SelectRange(activeSheetView,((Cells)activeSheetView.WorkSheet.Cells).AsCellRange());
                         break;
 
                     case Key.V:
@@ -428,14 +559,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
 
             if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
             {
-                if (e.Delta > 0)
-                {
-                    ZoomFactor = Math.Min(4.0, Math.Round(ZoomFactor + 0.1, 2));
-                }
-                else if (e.Delta < 0)
-                {
-                    ZoomFactor = Math.Max(0.1, Math.Round(ZoomFactor - 0.1, 2));
-                }
+                _zoomManager.HandleMouseWheel(e);
                 e.Handled = true;
                 return;
             }
@@ -443,16 +567,16 @@ namespace DevBrewLabs.WPF.Spreadsheet
             switch (activeSheetView.MouseWheelScrollDirection)
             {
                 case MouseWheelScrollDirection.Vertical:
-                    if (_tabControl.VScrollBar == null)
+                    if (_sheetTabControl.VScrollBar == null)
                         return;
-                    _tabControl.VScrollBar.Value += -e.Delta / 2;
+                    _sheetTabControl.VScrollBar.Value += -e.Delta / 2;
                     Invalidate(true, false, true, false);
                     break;
 
                 case MouseWheelScrollDirection.Horizontal:
-                    if (_tabControl.HScrollBar == null)
+                    if (_sheetTabControl.HScrollBar == null)
                         return;
-                    _tabControl.HScrollBar.Value += -e.Delta / 2;
+                    _sheetTabControl.HScrollBar.Value += -e.Delta / 2;
                     Invalidate(false, true, true, false);
                     break;
             }
@@ -482,11 +606,15 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public override void OnApplyTemplate()
         {
             base.OnApplyTemplate();
-            _tabControl = GetTemplateChild("_sheetTabControl") as SheetTabControl;
+            _sheetTabControl = GetTemplateChild("_sheetTabControl") as SheetTabControl;
         }
-        #endregion
+    }
+    #endregion
 
-        #region PropertyChanged Callbacks
+    #region PropertyChanged Callbacks
+    public partial class Spread
+    {
+
         private static object CoerceZoomFactor(DependencyObject d, object baseValue)
         {
             if (baseValue is double val)
@@ -499,16 +627,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         private static void OnZoomFactorChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var spread = d as Spread;
-            if (spread?.SheetViews?.ActiveSheetView != null)
-            {
-                var newZoom = (double)e.NewValue;
-                var oldZoom = (double)e.OldValue;
-                if (spread.SheetViews.ActiveSheetView.ZoomFactor != newZoom)
-                {
-                    spread.SheetViews.ActiveSheetView.ZoomFactor = newZoom;
-                }
-                spread.RaiseZoomChanged(oldZoom, newZoom);
-            }
+            spread?._zoomManager?.OnSpreadZoomFactorChanged((double)e.OldValue, (double)e.NewValue);
         }
 
         internal void RaiseZoomChanged(double oldZoom, double newZoom)
@@ -529,20 +648,6 @@ namespace DevBrewLabs.WPF.Spreadsheet
             if (e.NewValue != null && !e.NewValue.Equals(e.OldValue))
                 spread.UpdateGridlinePen(spread.GridLineBrush, GridLineThickness);
         }
-        #endregion
-
-        /// <summary>
-        /// Disposes the resources.
-        /// </summary>
-        public void Dispose()
-        {
-            Loaded -= OnLoaded;
-            WorkBook.Dispose();
-            SheetTabControl.Dispose();
-            SheetViewPane.Dispose();
-            RenderEngine.Dispose();
-        }
     }
+    #endregion
 }
-
-

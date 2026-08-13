@@ -12,14 +12,11 @@ namespace DevBrewLabs.WPF.Spreadsheet
         private HeadersVisibility _headersVisibility;
         private ViewPort _viewPort;
         private WorkSheet _workSheet;
-        private WorkBook _workBook;
         private Rows _rows;
         private Cells _cells;
         private Columns _columns;
         private double _zoomFactor = 1.0;
         private CellRange _selection;
-
-        public event EventHandler<ZoomChangedEventArgs> ZoomChanged;
 
         #region Properties
         public GridLineVisibility GridLineVisibility { get; set; }
@@ -40,20 +37,13 @@ namespace DevBrewLabs.WPF.Spreadsheet
             get => _zoomFactor;
             set
             {
-                var clamped = Math.Max(0.1, Math.Min(4.0, Math.Round(value, 2)));
-                if (Math.Abs(_zoomFactor - clamped) > 0.001)
+                if (Spread?.ZoomManager != null && Spread.SheetViews?.ActiveSheetView == this)
                 {
-                    var oldVal = _zoomFactor;
-                    _zoomFactor = clamped;
-                    ZoomChanged?.Invoke(this, new ZoomChangedEventArgs(oldVal, _zoomFactor));
-                    if (Spread.SheetViews?.ActiveSheetView == this)
-                    {
-                        Spread.SheetViewPane?.UpdateZoomTransform();
-                        _viewPort?.CalculateVisibleRange();
-                        Spread.SheetTabControl?.UpdateScrollbars();
-                        TextLayoutCache.Clear();
-                        Spread.Invalidate();
-                    }
+                    Spread.ZoomManager.SetZoom(value);
+                }
+                else
+                {
+                    InternalSetZoomFactor(Math.Max(0.1, Math.Min(4.0, Math.Round(value, 2))));
                 }
             }
         }
@@ -74,7 +64,6 @@ namespace DevBrewLabs.WPF.Spreadsheet
         {
             Spread = spread;
             _workSheet = worksheet;
-            _workBook = (WorkBook)_workSheet.WorkBook;
             _rows = (Rows)_workSheet.Rows;
             _columns = (Columns)_workSheet.Columns;
             _cells = (Cells)_workSheet.Cells;
@@ -91,19 +80,104 @@ namespace DevBrewLabs.WPF.Spreadsheet
         }
 
         #region Public
-        public void CopyToClipboard()
+        public void Copy()
         {
             Spread.ClipboardManager.Copy(this);
         }
 
-        public void PasteFromClipboard()
+        public void Paste()
         {
-            Spread.ClipboardManager.Paste();
+            Spread.ClipboardManager.Paste(this);
         }
 
-        public void CopyToClipboard(CellRange range)
+        public void CopyRange(CellRange range)
         {
             Spread.ClipboardManager.Copy(this, range);
+        }
+
+        public void MergeRange(CellRange range)
+        {
+            if (range.RowCount > 1 || range.ColumnCount > 1)
+            {
+                var action = new SpanChangedAction()
+                {
+                    SheetView = this,
+                    Row = range.TopRow,
+                    Column = range.LeftColumn,
+                    OldRowSpan = WorkSheet.GetRowSpan(range.TopRow, range.LeftColumn),
+                    OldColumnSpan = WorkSheet.GetColumnSpan(range.TopRow, range.LeftColumn),
+                    NewRowSpan = range.RowCount,
+                    NewColumnSpan = range.ColumnCount,
+                    OldValues = new object[range.RowCount, range.ColumnCount]
+                };
+
+                for (int r = 0; r < range.RowCount; r++)
+                {
+                    for (int c = 0; c < range.ColumnCount; c++)
+                    {
+                        action.OldValues[r, c] = WorkSheet.GetValue(range.TopRow + r, range.LeftColumn + c);
+                    }
+                }
+
+                WorkSheet.AddSpan(range.TopRow, range.LeftColumn, range.RowCount, range.ColumnCount);
+                Spread.UndoRedoManager.AddAction(action);
+            }
+        }
+
+        public void UnmergeRange(CellRange range)
+        {
+            var anchor = WorkSheet.GetSpanCellRange(range.TopRow, range.LeftColumn);
+            if (anchor != default)
+            {
+                var action = new SpanChangedAction()
+                {
+                    SheetView = this,
+                    Row = anchor.TopRow,
+                    Column = anchor.LeftColumn,
+                    OldRowSpan = anchor.RowCount,
+                    OldColumnSpan = anchor.ColumnCount,
+                    NewRowSpan = 1,
+                    NewColumnSpan = 1
+                };
+
+                WorkSheet.RemoveSpan(anchor.TopRow, anchor.LeftColumn);
+                Spread.UndoRedoManager.AddAction(action);
+            }
+        }
+
+        public void SelectCell(int row, int col)
+        {
+            Spread.SelectionManager.SelectCell(this, row, col);
+        }
+
+        public void SelectColumn(int column)
+        {
+            Spread.SelectionManager.SelectColumn(this, column);
+        }
+
+        public void SelectColumns(int column, int count)
+        {
+            Spread.SelectionManager.SelectColumns(this, column, count);
+        }
+
+        public void SelectRow(int row)
+        {
+            Spread.SelectionManager.SelectRow(this, row);
+        }
+
+        public void SelectRows(int row, int count)
+        {
+            Spread.SelectionManager.SelectRows(this, row, count);
+        }
+
+        public void SelectRange(CellRange range)
+        {
+            Spread.SelectionManager.SelectRange(this, range);
+        }
+
+        public void SelectRange(int row, int column, int rowCount, int columnCount)
+        {
+            Spread.SelectionManager.SelectRange(this, row, column, rowCount, columnCount);
         }
 
         public void ScrollToHorizontalOffset(double offset)
@@ -133,6 +207,15 @@ namespace DevBrewLabs.WPF.Spreadsheet
         #endregion
 
         #region Internal
+        internal void InternalSetZoomFactor(double zoomFactor)
+        {
+            if (Math.Abs(_zoomFactor - zoomFactor) > 0.001)
+            {
+                var oldVal = _zoomFactor;
+                _zoomFactor = zoomFactor;
+            }
+        }
+
         internal double GetRowHeaderWidth()
         {
             if (HeadersVisibility == HeadersVisibility.Row || HeadersVisibility == HeadersVisibility.Both)
@@ -254,7 +337,6 @@ namespace DevBrewLabs.WPF.Spreadsheet
 
         public void Dispose()
         {
-            _workBook = null;
             _workSheet = null;
             _cells = null;
             _rows = null;

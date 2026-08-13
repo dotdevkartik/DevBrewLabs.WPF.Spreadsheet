@@ -24,7 +24,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                     return;
                 }
 
-                _resizeManager.BeginResizeColumn(hitTest.Column, (int)hitTest.Position.X);
+                _resizeManager.BeginResizeColumn(SheetView, hitTest.Column, (int)hitTest.Position.X);
                 Children.Add(_resizeManager.ResizeLine);
             }
             else
@@ -34,7 +34,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                     if (!SheetView.Spread.EditingManager.EndEdit(true))
                         return;
                 }
-                SheetView.Spread.SelectionManager.SelectColumn(hitTest.Column);
+                SheetView.SelectColumn(hitTest.Column);
             }
         }
 
@@ -50,7 +50,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             }
 
             if (SheetView.Selection.ColumnCount <= 1)
-                SheetView.Spread.SelectionManager.SelectColumn(hitTest.Column);
+                SheetView.SelectColumn(hitTest.Column);
         }
 
         protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
@@ -61,7 +61,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
             if (_resizeManager.IsResizing)
             {
-                _resizeManager.EndResizeColumn();
+                _resizeManager.EndResizeColumn(SheetView);
                 Children.Remove(_resizeManager.ResizeLine);
                 SheetView.Spread.SheetTabControl.UpdateScrollbars();
             }
@@ -76,7 +76,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
             if(_resizeManager.IsResizing)
             {
-                _resizeManager.ResizeColumn((int)e.GetPosition(this).X);
+                _resizeManager.ResizeColumn(SheetView, (int)e.GetPosition(this).X);
                 return;
             }
 
@@ -99,7 +99,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
             int leftColumn = Math.Min(hitTest.Column, SheetView.ActiveColumn);
             int rightColumn = Math.Max(hitTest.Column, SheetView.ActiveColumn);
-            SheetView.Spread.SelectionManager.SelectColumns(leftColumn, rightColumn - leftColumn + 1);
+            SheetView.SelectColumns(leftColumn, rightColumn - leftColumn + 1);
         }      
 
         protected override void OnRender(DrawingContext dc)

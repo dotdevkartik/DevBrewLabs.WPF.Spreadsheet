@@ -13,6 +13,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         private Dictionary<IWorkSheet, ISheetView> _sheetViewStore;
 
         public ISheetView ActiveSheetView { get; private set; }
+
         public event NotifyCollectionChangedEventHandler CollectionChanged;
         public event EventHandler<SheetViewEventArgs> ActiveSheetChanged;
 

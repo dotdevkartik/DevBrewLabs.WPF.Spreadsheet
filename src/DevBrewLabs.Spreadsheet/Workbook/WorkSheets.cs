@@ -119,6 +119,11 @@ namespace DevBrewLabs.Spreadsheet
 
         private void SetActiveSheet(IWorkSheet sheet)
         {
+            if (!_sheets.Contains(sheet))
+            {
+                throw new InvalidOperationException("Provided sheet doesn't belong to this workbook");
+            }
+
             _activeSheet = sheet;
             OnActiveSheetChanged(sheet);
         }

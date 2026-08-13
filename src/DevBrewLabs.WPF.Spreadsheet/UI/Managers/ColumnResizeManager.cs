@@ -17,12 +17,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             _resizingColumn = -1;           
         }
 
-        public void BeginResizeColumn(int column, int columnLocation)
+        public void BeginResizeColumn(ISheetView sheetView, int column, int columnLocation)
         {
             _columnLocation = columnLocation;
             _resizingColumn = column;
 
-            var sheetView = Spread.SheetViews.ActiveSheetView.As<SheetView>();
             var workSheet = sheetView.WorkSheet;
 
             _initialWidths = new int[workSheet.ColumnCount];
@@ -34,9 +33,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             Spread.SuspendUpdates = true;
         }
 
-        public void ResizeColumn(int currentLocation)
+        public void ResizeColumn(ISheetView sheetView, int currentLocation)
         {
-            var sheetView = Spread.SheetViews.ActiveSheetView.As<SheetView>();
             var workSheet = sheetView.WorkSheet;
 
             double zoom = sheetView.ZoomFactor > 0 ? sheetView.ZoomFactor : 1.0;
@@ -117,14 +115,13 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             Spread.Invalidate(false, true, false, false);
         }
 
-        public void EndResizeColumn()
+        public void EndResizeColumn(ISheetView sheetView)
         {
             if (_initialWidths != null)
             {
-                var sheetView = Spread.SheetViews.ActiveSheetView.As<SheetView>();
                 var workSheet = sheetView.WorkSheet;
                 
-                var action = new ColumnResizedAction { SheetView = sheetView };
+                var action = new ColumnResizedAction { SheetView = (SheetView)sheetView };
                 bool hasChanges = false;
                 
                 for (int i = 0; i < workSheet.ColumnCount; i++)

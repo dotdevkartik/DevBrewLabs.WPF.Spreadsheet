@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace DevBrewLabs.WPF.Spreadsheet
 {
-    public class UndoRedoManager
+    public class UndoRedoManager : IUndoRedoManager
     {
         private readonly LinkedList<SheetAction> _undoStack;
         private readonly LinkedList<SheetAction> _redoStack;
