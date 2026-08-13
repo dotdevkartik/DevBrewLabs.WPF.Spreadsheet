@@ -4,7 +4,7 @@ using System;
 
 namespace DevBrewLabs.Spreadsheet
 {
-    public interface IWorkSheet : IDisposable
+    public interface IWorkSheet : ICellContainer, IDisposable
     {
         /// <summary>
         /// Fires when cell is modified.
@@ -28,26 +28,6 @@ namespace DevBrewLabs.Spreadsheet
         /// </summary>
         IWorkBook WorkBook { get; }
         
-        /// <summary>
-        /// Gets the span range for the specified cell, or null if the cell is not part of a span.
-        /// </summary>
-        CellRange GetSpanCellRange(int row, int column);
-
-        /// <summary>
-        /// Expands the given cell range to fully include any intersecting spans.
-        /// </summary>
-        CellRange ExpandSpanRange(CellRange range);
-
-        /// <summary>
-        /// Gets a value indicating whether there are any merged spans in this sheet.
-        /// </summary>
-        bool HasSpans { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether the specified cell is covered by a span (and is not the anchor).
-        /// </summary>
-        bool IsCovered(int row, int column);
-
         /// <summary>
         /// Gets or sets name for this sheet.
         /// </summary>
@@ -138,131 +118,10 @@ namespace DevBrewLabs.Spreadsheet
         /// <param name="columnCount"></param>
         /// <returns></returns>
         bool ContainsRange(int row, int column, int rowCount, int columnCount);
-
         /// <summary>
         /// Sorts the complete worksheet.
         /// </summary>
         /// <param name="options">Options for the sort operation.</param>
         void Sort(SortOptions options);
-
-        /// <summary>
-        /// Gets the data map for a specific cell.
-        /// </summary>
-        IDataMap GetDataMap(int row, int column);
-        
-        /// <summary>
-        /// Sets the data map for a specific cell.
-        /// </summary>
-        void SetDataMap(int row, int column, IDataMap dataMap);
-
-        /// <summary>
-        /// Gets the style for a specific cell.
-        /// </summary>
-        IStyle GetStyle(int row, int column);
-
-        /// <summary>
-        /// Sets the style for a specific cell.
-        /// </summary>
-        void SetStyle(int row, int column, IStyle style);
-
-        /// <summary>
-        /// Gets the style name for a specific cell.
-        /// </summary>
-        string GetStyleName(int row, int column);
-
-        /// <summary>
-        /// Sets the style name for a specific cell.
-        /// </summary>
-        void SetStyleName(int row, int column, string styleName);
-
-        /// <summary>
-        /// Gets the value for a specific cell.
-        /// </summary>
-        object GetValue(int row, int column);
-
-        /// <summary>
-        /// Sets the value for a specific cell.
-        /// </summary>
-        void SetValue(int row, int column, object value);
-
-        /// <summary>
-        /// Checks if a cell has a formula.
-        /// </summary>
-        bool HasFormula(int row, int column);
-
-        /// <summary>
-        /// Gets the formula for a specific cell.
-        /// </summary>
-        string GetFormula(int row, int column);
-
-        /// <summary>
-        /// Sets the formula for a specific cell.
-        /// </summary>
-        void SetFormula(int row, int column, string formula);
-
-        /// <summary>
-        /// Gets the formatter for a specific cell.
-        /// </summary>
-        IFormatter GetFormatter(int row, int column);
-
-        /// <summary>
-        /// Sets the formatter for a specific cell.
-        /// </summary>
-        void SetFormatter(int row, int column, IFormatter formatter);
-
-        /// <summary>
-        /// Gets whether a specific cell is locked.
-        /// </summary>
-        bool GetLocked(int row, int column);
-
-        /// <summary>
-        /// Sets whether a specific cell is locked.
-        /// </summary>
-        void SetLocked(int row, int column, bool locked);
-
-        /// <summary>
-        /// Gets the cell type for a specific cell.
-        /// </summary>
-        ICellType GetCellType(int row, int column);
-
-        /// <summary>
-        /// Sets the cell type for a specific cell.
-        /// </summary>
-        void SetCellType(int row, int column, ICellType cellType);
-
-        /// <summary>
-        /// Gets the row span for a specific cell.
-        /// </summary>
-        int GetRowSpan(int row, int column);
-
-        /// <summary>
-        /// Sets the row span for a specific cell.
-        /// </summary>
-        void SetRowSpan(int row, int column, int rowSpan);
-
-        /// <summary>
-        /// Gets the column span for a specific cell.
-        /// </summary>
-        int GetColumnSpan(int row, int column);
-
-        /// <summary>
-        /// Sets the column span for a specific cell.
-        /// </summary>
-        void SetColumnSpan(int row, int column, int columnSpan);
-
-        /// <summary>
-        /// Adds a merged span.
-        /// </summary>
-        void AddSpan(int row, int column, int rowCount, int columnCount);
-
-        /// <summary>
-        /// Removes a merged span.
-        /// </summary>
-        void RemoveSpan(int row, int column);
-
-        /// <summary>
-        /// Sets a raw string value to a cell, automatically inferring data types or formulas.
-        /// </summary>
-        void SetRawValue(int row, int column, string value);
     }
 }

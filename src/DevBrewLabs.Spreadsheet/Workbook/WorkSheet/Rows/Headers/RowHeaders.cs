@@ -1,6 +1,6 @@
 using DevBrewLabs.Spreadsheet.Core;
-using DevBrewLabs.Spreadsheet.Data;
 using DevBrewLabs.Spreadsheet.Formatters;
+using System;
 using System.Collections.Generic;
 
 namespace DevBrewLabs.Spreadsheet
@@ -30,6 +30,8 @@ namespace DevBrewLabs.Spreadsheet
         public IRange Cells => _cells;
         public IColumns Columns => _columns;
 
+        public bool HasSpans { get; }
+
         internal RowHeaders(WorkSheet workSheet) : base(workSheet)
         {
             DefaultColumnWidth = 30;
@@ -39,15 +41,6 @@ namespace DevBrewLabs.Spreadsheet
             _columnStore = new Dictionary<int, ColumnData>();
         }
 
-        public override void Dispose()
-        {
-            base.Dispose();
-            _cells.Dispose();
-            _columns.Dispose();
-            _columnStore = null;
-        }
-
-        #region ColumnData Management
         internal ColumnData GetColumnData(int column, bool createIfNotExists = true)
         {
             if (_columnStore.TryGetValue(column, out var colData))
@@ -63,23 +56,12 @@ namespace DevBrewLabs.Spreadsheet
             return null;
         }
 
-        internal void ClearColumnData()
-        {
-            foreach (var col in _columnStore.Values)
-            {
-                col.Clear();
-            }
-            _columnStore.Clear();
-        }
-
         internal void ClearColumnData(int column)
         {
             var colData = GetColumnData(column, false);
             colData?.Clear();
         }
-        #endregion
 
-        #region Facade Methods
         public IDataMap GetDataMap(int row, int column)
         {
             return GetColumnData(column, false)?.GetDataMap(row);
@@ -203,6 +185,36 @@ namespace DevBrewLabs.Spreadsheet
             GetColumnData(column, true).SetColumnSpan(row, columnSpan);
         }
 
+        public void AddSpan(int row, int column, int rowCount, int columnCount)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void RemoveSpan(int row, int column)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetRawValue(int row, int column, string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public CellRange GetSpanCellRange(int row, int column)
+        {
+            throw new NotImplementedException();
+        }
+
+        public CellRange ExpandSpanRange(CellRange range)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsCovered(int row, int column)
+        {
+            throw new NotImplementedException();
+        }
+
         private void OnCellChanged(int row, int column, CellChangeType changeType)
         {
             var sheet = (WorkSheet)WorkSheet;
@@ -212,6 +224,19 @@ namespace DevBrewLabs.Spreadsheet
                 wb.UpdateProvider.CellChanged(sheet, row, column, null, null, SheetRegion.RowHeader, changeType);
             }
         }
-        #endregion
+
+        public override void Dispose()
+        {
+            base.Dispose();
+            _cells.Dispose();
+            _columns.Dispose();
+            foreach (var col in _columnStore.Values)
+            {
+                col.Clear();
+            }
+            _columnStore.Clear();
+            _columnStore = null;
+        }
+
     }
 }

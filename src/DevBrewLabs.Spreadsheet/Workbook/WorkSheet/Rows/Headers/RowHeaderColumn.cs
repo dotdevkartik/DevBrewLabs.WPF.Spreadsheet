@@ -9,6 +9,7 @@ namespace DevBrewLabs.Spreadsheet
         private int _width;
         private RowHeaderColumns _parent;
         private string _styleName;
+        private IStyle _style;
 
         public int Width
         {
@@ -69,6 +70,32 @@ namespace DevBrewLabs.Spreadsheet
             }
         }
 
+        public IStyle Style
+        {
+            get
+            {
+                return _style;
+            }
+            set
+            {
+                if (value == _style)
+                {
+                    return;
+                }
+
+                if (_style != value)
+                {
+                    _parent.RowHeaders.WorkSheet.OnColumnsChanged(new ColumnChangedEventArgs(
+                       SheetRegion.RowHeader,
+                       Index,
+                        1,
+                        ColumnChangeType.Style));
+                }
+
+                _style = value;
+            }
+        }
+
         public IColumns Parent => _parent;
 
         public bool Visible => Width > 0;
@@ -76,8 +103,7 @@ namespace DevBrewLabs.Spreadsheet
         public DataMap DataMap { get; set; }
         public ICellType CellType { get; set; }
         public IFormatter Formatter { get; set; }
-
-        internal int Index { get; set; }
+        public int Index { get; internal set; }
 
         internal RowHeaderColumn(RowHeaderColumns parent)
         {

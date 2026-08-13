@@ -1,5 +1,6 @@
 using DevBrewLabs.Spreadsheet;
 using DevBrewLabs.WPF.Spreadsheet.Rendering.Text;
+using DevBrewLabs.WPF.Spreadsheet.Styling;
 using DevBrewLabs.WPF.Spreadsheet.UI;
 using System.Windows;
 using System.Windows.Media;
@@ -11,10 +12,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
         protected override void OnRender(DrawingContext context, int topRow, int leftColumn, int bottomRow, int rightColumn)
         {
             var workSheet = SheetView.WorkSheet;
-            var workBook = (WorkBook)workSheet.WorkBook;
             var rows = (ColumnHeaderRows)workSheet.ColumnHeaders.Rows;
             var columns = (Columns)workSheet.Columns;
-            var cells = (ColumnHeaderCells)workSheet.ColumnHeaders.Cells;
+            var cells = workSheet.ColumnHeaders.Cells;
             var viewport = (ViewPort)SheetView.ViewPort;
 
             double zoom = SheetView.ZoomFactor > 0 ? SheetView.ZoomFactor : 1.0;
@@ -25,7 +25,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                 var rowHeight = rows.GetRowHeight(row);
                 if (rowHeight == 0)
                     continue;
-                var sheetRow = rows.GetItem(row);
+                var headerRow = rows.GetItem(row);
                 var rowLocation = rows.GetLocation(row);
                 var y = rowLocation * zoom;
                 var scaledRowHeight = rowHeight * zoom;
@@ -36,23 +36,15 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                     if (columnWidth == 0)
                         continue;
 
-                    var sheetColumn = columns.GetItem(col);
+                    var headerColumn = columns.GetItem(col);
                     var colLocation = columns.GetLocation(col);
                     var x = (colLocation - viewport.LeftColumnLocation) * zoom;
                     var scaledColumnWidth = columnWidth * zoom;
 
                     var cellRect = new Rect(x, y, scaledColumnWidth, scaledRowHeight);
 
-                    var style = ((ColumnHeaders)workSheet.ColumnHeaders).GetStyle(row, col);
-
-                    if (style == null)
-                    {
-                        var styleName = ((ColumnHeaders)workSheet.ColumnHeaders).GetStyleName(row, col);
-                        style = !string.IsNullOrEmpty(styleName)
-                            ? workBook.GetNamedStyle(styleName)
-                            : workBook.PickStyle(sheetColumn, sheetRow, SheetRegion.ColumnHeader);
-                    }
-                    var cellValue = ((ColumnHeaders)workSheet.ColumnHeaders).GetValue(row, col);
+                    var style = workSheet.GetColumnHeaderCellStyle(row, col, headerRow, headerColumn);
+                    var cellValue = workSheet.ColumnHeaders.GetValue(row, col);
 
                     DrawColumnHeaderCell(context, row, col, cellValue, style, cellRect, renderContext);
                 }
@@ -61,7 +53,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
         private void DrawColumnHeaderCell(DrawingContext context, int row, int column, object cellValue, IStyle style, Rect cellRect, RenderContext renderContext)
         {
-            context.DrawRectangle(Styling.WpfResourceCache.GetBrush(style.BackColor), null, cellRect);
+            context.DrawRectangle(WpfResourceCache.GetBrush(style.BackColor), null, cellRect);
+
             if (cellValue != null)
             {
                 TextRenderer.DrawText(context, cellValue.ToString(), cellRect, style, renderContext);

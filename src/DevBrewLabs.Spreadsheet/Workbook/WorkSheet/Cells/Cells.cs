@@ -1,7 +1,6 @@
 using DevBrewLabs.Spreadsheet.CalcEngine.Parsers;
-using DevBrewLabs.Spreadsheet.Core;
-using DevBrewLabs.Spreadsheet.Data;
 using DevBrewLabs.Spreadsheet.Formatters;
+using DevBrewLabs.Spreadsheet.Utils;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -35,7 +34,7 @@ namespace DevBrewLabs.Spreadsheet
             }
         }
 
-        public IRange this[int row, int column]
+        public ICell this[int row, int column]
         {
             get
             {
@@ -163,8 +162,6 @@ namespace DevBrewLabs.Spreadsheet
             }
         }
 
-        public bool HasFormula => _workSheet.HasFormula(Row, Column);
-
         public bool Locked
         {
             get
@@ -203,6 +200,8 @@ namespace DevBrewLabs.Spreadsheet
 
         public WorkSheet WorkSheet => _workSheet;
 
+        public bool HasSpans { get; }
+
         internal Cells(WorkSheet parent)
         {
             _workSheet = parent;
@@ -213,6 +212,7 @@ namespace DevBrewLabs.Spreadsheet
 
         internal Cells(Cells parentRange, int row, int column, int rowCount, int columnCount)
         {
+            this.ValidateIndexes(row, column, rowCount, columnCount);
             _workSheet = parentRange._workSheet;
             ParentRange = parentRange;
             Row = row;
@@ -225,8 +225,8 @@ namespace DevBrewLabs.Spreadsheet
 
         private Cell GetCell(int row, int column)
         {
-            ValidateIndexes(row, column, 1, 1);
-            long key = MakeKey(row, column);
+            this.ValidateIndexes(row, column, 1, 1);
+            long key = CellUtils.MakeKey(row, column);
 
             if (_cellCollection.TryGetValue(key, out var existingCell))
             {
@@ -255,14 +255,9 @@ namespace DevBrewLabs.Spreadsheet
             }
         }
 
-        internal void Clear()
-        {
-            _cellCollection.Clear();
-        }
-
         internal void ClearColumnCells(int column)
         {
-            var columnCells = _cellCollection.Where(x => GetColumn(x.Key) == column).ToList();
+            var columnCells = _cellCollection.Where(x => CellUtils.GetColumn(x.Key) == column).ToList();
 
             foreach(var cell in columnCells)
             {
@@ -272,12 +267,7 @@ namespace DevBrewLabs.Spreadsheet
 
         private Cells GetRange(int row, int column, int rowCount, int columnCount)
         {
-            ValidateIndexes(row, column, rowCount, columnCount);
             return new Cells(this, row, column, rowCount, columnCount);
-        }
-
-        private void ValidateIndexes(int row, int column, int rowCount, int columnCount)
-        {
         }
 
         private void ApplyToRange(Action<int, int> action)
@@ -291,24 +281,144 @@ namespace DevBrewLabs.Spreadsheet
             }
         }
 
+        public IDataMap GetDataMap(int row, int column)
+        {
+            return _workSheet.GetDataMap(row, column);
+        }
+
+        public void SetDataMap(int row, int column, IDataMap dataMap)
+        {
+            _workSheet.SetDataMap(row, column, dataMap);
+        }
+
+        public IStyle GetStyle(int row, int column)
+        {
+            return _workSheet.GetStyle(row, column);
+        }
+
+        public void SetStyle(int row, int column, IStyle style)
+        {
+            _workSheet.SetStyle(row, column, style);
+        }
+
+        public string GetStyleName(int row, int column)
+        {
+            return _workSheet.GetStyleName(row, column);
+        }
+
+        public void SetStyleName(int row, int column, string styleName)
+        {
+            _workSheet.SetStyleName(row, column, styleName);
+        }
+
+        public object GetValue(int row, int column)
+        {
+            return _workSheet.GetValue(row, column);
+        }
+
+        public void SetValue(int row, int column, object value)
+        {
+            _workSheet.SetValue(row, column, value);
+        }
+
+        public bool HasFormula(int row, int column)
+        {
+            return _workSheet.HasFormula(row, column);
+        }
+
+        public string GetFormula(int row, int column)
+        {
+            return _workSheet.GetFormula(row, column);
+        }
+
+        public void SetFormula(int row, int column, string formula)
+        {
+            _workSheet.SetFormula(row, column, formula);
+        }
+
+        public IFormatter GetFormatter(int row, int column)
+        {
+            return _workSheet.GetFormatter(row, column);
+        }
+
+        public void SetFormatter(int row, int column, IFormatter formatter)
+        {
+            _workSheet.SetFormatter(row, column, formatter);
+        }
+
+        public bool GetLocked(int row, int column)
+        {
+            return _workSheet.GetLocked(row, column);
+        }
+
+        public void SetLocked(int row, int column, bool locked)
+        {
+            _workSheet.SetLocked(row, column, locked);
+        }
+
+        public ICellType GetCellType(int row, int column)
+        {
+            return _workSheet.GetCellType(row, column);
+        }
+
+        public void SetCellType(int row, int column, ICellType cellType)
+        {
+            _workSheet.SetCellType(row, column, cellType);
+        }
+
+        public int GetRowSpan(int row, int column)
+        {
+            return _workSheet.GetRowSpan(row, column);
+        }
+
+        public void SetRowSpan(int row, int column, int rowSpan)
+        {
+            _workSheet.SetRowSpan(row, column, rowSpan);
+        }
+
+        public int GetColumnSpan(int row, int column)
+        {
+            return _workSheet.GetColumnSpan(row, column);
+        }
+
+        public void SetColumnSpan(int row, int column, int columnSpan)
+        {
+            _workSheet.SetColumnSpan(row, column, columnSpan);
+        }
+
+        public void AddSpan(int row, int column, int rowCount, int columnCount)
+        {
+            _workSheet.AddSpan(row, column, rowCount, columnCount);
+        }
+
+        public void RemoveSpan(int row, int column)
+        {
+            _workSheet.RemoveSpan(row, column);
+        }
+
+        public void SetRawValue(int row, int column, string value)
+        {
+            _workSheet.SetRawValue(row, column, value);
+        }
+
+        public CellRange GetSpanCellRange(int row, int column)
+        {
+            return _workSheet.GetSpanCellRange(row, column);
+        }
+
+        public CellRange ExpandSpanRange(CellRange range)
+        {
+            return _workSheet.ExpandSpanRange(range);
+        }
+
+        public bool IsCovered(int row, int column)
+        {
+            return _workSheet.IsCovered(row, column);
+        }
+
         public void Dispose()
         {
-            Clear();
-        }
-
-        private static long MakeKey(int row, int column)
-        {
-            return ((long)row << 32) | (uint)column;
-        }
-
-        private static int GetRow(long key)
-        {
-            return (int)(key >> 32);
-        }
-
-        private static int GetColumn(long key)
-        {
-            return (int)key;
+            _cellCollection.Clear();
         }
     }
 }

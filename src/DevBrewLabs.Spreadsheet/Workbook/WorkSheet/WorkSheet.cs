@@ -60,9 +60,7 @@ namespace DevBrewLabs.Spreadsheet
                 InitializeDataStore(value);
             }
         }
-
         public bool HasSpans => _spanManager.HasSpans;
-
 
         public IRows Rows => _rows;
         public IColumns Columns => _columns;

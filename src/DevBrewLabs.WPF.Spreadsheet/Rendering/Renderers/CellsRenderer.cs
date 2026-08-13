@@ -76,22 +76,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             var height = unzoomedRect.Height * zoom;
 
             var cellRect = new Rect(x, y, width - penThickness, height - penThickness);
-            var style = workSheet.GetStyle(row, col);
-
-            if (style == null)
-            {
-                var styleName = workSheet.GetStyleName(row, col);
-                if (!string.IsNullOrEmpty(styleName))
-                {
-                    style = workBook.GetNamedStyle(styleName);
-                }
-                else
-                {
-                    style = workBook.PickStyle(sheetColumn, sheetRow, SheetRegion.Cells);
-                }
-            }
-
-            var formatter = workSheet.GetFormatter(row, col) ?? workSheet.PickFormatter(sheetColumn, sheetRow);
+            var style = workSheet.GetCellStyle(row, col, sheetRow, sheetColumn);
+            var formatter = workSheet.GetCellFormatter(row, col, sheetRow, sheetColumn);
             cellType.DrawCell(context, value, style, formatter, cellRect, renderContext);
         }
     }

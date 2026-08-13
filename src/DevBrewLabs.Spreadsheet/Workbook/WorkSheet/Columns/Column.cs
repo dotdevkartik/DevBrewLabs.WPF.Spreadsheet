@@ -10,6 +10,7 @@ namespace DevBrewLabs.Spreadsheet
         private DataMap _dataMap;
         private Columns _parent;
         private string _styleName;
+        private IStyle _style;
 
         public IFormatter Formatter { get; set; }
 
@@ -69,6 +70,32 @@ namespace DevBrewLabs.Spreadsheet
             }
         }
 
+        public IStyle Style
+        {
+            get
+            {
+                return _style;
+            }
+            set
+            {
+                if (value == _style)
+                {
+                    return;
+                }
+
+                if (_style != value)
+                {
+                    _parent.WorkSheet?.OnColumnsChanged(new ColumnChangedEventArgs(
+                       SheetRegion.Cells,
+                       Index,
+                        1,
+                        ColumnChangeType.Style));
+                }
+
+                _style = value;
+            }
+        }
+
         public IColumns Parent => _parent;
         public DataMap DataMap
         {
@@ -85,13 +112,14 @@ namespace DevBrewLabs.Spreadsheet
         public ICellType CellType { get; set; }
         public bool Locked { get; set; }
         public bool Visible => Width > 0;
+        public int Index { get; internal set; }
+
         internal Column(Columns parent)
         {
             _parent = parent;
             _width = -1;
             Locked = false;
         }
-        internal int Index { get; set; }
 
         private void OnDataMapChanged()
         {

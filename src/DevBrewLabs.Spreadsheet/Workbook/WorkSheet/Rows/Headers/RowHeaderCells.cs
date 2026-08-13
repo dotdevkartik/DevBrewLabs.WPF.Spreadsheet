@@ -1,5 +1,6 @@
 using DevBrewLabs.Spreadsheet.Data;
 using DevBrewLabs.Spreadsheet.Formatters;
+using DevBrewLabs.Spreadsheet.Utils;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -25,7 +26,7 @@ namespace DevBrewLabs.Spreadsheet
             }
         }
 
-        public IRange this[int row, int column]
+        public ICell this[int row, int column]
         {
             get
             {
@@ -111,18 +112,10 @@ namespace DevBrewLabs.Spreadsheet
             set { ApplyToRange((r, c) => _rowHeaders.SetCellType(r, c, value)); }
         }
 
-        public bool HasFormula => _rowHeaders.HasFormula(Row, Column);
-
         public bool Locked
         {
             get { return _rowHeaders.GetLocked(Row, Column); }
             set { ApplyToRange((r, c) => _rowHeaders.SetLocked(r, c, value)); }
-        }
-
-        public bool IsVisible
-        {
-            get { return GetCell(Row, Column)?.IsVisible ?? true; }
-            internal set { ApplyToRange((r, c) => ((RowHeaderCell)GetCell(r, c)).IsVisible = value); }
         }
 
         public int RowSpan
@@ -140,6 +133,8 @@ namespace DevBrewLabs.Spreadsheet
         public WorkSheet WorkSheet => _workSheet;
         public RowHeaders RowHeaders => _rowHeaders;
 
+        public bool HasSpans { get; }
+
         internal RowHeaderCells(RowHeaders parent)
         {
             _rowHeaders = parent;
@@ -151,6 +146,7 @@ namespace DevBrewLabs.Spreadsheet
 
         internal RowHeaderCells(RowHeaderCells parentRange, int row, int column, int rowCount, int columnCount)
         {
+            this.ValidateIndexes(row, column, rowCount, columnCount);
             _workSheet = parentRange._workSheet;
             ParentRange = parentRange;
             Row = row;
@@ -163,8 +159,8 @@ namespace DevBrewLabs.Spreadsheet
 
         private RowHeaderCell GetCell(int row, int column)
         {
-            ValidateIndexes(row, column, 1, 1);
-            long key = MakeKey(row, column);
+            this.ValidateIndexes(row, column, 1, 1);
+            long key = CellUtils.MakeKey(row, column);
 
             if (_activeCellInstances.TryGetValue(key, out var existingCell))
             {
@@ -183,19 +179,9 @@ namespace DevBrewLabs.Spreadsheet
             return cell;
         }
 
-        internal void ClearCellStore()
-        {
-            _activeCellInstances.Clear();
-        }
-
         private RowHeaderCells GetRange(int row, int column, int rowCount, int columnCount)
         {
-            ValidateIndexes(row, column, rowCount, columnCount);
             return new RowHeaderCells(this, row, column, rowCount, columnCount);
-        }
-
-        private void ValidateIndexes(int row, int column, int rowCount, int columnCount)
-        {
         }
 
         private void ApplyToRange(Action<int, int> action)
@@ -211,22 +197,142 @@ namespace DevBrewLabs.Spreadsheet
 
         public void Dispose()
         {
-            ClearCellStore();
+            _activeCellInstances.Clear();
         }
 
-        private static long MakeKey(int row, int column)
+        public IDataMap GetDataMap(int row, int column)
         {
-            return ((long)row << 32) | (uint)column;
+            return _rowHeaders.GetDataMap(row, column);
         }
 
-        private static int GetRow(long key)
+        public void SetDataMap(int row, int column, IDataMap dataMap)
         {
-            return (int)(key >> 32);
+            _rowHeaders.SetDataMap(row, column, dataMap);
         }
 
-        private static int GetColumn(long key)
+        public IStyle GetStyle(int row, int column)
         {
-            return (int)key;
+            return _rowHeaders.GetStyle(row, column);
+        }
+
+        public void SetStyle(int row, int column, IStyle style)
+        {
+            _rowHeaders.SetStyle(row, column, style);
+        }
+
+        public string GetStyleName(int row, int column)
+        {
+            return _rowHeaders.GetStyleName(row, column);
+        }
+
+        public void SetStyleName(int row, int column, string styleName)
+        {
+            _rowHeaders.SetStyleName(row, column, styleName);
+        }
+
+        public object GetValue(int row, int column)
+        {
+            return _rowHeaders.GetValue(row, column);
+        }
+
+        public void SetValue(int row, int column, object value)
+        {
+            _rowHeaders.SetValue(row, column, value);
+        }
+
+        public bool HasFormula(int row, int column)
+        {
+            return _rowHeaders.HasFormula(row, column);
+        }
+
+        public string GetFormula(int row, int column)
+        {
+            return _rowHeaders.GetFormula(row,column);
+        }
+
+        public void SetFormula(int row, int column, string formula)
+        {
+            _rowHeaders.SetFormula(row, column, formula);
+        }
+
+        public IFormatter GetFormatter(int row, int column)
+        {
+            return _rowHeaders.GetFormatter(row, column);
+        }
+
+        public void SetFormatter(int row, int column, IFormatter formatter)
+        {
+            _rowHeaders.SetFormatter(row, column, formatter);
+        }
+
+        public bool GetLocked(int row, int column)
+        {
+            return _rowHeaders.GetLocked(row, column);
+        }
+
+        public void SetLocked(int row, int column, bool locked)
+        {
+            _rowHeaders.SetLocked(row, column, locked);
+        }
+
+        public ICellType GetCellType(int row, int column)
+        {
+            return _rowHeaders.GetCellType(row, column);
+        }
+
+        public void SetCellType(int row, int column, ICellType cellType)
+        {
+            _rowHeaders.SetCellType(row, column, cellType);
+        }
+
+        public int GetRowSpan(int row, int column)
+        {
+            return _rowHeaders.GetRowSpan(row, column);
+        }
+
+        public void SetRowSpan(int row, int column, int rowSpan)
+        {
+            _rowHeaders.SetRowSpan(row, column, rowSpan);
+        }
+
+        public int GetColumnSpan(int row, int column)
+        {
+            return _rowHeaders.GetColumnSpan(row, column);
+        }
+
+        public void SetColumnSpan(int row, int column, int columnSpan)
+        {
+            _rowHeaders.SetColumnSpan(row, column, columnSpan);
+        }
+
+        public void AddSpan(int row, int column, int rowCount, int columnCount)
+        {
+            _rowHeaders.AddSpan(row, column, rowCount, columnCount);
+        }
+
+        public void RemoveSpan(int row, int column)
+        {
+            _rowHeaders.RemoveSpan(row, column);
+        }
+
+        public void SetRawValue(int row, int column, string value)
+        {
+            _rowHeaders.SetRawValue(row, column, value);
+        }
+
+        public CellRange GetSpanCellRange(int row, int column)
+        {
+            return _rowHeaders.GetSpanCellRange(row, column);
+        }
+
+        public CellRange ExpandSpanRange(CellRange range)
+        {
+            return _rowHeaders.ExpandSpanRange(range);
+        }
+
+        public bool IsCovered(int row, int column)
+        {
+            return _rowHeaders.IsCovered(row, column);
         }
     }
 }

@@ -175,13 +175,13 @@ namespace DevBrewLabs.WPF.Spreadsheet
                 var sheetColumn = _columns.GetItem(col);
                 var sheetRow = _rows.GetItem(row);
 
-                var formatter = _workSheet.PickFormatter(sheetColumn, sheetRow);
+                var formatter = _workSheet.GetCellFormatter(row, col, sheetRow, sheetColumn);
                 string text = formatter != null ? formatter.Format(value) : value.ToString();
 
                 if (string.IsNullOrEmpty(text))
                     continue;
 
-                var style = _workBook.PickStyle(sheetColumn, sheetRow, SheetRegion.Cells);
+                IStyle style = _workSheet.GetCellStyle(row, col, sheetRow, sheetColumn);
 
                 string[] lines = style.AllowMultiLineText 
                     ? TextUtils.GetLines(text) 
@@ -218,14 +218,13 @@ namespace DevBrewLabs.WPF.Spreadsheet
                 if(cellValue.Value != null)
                 {
                     var sheetRow = _rows.GetItem(cellValue.Key);
-                    var formatter = _workSheet.PickFormatter(sheetColumn, sheetRow);
+                    var formatter = _workSheet.GetCellFormatter(cellValue.Key, column, sheetRow, sheetColumn);
                     string text = formatter != null ? formatter.Format(cellValue.Value) : cellValue.Value.ToString();
 
                     if (string.IsNullOrEmpty(text))
                         continue;
 
-                    var style = _workBook.PickStyle(sheetColumn, sheetRow, SheetRegion.Cells);
-
+                    IStyle style = _workSheet.GetCellStyle(cellValue.Key, column, sheetRow, sheetColumn);
                     string[] lines = style.AllowMultiLineText
                      ? TextUtils.GetLines(text)
                      : new[] { TextUtils.NormalizeToSingleLine(text) };

@@ -3,7 +3,7 @@ using System;
 
 namespace DevBrewLabs.Spreadsheet
 {
-    internal class Cell : IRange, IDisposable
+    internal class Cell : ICell, IDisposable
     {
         private Cells _parentRange;
         private WorkSheet _workSheet;
@@ -128,24 +128,14 @@ namespace DevBrewLabs.Spreadsheet
             }
         }
 
-        public int RowCount => 1;
-        public int ColumnCount => 1;
-
         public int Row { get; set; }
         public int Column { get; set; }
-        public bool HasFormula => !string.IsNullOrEmpty(Formula);
         public IRange ParentRange => _parentRange;
-        public bool IsVisible { get; internal set; }
-
-        public IRange this[int row, int column, int rowCount, int columnCount] => this;
-        public IRange this[int row, int column] => this;
-        public IRange this[string name] => this;
 
         internal Cell(Cells parent)
         {
             _parentRange = parent;
             _workSheet = parent.WorkSheet;
-            IsVisible = true;
         }
 
         public void Dispose()
