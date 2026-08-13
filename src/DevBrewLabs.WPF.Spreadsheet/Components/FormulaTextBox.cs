@@ -91,7 +91,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
                 return;
             }
 
-            Spread.EditingManager.BeginEdit(activeSheetView.ActiveRow, activeSheetView.ActiveColumn);
+            Spread.BeginEdit(activeSheetView.ActiveRow, activeSheetView.ActiveColumn);
             (Spread.EditingManager.ActiveEditor as IEditorInfo).SetValue(_txtEditor.Text);
             _txtEditor.Focus();
         }
@@ -131,7 +131,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
                 e.Handled = true;
                 CommitCommand.Execute(null);
                 var activeSheetView = Spread.SheetViews.ActiveSheetView;
-                Spread.SelectionManager.SelectCell(activeSheetView.ActiveRow + 1, activeSheetView.ActiveColumn);
+                Spread.SelectCell(activeSheetView.ActiveRow + 1, activeSheetView.ActiveColumn);
             }
         }
 

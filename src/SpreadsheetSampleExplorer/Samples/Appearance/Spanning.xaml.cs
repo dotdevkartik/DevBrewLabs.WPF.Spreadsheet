@@ -112,7 +112,7 @@ namespace SpreadsheetSampleExplorer.Samples
             {
                 try
                 {
-                    spreadMain.SelectionManager.MergeSelection();
+                    sheetView.MergeRange(selection);
                     spreadMain.Invalidate();
                 }
                 catch (System.InvalidOperationException ex)
@@ -124,7 +124,8 @@ namespace SpreadsheetSampleExplorer.Samples
 
         private void btnUnmerge_Click(object sender, RoutedEventArgs e)
         {
-            spreadMain.SelectionManager.UnmergeSelection();
+            var sheetView = spreadMain.SheetViews.ActiveSheetView;
+            sheetView.UnmergeRange(sheetView.Selection);
             spreadMain.Invalidate();
         }
     }

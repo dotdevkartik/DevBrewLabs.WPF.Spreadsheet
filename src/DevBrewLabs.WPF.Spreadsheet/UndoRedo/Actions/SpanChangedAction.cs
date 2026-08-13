@@ -45,7 +45,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             
             SheetView.ActiveRow = Row;
             SheetView.ActiveColumn = Column;
-            SheetView.Spread.SelectionManager.SelectRange(Row, Column, OldRowSpan <= 1 ? 1 : OldRowSpan, OldColumnSpan <= 1 ? 1 : OldColumnSpan);
+            SheetView.SelectRange(Row, Column, OldRowSpan <= 1 ? 1 : OldRowSpan, OldColumnSpan <= 1 ? 1 : OldColumnSpan);
             SheetView.Spread.Invalidate();
         }
 
@@ -64,7 +64,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             
             SheetView.ActiveRow = Row;
             SheetView.ActiveColumn = Column;
-            SheetView.Spread.SelectionManager.SelectRange(Row, Column, NewRowSpan <= 1 ? 1 : NewRowSpan, NewColumnSpan <= 1 ? 1 : NewColumnSpan);
+            SheetView.SelectRange(Row, Column, NewRowSpan <= 1 ? 1 : NewRowSpan, NewColumnSpan <= 1 ? 1 : NewColumnSpan);
             SheetView.Spread.Invalidate();
         }
     }

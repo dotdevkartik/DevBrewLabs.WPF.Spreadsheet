@@ -26,10 +26,6 @@ namespace DevBrewLabs.WPF.Spreadsheet
         /// </summary>
         double ZoomFactor { get; set; }
         /// <summary>
-        /// Fires when the ZoomFactor changes.
-        /// </summary>
-        event System.EventHandler<ZoomChangedEventArgs> ZoomChanged;
-        /// <summary>
         /// Gets the sheet view port.
         /// </summary>
         IViewPort ViewPort { get; }
@@ -64,16 +60,16 @@ namespace DevBrewLabs.WPF.Spreadsheet
         /// <summary>
         /// Copies current selection to clipboard.
         /// </summary>
-        void CopyToClipboard();
+        void Copy();
         /// <summary>
         /// Pastes data from clipboard to sheet.
         /// </summary>
-        void PasteFromClipboard();
+        void Paste();
         /// <summary>
         /// Copies the provided cell range to clipboard.
         /// </summary>
         /// <param name="range"></param>
-        void CopyToClipboard(CellRange range);
+        void CopyRange(CellRange range);
         /// <summary>
         /// Horizontally scrolls the sheet.
         /// </summary>
@@ -102,5 +98,14 @@ namespace DevBrewLabs.WPF.Spreadsheet
         /// </summary>
         /// <param name="column"></param>
         void AutoSizeColumn(int column);
+        void MergeRange(CellRange range);
+        void UnmergeRange(CellRange range);
+        void SelectCell(int row, int col);
+        void SelectColumn(int column);
+        void SelectColumns(int column, int count);
+        void SelectRow(int row);
+        void SelectRows(int row, int count);
+        void SelectRange(CellRange range);
+        void SelectRange(int row, int column, int rowCount, int columnCount);
     }
 }

@@ -10,8 +10,10 @@ using DevBrewLabs.WPF.Spreadsheet.CellTypes;
 
 namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 {
-    internal class EditingManager : UIManager, IEditingManager
+    internal class EditingManager : UIManager
     {
+        private ISheetView _editingView;
+
         public EditingManager(Spread spread) : base(spread)
         {
             UseCellValue = true;
@@ -21,12 +23,12 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
         public bool IsEditing => ActiveEditor != null;
         internal bool UseCellValue { get; set; }
 
-        public void BeginEdit(int row, int column)
+        public void BeginEdit(ISheetView sheetView, int row, int column)
         {
             if (IsEditing)
                 return;
 
-            var sheetView = Spread.SheetViews.ActiveSheetView;
+            _editingView = sheetView;
             var workSheet = (WorkSheet)sheetView.WorkSheet;
 
             var anchor = workSheet.GetSpanCellRange(row, column);
@@ -46,16 +48,16 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             if (locked)
                 return;
 
-            var cellsInteractionLayer = sheetView.Spread.SheetViewPane.CellsRegion.GetInteractionLayer();
-            var cellRect = sheetView.ViewPort.GetCellRect(row, column);
-            cellRect.X -= sheetView.ViewPort.As<ViewPort>().LeftColumnLocation;
-            cellRect.Y -= sheetView.ViewPort.As<ViewPort>().TopRowLocation;
+            var cellsInteractionLayer = _editingView.Spread.SheetViewPane.CellsRegion.GetInteractionLayer();
+            var cellRect = _editingView.ViewPort.GetCellRect(row, column);
+            cellRect.X -= _editingView.ViewPort.As<ViewPort>().LeftColumnLocation;
+            cellRect.Y -= _editingView.ViewPort.As<ViewPort>().TopRowLocation;
 
             var cellType = (BaseCellType)(workSheet.GetCellType(row, column)) ?? (BaseCellType)sheetColumn?.CellType ?? TextCellType.Default;
 
             var style = workSheet.GetCellStyle(row, column, sheetRow, sheetColumn);
             var editor = cellType.GetEditor(style);
-            editor.SheetView = sheetView;
+            editor.SheetView = _editingView;
             ActiveEditor = editor;
 
             var formula = workSheet.GetFormula(row, column);
@@ -137,8 +139,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             if (!IsEditing)
                 return false;
 
-            var sheetView = Spread.SheetViews.ActiveSheetView;
-            var cellsInteractionLayer = sheetView.Spread.SheetViewPane.CellsRegion.GetInteractionLayer();
+            var cellsInteractionLayer = _editingView.Spread.SheetViewPane.CellsRegion.GetInteractionLayer();
 
             if (!commitChanges)
             {
@@ -153,11 +154,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
             if (ActiveEditor is TextEditor gcTextBox)
             {
-                return EndTextCellEdit(gcTextBox, sheetView, cellsInteractionLayer);
+                return EndTextCellEdit(gcTextBox, _editingView, cellsInteractionLayer);
             }
             else if(ActiveEditor is NumericEditor numTextBox)
             {
-                return EndNumericCellEdit(numTextBox, sheetView, cellsInteractionLayer);
+                return EndNumericCellEdit(numTextBox, _editingView, cellsInteractionLayer);
             }
 
             return false;

@@ -1,13 +1,10 @@
 using DevBrewLabs.Spreadsheet;
-using DevBrewLabs.WPF.Spreadsheet;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Windows;
-using System.Windows.Input;
 using DevBrewLabs.Spreadsheet.Core;
 
 namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
@@ -16,7 +13,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
     /// Enterprise-grade clipboard manager handling copy, paste, Win32 clipboard locking retries,
     /// internal data objects, TSV/CSV format parsing, formula insertion, and undo/redo integration.
     /// </summary>
-    public class ClipboardManager : IClipboardManager
+    public class ClipboardManager
     {
         private readonly Spread _spread;
         private const int MaxClipboardRetries = 5;
@@ -29,15 +26,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
         #region Public Methods
 
-        public void Copy()
-        {
-            var activeSheetView = _spread.SheetViews?.ActiveSheetView;
-            if (activeSheetView != null)
-            {
-                Copy(activeSheetView, activeSheetView.Selection);
-            }
-        }
-
         public void Copy(ISheetView sheetView)
         {
             if (sheetView == null)
@@ -48,7 +36,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
         public void Copy(ISheetView sheetView, CellRange range)
         {
-            if (sheetView == null || range == null || sheetView.WorkSheet == null)
+            if (sheetView == null || range == default || sheetView.WorkSheet == null)
                 return;
 
             if (range.RowCount <= 0 || range.ColumnCount <= 0)
@@ -90,15 +78,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             dataObject.SetData("InternalDataObject", data);
 
             ExecuteWithRetry(() => Clipboard.SetDataObject(dataObject));
-        }
-
-        public void Paste()
-        {
-            var activeSheetView = _spread.SheetViews?.ActiveSheetView;
-            if (activeSheetView != null)
-            {
-                Paste(activeSheetView);
-            }
         }
 
         public void Paste(ISheetView sheetView)
@@ -160,7 +139,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                     }
                 }
 
-                _spread.SelectionManager.SelectRange(activeRow, activeColumn, data.GetLength(0), data.GetLength(1));
+                _spread.SelectionManager.SelectRange(sheetView, activeRow, activeColumn, data.GetLength(0), data.GetLength(1));
 
                 pasteAction.NewState.Value = data;
                 pasteAction.NewState.Row = activeRow;
@@ -175,21 +154,13 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             }
         }
 
-        public bool CanCopy(ISheetView sheetView = null)
+        public bool CanCopy(ISheetView sheetView)
         {
-            var targetView = sheetView ?? _spread.SheetViews?.ActiveSheetView;
-            if (targetView == null || targetView.Selection == null)
-                return false;
-
-            return targetView.Selection.RowCount > 0 && targetView.Selection.ColumnCount > 0;
+            return sheetView.Selection.RowCount > 0 && sheetView.Selection.ColumnCount > 0;
         }
 
-        public bool CanPaste(ISheetView sheetView = null)
+        public bool CanPaste(ISheetView sheetView)
         {
-            var targetView = sheetView ?? _spread.SheetViews?.ActiveSheetView;
-            if (targetView == null)
-                return false;
-
             var dataObject = ExecuteWithRetry(() => Clipboard.GetDataObject());
             if (dataObject == null)
                 return false;

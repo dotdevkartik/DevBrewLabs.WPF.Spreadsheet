@@ -55,18 +55,19 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
             _sheetsListBox.SelectedIndex = 0;
         }
 
-        public void DisplayActiveSheet()
+        private void DisplaySheet(SheetView sheetView)
         {
-            var sheetView = Spread.SheetViews.ActiveSheetView.As<SheetView>();
             Spread.SheetViewPane.AttachSheet(sheetView);
-            Spread.RenderEngine.SetRenderSheet(sheetView);
 
             double oldZoom = Spread.ZoomFactor;
-            Spread.ZoomFactor = sheetView.ZoomFactor;
-            Spread.SheetViewPane.UpdateZoomTransform();
             if (oldZoom != sheetView.ZoomFactor)
             {
-                Spread.RaiseZoomChanged(oldZoom, sheetView.ZoomFactor);
+                Spread.ZoomFactor = sheetView.ZoomFactor;
+            }
+            else
+            {
+                Spread.SheetViewPane.UpdateZoomTransform();
+                Spread.Invalidate();
             }
 
             UpdateScrollbars();
@@ -74,13 +75,14 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
             _vScrollBar.Value = sheetView.ScrollPosition.Y;
             sheetView.ScrollToHorizontalOffset(sheetView.ScrollPosition.X);
             sheetView.ScrollToVerticalOffset(sheetView.ScrollPosition.Y);
+            Spread.SelectionManager.RefreshInteractionLayers();
         }
 
         private void OnAddSheetClick(object sender, RoutedEventArgs e)
         {
             Spread.WorkBook.WorkSheets.AddSheet($"Sheet{Spread.WorkBook.WorkSheets.Count + 1}");
             _sheetsListBox.SelectedIndex = _sheetsListBox.Items.Count - 1;
-            ScrollSelectedItemIntoView();
+            ScrollSelectedSheetIntoView();
         }
 
         private void OnSheetSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -93,11 +95,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
 
             var sheetView = _sheetsListBox.SelectedItem.As<SheetView>();
             Spread.WorkBook.WorkSheets.ActiveSheet = sheetView.WorkSheet;
-            DisplayActiveSheet();
-            ScrollSelectedItemIntoView();
+            DisplaySheet(sheetView);
+            ScrollSelectedSheetIntoView();
         }
 
-        private void ScrollSelectedItemIntoView()
+        private void ScrollSelectedSheetIntoView()
         {
             if (_sheetsListBox == null || _sheetsListBox.SelectedItem == null)
                 return;

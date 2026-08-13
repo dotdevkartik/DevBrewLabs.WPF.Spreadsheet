@@ -59,7 +59,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                     // Starts editing
                     if (e.ClickCount == 2)
                     {
-                        SheetView.Spread.EditingManager.BeginEdit(hitTest.Row, hitTest.Column);
+                        SheetView.Spread.EditingManager.BeginEdit(SheetView, hitTest.Row, hitTest.Column);
                     }
                     else
                     {
@@ -70,7 +70,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                                 return;
                         }
 
-                        SheetView.Spread.SelectionManager.SelectCell(hitTest.Row, hitTest.Column);
+                        SheetView.SelectCell(hitTest.Row, hitTest.Column);
                     }
                     break;
 
@@ -99,7 +99,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
                     if (!SheetView.Selection.ContainsCell(hitTest.Row, hitTest.Column))
                     {
-                        SheetView.Spread.SelectionManager.SelectCell(hitTest.Row, hitTest.Column);
+                        SheetView.SelectCell(hitTest.Row, hitTest.Column);
                     }
                     break;
             }
@@ -137,7 +137,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 }
             }
 
-            SheetView.Spread.SelectionManager.SelectCell(nextRow, SheetView.ActiveColumn);
+            SheetView.SelectCell(nextRow, SheetView.ActiveColumn);
         }
 
         private void MoveUpCellSelection()
@@ -156,7 +156,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 }
             }
 
-            SheetView.Spread.SelectionManager.SelectCell(SheetView.ActiveRow - 1, SheetView.ActiveColumn);
+            SheetView.SelectCell(SheetView.ActiveRow - 1, SheetView.ActiveColumn);
         }
 
         private void MoveRightCellSelection()
@@ -179,7 +179,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 }
             }
 
-            SheetView.Spread.SelectionManager.SelectCell(SheetView.ActiveRow, nextCol);
+            SheetView.SelectCell(SheetView.ActiveRow, nextCol);
         }
 
         private void MoveLeftCellSelection()
@@ -198,7 +198,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 }
             }
 
-            SheetView.Spread.SelectionManager.SelectCell(SheetView.ActiveRow, SheetView.ActiveColumn - 1);
+            SheetView.SelectCell(SheetView.ActiveRow, SheetView.ActiveColumn - 1);
         }
         #endregion
 
@@ -324,7 +324,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                         return;
 
                     editingManager.UseCellValue = false;
-                    editingManager.BeginEdit(SheetView.ActiveRow, SheetView.ActiveColumn);
+                    editingManager.BeginEdit(SheetView, SheetView.ActiveRow, SheetView.ActiveColumn);
                     editingManager.UseCellValue = true;
                     break;
             }
@@ -468,7 +468,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 int leftColumn = Math.Min(hitTest.Column, SheetView.ActiveColumn);
                 int bottomRow = Math.Max(hitTest.Row, SheetView.ActiveRow);
                 int rightColumn = Math.Max(hitTest.Column, SheetView.ActiveColumn);
-                SheetView.Spread.SelectionManager.SelectRange(topRow, leftColumn, bottomRow + 1 - topRow, rightColumn + 1 - leftColumn);
+                SheetView.SelectRange(topRow, leftColumn, bottomRow + 1 - topRow, rightColumn + 1 - leftColumn);
             }
         }
 

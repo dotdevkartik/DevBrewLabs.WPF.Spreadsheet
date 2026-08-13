@@ -26,7 +26,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                     return;
                 }
 
-                _resizeManager.BeginResizeRow(hitTest.Row, (int)hitTest.Position.Y);
+                _resizeManager.BeginResizeRow(SheetView, hitTest.Row, (int)hitTest.Position.Y);
                 Children.Add(_resizeManager.ResizeLine);
             }
             else
@@ -37,7 +37,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                         return;
                 }
 
-                SheetView.Spread.SelectionManager.SelectRow(hitTest.Row);
+                SheetView.SelectRow(hitTest.Row);
             }
         }
 
@@ -53,7 +53,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             }
 
             if(SheetView.Selection.RowCount <= 1)
-                SheetView.Spread.SelectionManager.SelectRow(hitTest.Row);
+                SheetView.SelectRow(hitTest.Row);
         }
 
         protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
@@ -63,7 +63,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
             if (_resizeManager.IsResizing)
             {
-                _resizeManager.EndResizeRow();
+                _resizeManager.EndResizeRow(SheetView);
                 Children.Remove(_resizeManager.ResizeLine);
             }
 
@@ -77,7 +77,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
             if (_resizeManager.IsResizing)
             {
-                _resizeManager.ResizeRow((int)e.GetPosition(this).Y);
+                _resizeManager.ResizeRow(SheetView, (int)e.GetPosition(this).Y);
                 return;
             }
 
@@ -100,7 +100,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
             int topRow = Math.Min(hitTest.Row, SheetView.ActiveRow);
             int bottomRow = Math.Max(hitTest.Row, SheetView.ActiveRow);
-            SheetView.Spread.SelectionManager.SelectRows(topRow, bottomRow - topRow + 1);
+            SheetView.SelectRows(topRow, bottomRow - topRow + 1);
         }
 
         protected override void OnRender(DrawingContext dc)

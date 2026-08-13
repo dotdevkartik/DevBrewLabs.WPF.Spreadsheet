@@ -53,6 +53,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
             var style = _spread.WorkBook.GetNamedStyle(StyleKeys.DefaultSheetStyleKey);
             CellsRegion.Background = style != null ? Styling.WpfResourceCache.GetBrush(style.BackColor) : null;
+
+            _spread.RenderEngine.SetRenderSheet(sheetView);
             UpdateZoomTransform();
         }
 

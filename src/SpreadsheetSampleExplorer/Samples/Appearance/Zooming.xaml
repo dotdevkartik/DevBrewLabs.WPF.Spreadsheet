@@ -33,6 +33,9 @@
                         <Button Content="150%" Width="44" Height="24" Style="{StaticResource ModernOutlineButton}" Padding="0" Margin="0,0,4,0" Click="OnPresetZoomClicked" Tag="1.5"/>
                         <Button Content="200%" Width="44" Height="24" Style="{StaticResource ModernOutlineButton}" Padding="0" Margin="0,0,4,0" Click="OnPresetZoomClicked" Tag="2.0"/>
                     </StackPanel>
+
+                    <!-- AllowZooming Checkbox -->
+                    <CheckBox Content="Allow Zooming" IsChecked="{Binding ElementName=spread, Path=AllowZooming, Mode=TwoWay}" VerticalAlignment="Center" Margin="14,0,0,0" Foreground="#3F3F46"/>
                 </StackPanel>
 
                 <!-- Shortcut Info Badge -->

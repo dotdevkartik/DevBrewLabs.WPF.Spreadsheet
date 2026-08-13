@@ -14,7 +14,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 var workSheet = SheetView.WorkSheet;
                 SheetView.ActiveRow = 0;
                 SheetView.ActiveColumn = 0;
-                SheetView.Spread.SelectionManager.SelectRange(0, 0, workSheet.RowCount, workSheet.ColumnCount);
+                SheetView.SelectRange(0, 0, workSheet.RowCount, workSheet.ColumnCount);
             }
         }
 
@@ -28,7 +28,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 var workSheet = SheetView.WorkSheet;
                 SheetView.ActiveRow = 0;
                 SheetView.ActiveColumn = 0;
-                SheetView.Spread.SelectionManager.SelectRange(0, 0, workSheet.RowCount, workSheet.ColumnCount);
+                SheetView.SelectRange(0, 0, workSheet.RowCount, workSheet.ColumnCount);
             }
         }
     }
