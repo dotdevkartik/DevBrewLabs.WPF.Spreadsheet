@@ -15,78 +15,70 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             var workBook = (WorkBook)workSheet.WorkBook;
             var rows = (Rows)workSheet.Rows;
             var columns = (Columns)workSheet.Columns;
-            var cells = (Cells)workSheet.Cells;
             var viewport = (ViewPort)SheetView.ViewPort;
 
             double zoom = SheetView.ZoomFactor > 0 ? SheetView.ZoomFactor : 1.0;
             double penThickness = SheetView.Spread.GridLinePen.Thickness;
-            double halfPenWidth = (penThickness * SheetView.Spread.PixelPerDip) / 2;
             
             var renderContext = new RenderContext(zoom, SheetView.Spread.PixelPerDip, 5.0, true);
+            var renderedSkippedAnchors = new System.Collections.Generic.HashSet<(int Row, int Col)>();
             
             for (int row = topRow; row <= bottomRow; row++)
             {
                 var rowHeight = rows.GetRowHeight(row);
-
-                if (rowHeight == 0)
-                    continue;
-
-                var sheetRow = rows.GetItem(row);
-                var rowLocation = rows.GetLocation(row);
-                var y = (rowLocation - viewport.TopRowLocation) * zoom;
-                var scaledRowHeight = rowHeight * zoom;
+                if (rowHeight == 0) continue;
 
                 for (int col = leftColumn; col <= rightColumn; col++)
                 {
                     var columnWidth = columns.GetColumnWidth(col);
+                    if (columnWidth == 0) continue;
 
-                    if (columnWidth == 0)
+                    var anchor = workSheet.GetSpanCellRange(row, col);
+                    if (anchor != default)
+                    {
+                        if (!renderedSkippedAnchors.Add((anchor.TopRow, anchor.LeftColumn)))
+                            continue; // Already rendered
+
+                        RenderSingleCell(context, workSheet, workBook, rows, columns, viewport, anchor.TopRow, anchor.LeftColumn, zoom, penThickness, renderContext);
                         continue;
-
-                    var columnLocation = columns.GetLocation(col);
-                    var x = (columnLocation - viewport.LeftColumnLocation) * zoom;
-                    var scaledColumnWidth = columnWidth * zoom;
-
-                    var sheetColumn = columns.GetItem(col);
-                    var cellType = (BaseCellType)(workSheet.GetCellType(row, col) ?? sheetColumn?.CellType ?? TextCellType.Default);
-                    object value = workSheet.GetValue(row, col);
-
-                    if (value == null && sheetColumn == null && sheetRow == null)
-                    {
-                        switch (cellType)
-                        {
-                            case ButtonCellType buttonCellType:
-                                value = buttonCellType.Text;
-                                break;
-                            case CheckBoxCellType checkBoxCellType:
-                                //value = false;
-                                break;
-                            default:
-                                continue;
-                        }
                     }
 
-                    var cellRect = new Rect(x, y, scaledColumnWidth - penThickness, scaledRowHeight - penThickness);
-
-                    var style = workSheet.GetStyle(row, col);
-
-                    if (style == null)
-                    {
-                        var styleName = workSheet.GetStyleName(row, col);
-                        if (!string.IsNullOrEmpty(styleName))
-                        {
-                            style = workBook.GetNamedStyle(styleName);
-                        }
-                        else
-                        {
-                            style = workBook.PickStyle(sheetColumn, sheetRow, SheetRegion.Cells);
-                        }
-                    }
-
-                    var formatter = workSheet.GetFormatter(row, col) ?? workSheet.PickFormatter(sheetColumn, sheetRow);
-                    cellType.DrawCell(context, value, style, formatter, cellRect, renderContext);
+                    RenderSingleCell(context, workSheet, workBook, rows, columns, viewport, row, col, zoom, penThickness, renderContext);
                 }
             }
+        }
+
+        private void RenderSingleCell(DrawingContext context, WorkSheet workSheet, WorkBook workBook, Rows rows, Columns columns, ViewPort viewport, int row, int col, double zoom, double penThickness, RenderContext renderContext)
+        {
+            var sheetRow = rows.GetItem(row);
+            var sheetColumn = columns.GetItem(col);
+            var cellType = (BaseCellType)(workSheet.GetCellType(row, col) ?? sheetColumn?.CellType ?? TextCellType.Default);
+            object value = workSheet.GetValue(row, col);
+
+            if (value == null && sheetColumn == null && sheetRow == null)
+            {
+                switch (cellType)
+                {
+                    case ButtonCellType buttonCellType:
+                        value = buttonCellType.Text;
+                        break;
+                    case CheckBoxCellType checkBoxCellType:
+                        break;
+                    default:
+                        return;
+                }
+            }
+
+            var unzoomedRect = viewport.GetCellRect(row, col);
+            var x = (unzoomedRect.X - viewport.LeftColumnLocation) * zoom;
+            var y = (unzoomedRect.Y - viewport.TopRowLocation) * zoom;
+            var width = unzoomedRect.Width * zoom;
+            var height = unzoomedRect.Height * zoom;
+
+            var cellRect = new Rect(x, y, width - penThickness, height - penThickness);
+            var style = workSheet.GetCellStyle(row, col, sheetRow, sheetColumn);
+            var formatter = workSheet.GetCellFormatter(row, col, sheetRow, sheetColumn);
+            cellType.DrawCell(context, value, style, formatter, cellRect, renderContext);
         }
     }
 }

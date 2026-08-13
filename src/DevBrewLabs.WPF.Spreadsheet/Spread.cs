@@ -28,6 +28,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public static readonly DependencyProperty AllowColumnResizeProperty;
         public static readonly DependencyProperty ShowFormulaSuggestionsProperty;
         public static readonly DependencyProperty SheetTabsVisibilityProperty;
+        public static readonly DependencyProperty IsSelectionAnimationEnabledProperty;
 
         public static readonly DependencyProperty ZoomFactorProperty;
 
@@ -49,6 +50,8 @@ namespace DevBrewLabs.WPF.Spreadsheet
             DependencyProperty.Register("AllowColumnResize", typeof(bool), typeof(Spread), new PropertyMetadata(true));
             ShowFormulaSuggestionsProperty =
             DependencyProperty.Register("ShowFormulaSuggestions", typeof(bool), typeof(Spread), new PropertyMetadata(true));
+            IsSelectionAnimationEnabledProperty =
+            DependencyProperty.Register("IsSelectionAnimationEnabled", typeof(bool), typeof(Spread), new PropertyMetadata(false));
             SheetTabsVisibilityProperty =
             DependencyProperty.Register("SheetTabsVisibility", typeof(Visibility), typeof(Spread), new PropertyMetadata(Visibility.Visible));
             ResourceDictionary res = (ResourceDictionary)Application.LoadComponent(new Uri("/DevBrewLabs.WPF.Spreadsheet;component/Themes/ScrollBarStyle.xaml", UriKind.Relative));
@@ -99,6 +102,15 @@ namespace DevBrewLabs.WPF.Spreadsheet
         {
             get { return (bool)GetValue(AllowRowResizeProperty); }
             set { SetValue(AllowRowResizeProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets whether the selection travel animation is enabled.
+        /// </summary>
+        public bool IsSelectionAnimationEnabled
+        {
+            get { return (bool)GetValue(IsSelectionAnimationEnabledProperty); }
+            set { SetValue(IsSelectionAnimationEnabledProperty, value); }
         }
 
         /// <summary>

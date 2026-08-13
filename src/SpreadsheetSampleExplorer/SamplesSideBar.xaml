@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:SpreadsheetSampleExplorer"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="280">
-    <Border Background="#FAFAFA" BorderBrush="#E4E4E7" BorderThickness="1" CornerRadius="8">
+    <Border Background="Transparent" BorderThickness="0">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -35,8 +35,8 @@
                     <GroupStyle>
                         <GroupStyle.HeaderTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Name}" Foreground="#107C41" FontSize="10.5" FontWeight="Bold" 
-                                           Margin="10,14,10,4"/>
+                                <TextBlock Text="{Binding Name}" Foreground="#A1A1AA" FontSize="10" FontWeight="SemiBold" 
+                                           Margin="12,16,10,4"/>
                             </DataTemplate>
                         </GroupStyle.HeaderTemplate>
                     </GroupStyle>
@@ -57,36 +57,32 @@
                                             </Grid.ColumnDefinitions>
 
                                             <!-- Active Indicator Pill (Excel Green) -->
-                                            <Rectangle x:Name="_Indicator" Width="3" Height="16" RadiusX="1.5" RadiusY="1.5"
+                                            <Rectangle x:Name="_Indicator" Width="2" Height="14" RadiusX="1" RadiusY="1"
                                                        Fill="#107C41" HorizontalAlignment="Left" VerticalAlignment="Center"
                                                        Margin="-8,0,6,0" Visibility="Collapsed"/>
 
                                             <!-- Vector Icon -->
                                             <Path x:Name="_IconPath" Grid.Column="0" Data="{Binding IconData}"
-                                                  Fill="#71717A" Width="15" Height="15" Stretch="Uniform"
+                                                  Fill="#A1A1AA" Width="14" Height="14" Stretch="Uniform"
                                                   VerticalAlignment="Center" Margin="2,0,10,0"/>
 
                                             <!-- Text Information -->
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                <TextBlock x:Name="_TxtTitle" Text="{Binding Title}" FontSize="12.5" FontWeight="Medium" Foreground="#27272A"/>
-                                                <TextBlock x:Name="_TxtDesc" Text="{Binding Description}" FontSize="11" Foreground="#71717A"
-                                                           TextTrimming="CharacterEllipsis" Margin="0,1,0,0"/>
+                                                <TextBlock x:Name="_TxtTitle" Text="{Binding Title}" FontSize="12" FontWeight="Regular" Foreground="#3F3F46"/>
                                             </StackPanel>
                                         </Grid>
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsMouseOver" Value="true">
-                                            <Setter TargetName="_Border" Property="Background" Value="#F0FDF4"/>
-                                            <Setter TargetName="_TxtTitle" Property="Foreground" Value="#0E6B38"/>
-                                            <Setter TargetName="_IconPath" Property="Fill" Value="#107C41"/>
+                                            <Setter TargetName="_Border" Property="Background" Value="#F4F4F5"/>
+                                            <Setter TargetName="_TxtTitle" Property="Foreground" Value="#18181B"/>
+                                            <Setter TargetName="_IconPath" Property="Fill" Value="#52525B"/>
                                         </Trigger>
                                         <Trigger Property="IsSelected" Value="true">
-                                            <Setter TargetName="_Border" Property="Background" Value="#FFFFFF"/>
-                                            <Setter TargetName="_Border" Property="BorderBrush" Value="#BBF7D0"/>
-                                            <Setter TargetName="_TxtTitle" Property="Foreground" Value="#0E6B38"/>
+                                            <Setter TargetName="_Border" Property="Background" Value="#F4F4F5"/>
+                                            <Setter TargetName="_TxtTitle" Property="Foreground" Value="#18181B"/>
                                             <Setter TargetName="_TxtTitle" Property="FontWeight" Value="SemiBold"/>
-                                            <Setter TargetName="_TxtDesc" Property="Foreground" Value="#3F3F46"/>
-                                            <Setter TargetName="_IconPath" Property="Fill" Value="#107C41"/>
+                                            <Setter TargetName="_IconPath" Property="Fill" Value="#18181B"/>
                                             <Setter TargetName="_Indicator" Property="Visibility" Value="Visible"/>
                                         </Trigger>
                                     </ControlTemplate.Triggers>

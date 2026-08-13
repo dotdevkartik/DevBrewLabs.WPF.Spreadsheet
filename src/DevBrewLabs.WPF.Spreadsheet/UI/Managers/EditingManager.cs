@@ -27,11 +27,23 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 return;
 
             var sheetView = Spread.SheetViews.ActiveSheetView;
-            var workSheet = sheetView.WorkSheet;
+            var workSheet = (WorkSheet)sheetView.WorkSheet;
+
+            var anchor = workSheet.GetSpanCellRange(row, column);
+            if (anchor != default)
+            {
+                row = anchor.TopRow;
+                column = anchor.LeftColumn;
+            }
 
             var sheetColumn = ((Columns)workSheet.Columns).GetItem(column);
+            var sheetRow = ((Rows)workSheet.Rows).GetItem(row);
 
-            if (sheetColumn != null && sheetColumn.Locked)
+            bool locked = workSheet.GetLocked(row, column) || 
+                (sheetRow != null && sheetRow.Locked) || 
+                (sheetColumn != null && sheetColumn.Locked);
+
+            if (locked)
                 return;
 
             var cellsInteractionLayer = sheetView.Spread.SheetViewPane.CellsRegion.GetInteractionLayer();
@@ -39,18 +51,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             cellRect.X -= sheetView.ViewPort.As<ViewPort>().LeftColumnLocation;
             cellRect.Y -= sheetView.ViewPort.As<ViewPort>().TopRowLocation;
 
-            var sheetRow = ((Rows)workSheet.Rows).GetItem(row);
             var cellType = (BaseCellType)(workSheet.GetCellType(row, column)) ?? (BaseCellType)sheetColumn?.CellType ?? TextCellType.Default;
 
-            var style = workSheet.GetStyle(row, column);
-
-            if (style == null)
-            {
-                var styleName = workSheet.GetStyleName(row, column);
-                style = !string.IsNullOrEmpty(styleName)
-                    ? ((WorkBook)workSheet.WorkBook).GetNamedStyle(styleName)
-                    : ((WorkBook)workSheet.WorkBook).PickStyle(sheetColumn, sheetRow, SheetRegion.Cells);
-            }
+            var style = workSheet.GetCellStyle(row, column, sheetRow, sheetColumn);
             var editor = cellType.GetEditor(style);
             editor.SheetView = sheetView;
             ActiveEditor = editor;
@@ -63,7 +66,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             else
             {
                 var value = workSheet.GetValue(row, column);
-                var formatter = workSheet.PickFormatter(sheetColumn, sheetRow);
+                var formatter = workSheet.GetCellFormatter(row, column, sheetRow, sheetColumn);
                 editor.Text = formatter?.Format(value) ?? value?.ToString() ?? "";
             }
 
@@ -99,18 +102,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 cellRect.Y -= viewPort.TopRowLocation;
                 var sheetColumn = ((Columns)workSheet.Columns).GetItem(editor.Column);
                 var sheetRow = ((Rows)workSheet.Rows).GetItem(editor.Row);
-                var style = workSheet.GetStyle(editor.Row, editor.Column);
-
-                if (style == null)
-                {
-                    var styleName = workSheet.GetStyleName(editor.Row, editor.Column);
-                    style = !string.IsNullOrEmpty(styleName)
-                        ? ((WorkBook)workSheet.WorkBook).GetNamedStyle(styleName)
-                        : ((WorkBook)workSheet.WorkBook).PickStyle(sheetColumn, sheetRow, SheetRegion.Cells);
-                }
-
-                var wpfStyle = style;
-                editor.FontSize = (wpfStyle?.FontSize ?? 14) * zoom;
+                var style = workSheet.GetCellStyle(editor.Row, editor.Column, sheetRow, sheetColumn);
+                editor.FontSize = (style?.FontSize ?? 14) * zoom;
                 editor.MinWidth = System.Math.Max(0, cellRect.Width * zoom - 3);
 
                 int initialLineCount = TextUtils.GetLineCount(editor.Text);

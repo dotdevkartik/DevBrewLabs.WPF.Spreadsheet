@@ -17,6 +17,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         private Cells _cells;
         private Columns _columns;
         private double _zoomFactor = 1.0;
+        private CellRange _selection;
 
         public event EventHandler<ZoomChangedEventArgs> ZoomChanged;
 
@@ -63,7 +64,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public Spread Spread { get; }
         public int ActiveRow { get; internal set; }
         public int ActiveColumn { get; internal set; }
-        public CellRange Selection { get; }
+        public CellRange Selection => _selection;
         public IWorkSheet WorkSheet => _workSheet;
         public bool AutoSizeRows { get; set; }
         public bool AutoSizeColumns { get; set; }
@@ -84,7 +85,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             ScrollPosition = new Point(0, 0);
             _viewPort = new ViewPort(this);
             HeadersVisibility = HeadersVisibility.Both;
-            Selection = new CellRange(0, 0);
+            _selection = new CellRange(0, 0);
             AutoSizeRows = true;
             AutoSizeColumns = false;
         }
@@ -146,6 +147,11 @@ namespace DevBrewLabs.WPF.Spreadsheet
             else return 0;
         }
 
+        internal void SetSelection(CellRange range)
+        {
+            _selection = range;
+        }
+
         #endregion
 
         public override string ToString()
@@ -169,13 +175,13 @@ namespace DevBrewLabs.WPF.Spreadsheet
                 var sheetColumn = _columns.GetItem(col);
                 var sheetRow = _rows.GetItem(row);
 
-                var formatter = _workSheet.PickFormatter(sheetColumn, sheetRow);
+                var formatter = _workSheet.GetCellFormatter(row, col, sheetRow, sheetColumn);
                 string text = formatter != null ? formatter.Format(value) : value.ToString();
 
                 if (string.IsNullOrEmpty(text))
                     continue;
 
-                var style = _workBook.PickStyle(sheetColumn, sheetRow, SheetRegion.Cells);
+                IStyle style = _workSheet.GetCellStyle(row, col, sheetRow, sheetColumn);
 
                 string[] lines = style.AllowMultiLineText 
                     ? TextUtils.GetLines(text) 
@@ -212,14 +218,13 @@ namespace DevBrewLabs.WPF.Spreadsheet
                 if(cellValue.Value != null)
                 {
                     var sheetRow = _rows.GetItem(cellValue.Key);
-                    var formatter = _workSheet.PickFormatter(sheetColumn, sheetRow);
+                    var formatter = _workSheet.GetCellFormatter(cellValue.Key, column, sheetRow, sheetColumn);
                     string text = formatter != null ? formatter.Format(cellValue.Value) : cellValue.Value.ToString();
 
                     if (string.IsNullOrEmpty(text))
                         continue;
 
-                    var style = _workBook.PickStyle(sheetColumn, sheetRow, SheetRegion.Cells);
-
+                    IStyle style = _workSheet.GetCellStyle(cellValue.Key, column, sheetRow, sheetColumn);
                     string[] lines = style.AllowMultiLineText
                      ? TextUtils.GetLines(text)
                      : new[] { TextUtils.NormalizeToSingleLine(text) };

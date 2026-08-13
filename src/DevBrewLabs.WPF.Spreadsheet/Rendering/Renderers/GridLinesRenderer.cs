@@ -8,15 +8,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 {
     internal class GridLinesRenderer : Renderer
     {
-        /// <summary>
-        /// Draws horizontal grid lines.
-        /// </summary>
-        /// <param name="context"></param>
-        /// <param name="topRow"></param>
-        /// <param name="bottomRow"></param>
         private void DrawHorizontalGridlines(DrawingContext context, int topRow, int leftColumn, int bottomRow, int rightColumn)
         {
-            var workSheet = SheetView.WorkSheet;
+            var workSheet = (WorkSheet)SheetView.WorkSheet;
             var rows = (Rows)workSheet.Rows;
             var columns = (Columns)workSheet.Columns;
             var viewport = (ViewPort)SheetView.ViewPort;
@@ -35,23 +29,55 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                 var rowLocation = rows.GetLocation(row);
                 double y = (rowLocation - viewport.TopRowLocation + rowHeight) * zoom;
                 guidelines.GuidelinesY.Add(y + halfPenWidth);
-                double rightX = (columns.GetLocation(rightColumn) - viewport.LeftColumnLocation + columns.GetColumnWidth(rightColumn)) * zoom;
-                context.DrawLine(SheetView.Spread.GridLinePen, new Point(0, y),
-                            new Point(rightX, y));
+
+                bool drawing = false;
+                double startX = 0;
+                double currentX = 0;
+
+                for (int col = leftColumn; col <= rightColumn; col++)
+                {
+                    var colWidth = columns.GetColumnWidth(col);
+                    if (colWidth == 0) continue;
+
+                    double x = (columns.GetLocation(col) - viewport.LeftColumnLocation) * zoom;
+                    double nextX = x + colWidth * zoom;
+
+                    var anchor1 = workSheet.GetSpanCellRange(row, col);
+                    var anchor2 = workSheet.GetSpanCellRange(row + 1, col);
+                    
+                    bool skip = anchor1 != default && anchor2 != default && anchor1.TopRow == anchor2.TopRow && anchor1.LeftColumn == anchor2.LeftColumn;
+
+                    if (!skip)
+                    {
+                        if (!drawing)
+                        {
+                            drawing = true;
+                            startX = (col == leftColumn) ? System.Math.Min(0, x) : x;
+                        }
+                    }
+                    else
+                    {
+                        if (drawing)
+                        {
+                            drawing = false;
+                            context.DrawLine(SheetView.Spread.GridLinePen, new Point(startX, y), new Point(x, y));
+                        }
+                    }
+                    currentX = nextX;
+                }
+
+                if (drawing)
+                {
+                    context.DrawLine(SheetView.Spread.GridLinePen, new Point(startX, y), new Point(currentX, y));
+                }
             }
 
             context.Pop();
         }
 
-        /// <summary>
-        /// Draws vertical grid lines.
-        /// </summary>
-        /// <param name="context"></param>
-        /// <param name="leftColumn"></param>
-        /// <param name="rightColumn"></param>
         private void DrawVerticalGridlines(DrawingContext context, int topRow, int leftColumn, int bottomRow, int rightColumn)
         {
-            var workSheet = SheetView.WorkSheet;
+            var workSheet = (WorkSheet)SheetView.WorkSheet;
             var rows = (Rows)workSheet.Rows;
             var columns = (Columns)workSheet.Columns;
             var viewport = (ViewPort)SheetView.ViewPort;
@@ -70,9 +96,47 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                 var colLocation = columns.GetLocation(col);
                 double x = (colLocation - viewport.LeftColumnLocation + columnWidth) * zoom;
                 guidelines.GuidelinesX.Add(x + halfPenWidth);
-                double bottomY = (rows.GetLocation(bottomRow) - viewport.TopRowLocation + rows.GetRowHeight(bottomRow)) * zoom;
-                context.DrawLine(SheetView.Spread.GridLinePen, new Point(x, 0),
-                    new Point(x, bottomY));
+
+                bool drawing = false;
+                double startY = 0;
+                double currentY = 0;
+
+                for (int row = topRow; row <= bottomRow; row++)
+                {
+                    var rowHeight = rows.GetRowHeight(row);
+                    if (rowHeight == 0) continue;
+
+                    double y = (rows.GetLocation(row) - viewport.TopRowLocation) * zoom;
+                    double nextY = y + rowHeight * zoom;
+
+                    var anchor1 = workSheet.GetSpanCellRange(row, col);
+                    var anchor2 = workSheet.GetSpanCellRange(row, col + 1);
+                    
+                    bool skip = anchor1 != default && anchor2 != default && anchor1.TopRow == anchor2.TopRow && anchor1.LeftColumn == anchor2.LeftColumn;
+
+                    if (!skip)
+                    {
+                        if (!drawing)
+                        {
+                            drawing = true;
+                            startY = (row == topRow) ? System.Math.Min(0, y) : y;
+                        }
+                    }
+                    else
+                    {
+                        if (drawing)
+                        {
+                            drawing = false;
+                            context.DrawLine(SheetView.Spread.GridLinePen, new Point(x, startY), new Point(x, y));
+                        }
+                    }
+                    currentY = nextY;
+                }
+
+                if (drawing)
+                {
+                    context.DrawLine(SheetView.Spread.GridLinePen, new Point(x, startY), new Point(x, currentY));
+                }
             }
 
             context.Pop();

@@ -3,7 +3,7 @@ using DevBrewLabs.Spreadsheet.Formatters;
 
 namespace DevBrewLabs.Spreadsheet
 {
-    public interface IColumn : IStyledObject
+    public interface IColumn : ISheetDimension, IStyledObject
     {
         /// <summary>
         /// Gets the parent column collection.
@@ -14,10 +14,6 @@ namespace DevBrewLabs.Spreadsheet
         /// </summary>
         int Width { get; set; }
         /// <summary>
-        /// Gets or sets whether the column supports editing.
-        /// </summary>
-        bool Locked { get; set; }
-        /// <summary>
         /// Gets or sets the data map for this column.
         /// </summary>
         DataMap DataMap { get; set; }
@@ -25,13 +21,5 @@ namespace DevBrewLabs.Spreadsheet
         /// Gets or sets the cell type for this column.
         /// </summary>
         ICellType CellType { get; set; }
-        /// <summary>
-        /// Gets whether the column is visible.
-        /// </summary>
-        bool Visible { get; }
-        /// <summary>
-        /// Gets or sets the column formatter.
-        /// </summary>
-        IFormatter Formatter { get; set; }
     }
 }

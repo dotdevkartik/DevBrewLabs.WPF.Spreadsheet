@@ -1,4 +1,5 @@
 using DevBrewLabs.Spreadsheet;
+using DevBrewLabs.WPF.Spreadsheet.Styling;
 using System.Windows;
 using System.Windows.Media;
 
@@ -13,14 +14,12 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             var width = workSheet.RowHeaders.Width * zoom;
             var height = workSheet.ColumnHeaders.Height * zoom;
             var topLeft = workSheet.TopLeft;
-            var style = workSheet.WorkBook.GetNamedStyle(string.IsNullOrEmpty(topLeft.StyleName) ? 
-                StyleKeys.DefaultTopLeftStyleKey : topLeft.StyleName);
-            var wpfStyle = style;
+            var style = workSheet.GetTopLeftStyle();
 
             double halfPenWidth = (SheetView.Spread.GridLinePen.Thickness * SheetView.Spread.PixelPerDip) / 2;
             var rect = new Rect(-SheetView.Spread.GridLinePen.Thickness, -SheetView.Spread.GridLinePen.Thickness, width, height);
 
-            context.DrawRectangle(Styling.WpfResourceCache.GetBrush(wpfStyle.BackColor), SheetView.Spread.GridLinePen, rect);
+            context.DrawRectangle(WpfResourceCache.GetBrush(style.BackColor), SheetView.Spread.GridLinePen, rect);
        
             var pathGeometry = new PathGeometry();
             pathGeometry.Figures.Add(new PathFigure(new Point(5 * zoom, height - 5 * zoom), new PathSegment[]
@@ -30,7 +29,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                 new LineSegment(new Point(5 * zoom, height - 5 * zoom), false)
             }, true));
 
-            context.DrawGeometry(Styling.WpfResourceCache.GetBrush(wpfStyle.ForeColor), null, pathGeometry);
+            context.DrawGeometry(WpfResourceCache.GetBrush(style.ForeColor), null, pathGeometry);
         }
     }
 }

@@ -15,6 +15,6 @@ namespace DevBrewLabs.Spreadsheet
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        CellStyle GetNamedStyle(string name);
+        IStyle GetNamedStyle(string name);
     }
 }

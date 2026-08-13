@@ -1,5 +1,6 @@
 using DevBrewLabs.Spreadsheet;
 using DevBrewLabs.WPF.Spreadsheet.UI;
+using System;
 using System.Windows;
 using System.Windows.Media;
 
@@ -40,11 +41,27 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             hitTestInfo.ActualHitTestPoint = hitPoint;
             var rows = _workSheet.Rows.As<Rows>();
             var columns = _workSheet.Columns.As<Columns>();
-            var viewRange = sheetView.ViewPort.ViewRange;
+            var viewRange = _viewPort.ViewRange;
 
             double zoom = sheetView != null && sheetView.ZoomFactor > 0 ? sheetView.ZoomFactor : 1.0;
             var point = new Point(hitPoint.X / zoom + _viewPort.LeftColumnLocation, 
                 hitPoint.Y / zoom + _viewPort.TopRowLocation);
+
+            // Fast path for DragFill handle hit test
+            if (sheetView.Selection.RightColumn >= 0 && sheetView.Selection.BottomRow >= 0)
+            {
+                var brCellRect = _viewPort.GetCellRect(sheetView.Selection.BottomRow, sheetView.Selection.RightColumn);
+                if (Math.Abs(point.X - brCellRect.BottomRight.X) <= _dragFillOffset &&
+                    Math.Abs(point.Y - brCellRect.BottomRight.Y) <= _dragFillOffset)
+                {
+                    hitTestInfo.Element = VisualElement.DragFill;
+                    hitTestInfo.Row = sheetView.Selection.BottomRow;
+                    hitTestInfo.Column = sheetView.Selection.RightColumn;
+                    hitTestInfo.Position = new Point(brCellRect.X - _viewPort.LeftColumnLocation, 
+                        brCellRect.Y - _viewPort.TopRowLocation);
+                    return hitTestInfo;
+                }
+            }
 
             double x = 0, y = 0;
 
@@ -65,13 +82,20 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                         if (point.X >= colLocation && point.X < colLocation + columnWidth)
                         {
                             hitTestInfo.Column = col;
+                            hitTestInfo.Row = row;
                             x = colLocation;
+                            y = rowLocation;
 
-                            if (sheetView.Selection.RightColumn == hitTestInfo.Column && sheetView.Selection.BottomRow == hitTestInfo.Row)
+                            var anchor = _workSheet.GetSpanCellRange(hitTestInfo.Row, hitTestInfo.Column);
+                            if (anchor != default)
                             {
-                                if (point.X > x + columnWidth - _dragFillOffset && point.Y > y + rowHeight - _dragFillOffset
-                                    && point.X <= x + columnWidth && point.Y <= y + rowHeight)
-                                    hitTestInfo.Element = VisualElement.DragFill;
+                                hitTestInfo.Row = anchor.TopRow;
+                                hitTestInfo.Column = anchor.LeftColumn;
+                                var cellRect = _viewPort.GetCellRect(hitTestInfo.Row, hitTestInfo.Column);
+                                x = cellRect.X;
+                                y = cellRect.Y;
+                                columnWidth = cellRect.Width;
+                                rowHeight = cellRect.Height;
                             }
 
                             break;

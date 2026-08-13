@@ -8,6 +8,7 @@ namespace DevBrewLabs.Spreadsheet
         private int _height;
         private string _styleName;
         private ColumnHeaderRows _parent;
+        private IStyle _style;
 
         public int Height
         {
@@ -65,10 +66,37 @@ namespace DevBrewLabs.Spreadsheet
             }
         }
 
+        public IStyle Style
+        {
+            get
+            {
+                return _style;
+            }
+            set
+            {
+                if (value == _style)
+                {
+                    return;
+                }
+
+                if (_style != value)
+                {
+                    _parent.ColumnHeaders.WorkSheet.OnRowsChanged(new RowChangedEventArgs(
+                       SheetRegion.ColumnHeader,
+                       Index,
+                        1,
+                        RowChangeType.Style));
+                }
+
+                _style = value;
+            }
+        }
+
         public IFormatter Formatter { get; set; }
 
         public bool Visible => Height > 0;
-        internal int Index { get; set; }
+        public int Index { get; set; }
+        public bool Locked { get; set; }
 
         internal ColumnHeaderRow(ColumnHeaderRows parent)
         {

@@ -25,6 +25,7 @@ namespace DevBrewLabs.Spreadsheet
         private ColumnHeaders _columnHeaders;
         private TopLeft _topLeft;
         private WorkSheetDataStore _dataStore;
+        private SpanManager _spanManager;
 
         public string Name
         {
@@ -59,6 +60,7 @@ namespace DevBrewLabs.Spreadsheet
                 InitializeDataStore(value);
             }
         }
+        public bool HasSpans => _spanManager.HasSpans;
 
         public IRows Rows => _rows;
         public IColumns Columns => _columns;
@@ -82,6 +84,7 @@ namespace DevBrewLabs.Spreadsheet
             _cells = new Cells(this);
             RowCount = ColumnCount = 500;
             _dataStore = new WorkSheetDataStore(this);
+            _spanManager = new SpanManager();
         }
 
         public IDataMap GetDataMap(int row, int column)
@@ -172,7 +175,7 @@ namespace DevBrewLabs.Spreadsheet
         {
             var existingValue = GetValue(row, column);
 
-            if (existingValue == value)
+            if (existingValue != null && existingValue.Equals(value))
             {
                 return;
             }
@@ -315,6 +318,17 @@ namespace DevBrewLabs.Spreadsheet
             }
             var colData = _dataStore.GetColumnData(column, true);
             colData.SetRowSpan(row, rowSpan);
+
+            if (rowSpan > 1)
+            {
+                int colSpan = Math.Max(1, GetColumnSpan(row, column));
+                _spanManager.AddSpan(row, column, rowSpan, colSpan);
+                ClearCoveredCells(row, column, rowSpan, colSpan);
+            }
+            else
+            {
+                _spanManager.RemoveSpan(row, column);
+            }
         }
 
         public int GetColumnSpan(int row, int column)
@@ -332,6 +346,82 @@ namespace DevBrewLabs.Spreadsheet
             }
             var colData = _dataStore.GetColumnData(column, true);
             colData.SetColumnSpan(row, columnSpan);
+
+            if (columnSpan > 1)
+            {
+                int rowSpan = Math.Max(1, GetRowSpan(row, column));
+                _spanManager.AddSpan(row, column, rowSpan, columnSpan);
+                ClearCoveredCells(row, column, rowSpan, columnSpan);
+            }
+            else
+            {
+                _spanManager.RemoveSpan(row, column);
+            }
+        }
+
+        public void AddSpan(int row, int column, int rowCount, int columnCount)
+        {
+            if (rowCount <= 1 && columnCount <= 1)
+                return;
+
+            _spanManager.AddSpan(row, column, rowCount, columnCount);
+
+            var colData = _dataStore.GetColumnData(column, true);
+            colData.SetRowSpan(row, rowCount);
+            colData.SetColumnSpan(row, columnCount);
+
+            ClearCoveredCells(row, column, rowCount, columnCount);
+
+            OnRangeChanged(new RangeChangedEventArgs(
+                     SheetRegion.Cells,
+                     new CellRange(row, column, rowCount, columnCount),
+                     RangeChangeType.Value));
+        }
+
+        public void RemoveSpan(int row, int column)
+        {
+            var range = _spanManager.GetSpanRange(row, column);
+            if (range == null)
+                return;
+
+            _spanManager.RemoveSpan(row, column);
+
+            var colData = _dataStore.GetColumnData(column, true);
+            colData.SetRowSpan(row, 0);
+            colData.SetColumnSpan(row, 0);
+
+            OnRangeChanged(new RangeChangedEventArgs(
+                     SheetRegion.Cells,
+                     range,
+                     RangeChangeType.Value));
+        }
+
+        public CellRange GetSpanCellRange(int row, int column)
+        {
+            return _spanManager.GetSpanRange(row, column);
+        }
+
+        public CellRange ExpandSpanRange(CellRange range)
+        {
+            return _spanManager.ExpandRange(range);
+        }
+
+        public bool IsCovered(int row, int column)
+        {
+            return _spanManager.IsCovered(row, column);
+        }
+
+        private void ClearCoveredCells(int row, int column, int rowCount, int colCount)
+        {
+            for (int r = row; r < row + rowCount; r++)
+            {
+                for (int c = column; c < column + colCount; c++)
+                {
+                    if (r == row && c == column) continue;
+                    SetValue(r, c, null);
+                    SetFormula(r, c, null);
+                }
+            }
         }
 
         public object GetMetadata(int row, int column)
@@ -424,7 +514,7 @@ namespace DevBrewLabs.Spreadsheet
             }
             else
             {
-                Cells[row, column].Value = DataTypeConverter.ConvertType(value);
+                SetValue(row, column, DataTypeConverter.ConvertType(value));
             }
         }
 

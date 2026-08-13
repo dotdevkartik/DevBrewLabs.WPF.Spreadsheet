@@ -94,15 +94,24 @@ namespace SpreadsheetSampleExplorer
             );
 
             _samplesSideBar.RegisterSample(
-                "RealTimeFeed",
-                "Real-Time Data & Portfolio",
-                "Streaming live market prices, dynamic formulas, and conditional cell styling.",
+                "PortfolioDashboard",
+                "Portfolio Dashboard",
+                "Industry-grade mesmerising dashboard with custom formatters, spanning, and live streams.",
                 "DATA & CALCULATIONS",
-                "M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z",
-                typeof(RealTimeFeed)
+                "M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14h-2v-4H8v-2h2V9h2v2h2v2h-2v4z",
+                typeof(PortfolioDashboard)
             );
 
             // Category: APPEARANCE & STYLING
+            _samplesSideBar.RegisterSample(
+                "Spanning",
+                "Cell Spanning",
+                "Merge and unmerge cells, spanning multiple rows and columns.",
+                "APPEARANCE & STYLING",
+                "M3 3h18v18H3V3zm16 16V5H5v14h14zm-4-4H9v-4h6v4z",
+                typeof(Spanning)
+            );
+
             _samplesSideBar.RegisterSample(
                 "Styling",
                 "Grid Styling & Themes",

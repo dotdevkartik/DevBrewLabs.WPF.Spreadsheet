@@ -66,6 +66,12 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 for (int column = 0; column < data.GetLength(1); column++)
                 {
                     var val = data[row, column];
+                    if (sheetView.WorkSheet.IsCovered(range.TopRow + row, range.LeftColumn + column))
+                    {
+                        val = null;
+                        data[row, column] = null;
+                    }
+
                     var strVal = val != null ? val.ToString() : string.Empty;
                     stringBuilder.Append(SpreadsheetDataParser.FormatTsvCell(strVal));
 
@@ -130,6 +136,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 {
                     for (int column = 0; column < data.GetLength(1); column++)
                     {
+                        if (workSheet.IsCovered(activeRow + row, activeColumn + column))
+                        {
+                            continue;
+                        }
+
                         var value = data[row, column];
                         if (value is string strVal)
                         {

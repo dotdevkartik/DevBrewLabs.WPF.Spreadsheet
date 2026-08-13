@@ -10,7 +10,7 @@ namespace DevBrewLabs.Spreadsheet
     {
         private WorkbookAdapter _dataProvider;
         private IUpdateProvider _updateProvider;
-        private Dictionary<string, CellStyle> _namedStyles;
+        private Dictionary<string, IStyle> _namedStyles;
 
         public string Name { get; set; }
         public IWorkSheets WorkSheets { get; private set; }
@@ -25,7 +25,7 @@ namespace DevBrewLabs.Spreadsheet
 
             Name = name;
             WorkSheets = new WorkSheets(this);
-            _namedStyles = new Dictionary<string, CellStyle>();
+            _namedStyles = new Dictionary<string, IStyle>();
             _dataProvider = new WorkbookAdapter(this);
             CalcEngine = new SheetCalcEngine(_dataProvider);
             StylePalette = new StylePalette();
@@ -85,9 +85,9 @@ namespace DevBrewLabs.Spreadsheet
             _namedStyles.Add(styleName, style);
         }
 
-        public CellStyle GetNamedStyle(string styleName)
+        public IStyle GetNamedStyle(string styleName)
         {
-            if(_namedStyles.TryGetValue(styleName, out CellStyle style))
+            if(_namedStyles.TryGetValue(styleName, out IStyle style))
                 return style;
 
             return null;

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 
 namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 {
@@ -15,6 +16,29 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
     {
         private bool _scrolling = false;
         private bool _isDragging = false;
+        private Rect _targetSelectionRect;
+        private Rect _targetActiveCellRect;
+        private bool _isFirstRender = true;
+
+        public static readonly DependencyProperty AnimatedSelectionRectProperty =
+            DependencyProperty.Register("AnimatedSelectionRect", typeof(Rect), typeof(CellsInteractionLayer),
+                new FrameworkPropertyMetadata(Rect.Empty, FrameworkPropertyMetadataOptions.AffectsRender));
+
+        public static readonly DependencyProperty AnimatedActiveCellRectProperty =
+            DependencyProperty.Register("AnimatedActiveCellRect", typeof(Rect), typeof(CellsInteractionLayer),
+                new FrameworkPropertyMetadata(Rect.Empty, FrameworkPropertyMetadataOptions.AffectsRender));
+
+        public Rect AnimatedSelectionRect
+        {
+            get { return (Rect)GetValue(AnimatedSelectionRectProperty); }
+            set { SetValue(AnimatedSelectionRectProperty, value); }
+        }
+
+        public Rect AnimatedActiveCellRect
+        {
+            get { return (Rect)GetValue(AnimatedActiveCellRectProperty); }
+            set { SetValue(AnimatedActiveCellRectProperty, value); }
+        }
 
         public CellsInteractionLayer()
         {
@@ -96,21 +120,24 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
         private void MoveDownCellSelection()
         {
             var workSheet = SheetView.WorkSheet;
-            if (SheetView.ActiveRow == workSheet.RowCount - 1)
+            int rowSpan = Math.Max(1, workSheet.GetRowSpan(SheetView.ActiveRow, SheetView.ActiveColumn));
+            int nextRow = SheetView.ActiveRow + rowSpan;
+
+            if (nextRow >= workSheet.RowCount)
                 return;
 
-            if (SheetView.ActiveRow + 1 >= SheetView.ViewPort.ViewRange.BottomRow)
+            if (nextRow >= SheetView.ViewPort.ViewRange.BottomRow)
             {
-                double renderedRowHeight = SheetView.GetRowRenderedHeight(SheetView.ActiveRow + 1);
-                var rowRect = SheetView.ViewPort.GetRowRect(SheetView.ActiveRow + 1);
+                double renderedRowHeight = SheetView.GetRowRenderedHeight(nextRow);
+                var rowRect = SheetView.ViewPort.GetRowRect(nextRow);
 
                 if (renderedRowHeight < rowRect.Height)
                 {
-                    SheetView.Spread.ScrollToRow(SheetView, SheetView.ViewPort.ViewRange.TopRow + 1);
+                    SheetView.Spread.ScrollToRow(SheetView, SheetView.ViewPort.ViewRange.TopRow + rowSpan);
                 }
             }
 
-            SheetView.Spread.SelectionManager.SelectCell(SheetView.ActiveRow + 1, SheetView.ActiveColumn);
+            SheetView.Spread.SelectionManager.SelectCell(nextRow, SheetView.ActiveColumn);
         }
 
         private void MoveUpCellSelection()
@@ -135,21 +162,24 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
         private void MoveRightCellSelection()
         {
             var workSheet = SheetView.WorkSheet;
-            if (SheetView.ActiveColumn == workSheet.ColumnCount - 1)
+            int colSpan = Math.Max(1, workSheet.GetColumnSpan(SheetView.ActiveRow, SheetView.ActiveColumn));
+            int nextCol = SheetView.ActiveColumn + colSpan;
+
+            if (nextCol >= workSheet.ColumnCount)
                 return;
 
-            if (SheetView.ActiveColumn + 1 >= SheetView.ViewPort.ViewRange.RightColumn)
+            if (nextCol >= SheetView.ViewPort.ViewRange.RightColumn)
             {
-                double renderedColumnWidth = SheetView.GetColumnRenderedWidth(SheetView.ActiveColumn + 1);
-                var colRect = SheetView.ViewPort.GetColumnRect(SheetView.ActiveColumn + 1);
+                double renderedColumnWidth = SheetView.GetColumnRenderedWidth(nextCol);
+                var colRect = SheetView.ViewPort.GetColumnRect(nextCol);
 
                 if (renderedColumnWidth < colRect.Width)
                 {
-                    SheetView.Spread.ScrollToColumn(SheetView, SheetView.ViewPort.ViewRange.LeftColumn + 1);
+                    SheetView.Spread.ScrollToColumn(SheetView, SheetView.ViewPort.ViewRange.LeftColumn + colSpan);
                 }
             }
 
-            SheetView.Spread.SelectionManager.SelectCell(SheetView.ActiveRow, SheetView.ActiveColumn + 1);
+            SheetView.Spread.SelectionManager.SelectCell(SheetView.ActiveRow, nextCol);
         }
 
         private void MoveLeftCellSelection()
@@ -450,6 +480,45 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             }
         }
 
+        public void UpdateSelectionRects()
+        {
+            if (SheetView == null) return;
+            
+            var targetSelectionAbsolute = SheetView.ViewPort.GetRangeRect(SheetView.Selection);
+            var targetActiveCellAbsolute = SheetView.ViewPort.GetCellRect(SheetView.ActiveRow, SheetView.ActiveColumn);
+
+            if (_isFirstRender || !SheetView.Spread.IsSelectionAnimationEnabled)
+            {
+                AnimatedSelectionRect = targetSelectionAbsolute;
+                AnimatedActiveCellRect = targetActiveCellAbsolute;
+                _targetSelectionRect = targetSelectionAbsolute;
+                _targetActiveCellRect = targetActiveCellAbsolute;
+                _isFirstRender = false;
+                
+                BeginAnimation(AnimatedSelectionRectProperty, null);
+                BeginAnimation(AnimatedActiveCellRectProperty, null);
+            }
+            else if (_targetSelectionRect != targetSelectionAbsolute || _targetActiveCellRect != targetActiveCellAbsolute)
+            {
+                _targetSelectionRect = targetSelectionAbsolute;
+                _targetActiveCellRect = targetActiveCellAbsolute;
+
+                var duration = new Duration(TimeSpan.FromMilliseconds(150));
+                var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
+                
+                var selAnim = new RectAnimation(targetSelectionAbsolute, duration) { EasingFunction = ease };
+                var actAnim = new RectAnimation(targetActiveCellAbsolute, duration) { EasingFunction = ease };
+
+                Timeline.SetDesiredFrameRate(selAnim, 60);
+                Timeline.SetDesiredFrameRate(actAnim, 60);
+
+                BeginAnimation(AnimatedSelectionRectProperty, selAnim, HandoffBehavior.SnapshotAndReplace);
+                BeginAnimation(AnimatedActiveCellRectProperty, actAnim, HandoffBehavior.SnapshotAndReplace);
+            }
+
+            InvalidateVisual();
+        }
+
         protected override void OnRender(DrawingContext dc)
         {
             base.OnRender(dc);
@@ -459,14 +528,25 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             double zoom = SheetView.ZoomFactor > 0 ? SheetView.ZoomFactor : 1.0;
             var workSheet = SheetView.WorkSheet;
 
-            var unscaledSelection = ToSheetViewRect(SheetView.ViewPort.GetRangeRect(SheetView.Selection));
+            var targetSelectionAbsolute = SheetView.ViewPort.GetRangeRect(SheetView.Selection);
+            var targetActiveCellAbsolute = SheetView.ViewPort.GetCellRect(SheetView.ActiveRow, SheetView.ActiveColumn);
+
+            var currentSelectionAbsolute = AnimatedSelectionRect;
+            var currentActiveCellAbsolute = AnimatedActiveCellRect;
+
+            if (currentSelectionAbsolute.IsEmpty || currentSelectionAbsolute.Width <= 0 || currentSelectionAbsolute.Height <= 0)
+                currentSelectionAbsolute = targetSelectionAbsolute;
+            if (currentActiveCellAbsolute.IsEmpty || currentActiveCellAbsolute.Width <= 0 || currentActiveCellAbsolute.Height <= 0)
+                currentActiveCellAbsolute = targetActiveCellAbsolute;
+
+            var unscaledSelection = ToSheetViewRect(currentSelectionAbsolute);
             var selectionRangeRect = new Rect(
                 unscaledSelection.X * zoom - 1,
                 unscaledSelection.Y * zoom - 0.5,
                 unscaledSelection.Width * zoom + 1,
                 unscaledSelection.Height * zoom + 1);
 
-            var unscaledActive = ToSheetViewRect(SheetView.ViewPort.GetCellRect(SheetView.ActiveRow, SheetView.ActiveColumn));
+            var unscaledActive = ToSheetViewRect(currentActiveCellAbsolute);
             var activeCellRect = new Rect(
                 unscaledActive.X * zoom,
                 unscaledActive.Y * zoom,
@@ -481,14 +561,19 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             guidelines.GuidelinesX.Add(selectionRangeRect.BottomRight.X + halfPenWidth);
 
             dc.PushGuidelineSet(guidelines);
-            dc.DrawLine(SheetView.Spread.SelectionBorderPen, selectionRangeRect.TopLeft, selectionRangeRect.TopRight);
-            dc.DrawLine(SheetView.Spread.SelectionBorderPen, selectionRangeRect.TopRight,
-                new Point(selectionRangeRect.BottomRight.X, selectionRangeRect.BottomRight.Y - 4.5));
-            dc.DrawLine(SheetView.Spread.SelectionBorderPen, selectionRangeRect.BottomLeft, selectionRangeRect.TopLeft);
-            dc.DrawLine(SheetView.Spread.SelectionBorderPen, selectionRangeRect.BottomLeft,
-                new Point(selectionRangeRect.BottomRight.X - 4.5, selectionRangeRect.BottomRight.Y));
 
-            if (activeCellRect != selectionRangeRect)
+            var borderGeometry = new StreamGeometry();
+            using (var ctx = borderGeometry.Open())
+            {
+                ctx.BeginFigure(new Point(selectionRangeRect.BottomRight.X, selectionRangeRect.BottomRight.Y - 3), false, false);
+                ctx.LineTo(selectionRangeRect.TopRight, true, true);
+                ctx.LineTo(selectionRangeRect.TopLeft, true, true);
+                ctx.LineTo(selectionRangeRect.BottomLeft, true, true);
+                ctx.LineTo(new Point(selectionRangeRect.BottomRight.X - 3, selectionRangeRect.BottomRight.Y), true, true);
+            }
+            dc.DrawGeometry(null, SheetView.Spread.SelectionBorderPen, borderGeometry);
+
+            if (!AreClose(activeCellRect, selectionRangeRect))
             {
                 double margin = 1.5;
                 var pathGeometry = new PathGeometry();
@@ -506,18 +591,31 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 }
             }
 
-            selectionRangeRect.X = selectionRangeRect.BottomRight.X - 1.5;
-            selectionRangeRect.Y = selectionRangeRect.BottomRight.Y - 1.5;
-            selectionRangeRect.Width = 2;
-            selectionRangeRect.Height = 2;
-
-            dc.DrawRectangle(null, SheetView.Spread.SelectionBorderPen, selectionRangeRect);
+            var handleRect = new Rect(selectionRangeRect.BottomRight.X - 3, selectionRangeRect.BottomRight.Y - 3, 6, 6);
+            
+            // Draw a solid square handle using the border pen's brush
+            dc.DrawRectangle(SheetView.Spread.SelectionBorderPen.Brush, null, handleRect);
+            
+            // Give the handle a subtle white border so it pops out over the grid lines
+            dc.DrawRectangle(null, new Pen(Brushes.White, 1), handleRect);
+            
             dc.Pop();
+        }
+
+        private bool AreClose(Point p1, Point p2)
+        {
+            return Math.Abs(p1.X - p2.X) < 1.0 && Math.Abs(p1.Y - p2.Y) < 1.0;
+        }
+
+        private bool AreClose(Rect r1, Rect r2)
+        {
+            return Math.Abs(r1.X - r2.X) < 1.0 && Math.Abs(r1.Y - r2.Y) < 1.0 && 
+                   Math.Abs(r1.Width - r2.Width) < 1.0 && Math.Abs(r1.Height - r2.Height) < 1.0;
         }
 
         private IEnumerable<PathSegment> GetSelectionBackgroundSegments(Rect selectionRect, Rect activeCellRect)
         {
-            if(selectionRect.TopLeft == activeCellRect.TopLeft)
+            if(AreClose(selectionRect.TopLeft, activeCellRect.TopLeft))
             {
                 yield return new LineSegment(activeCellRect.TopRight, false);
                 yield return new LineSegment(selectionRect.TopRight, false);
@@ -527,7 +625,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 yield return new LineSegment(activeCellRect.BottomRight, false);
                 yield return new LineSegment(activeCellRect.TopRight, false);
             }
-            else if(selectionRect.TopRight == activeCellRect.TopRight)
+            else if(AreClose(selectionRect.TopRight, activeCellRect.TopRight))
             {
                 yield return new LineSegment(selectionRect.TopLeft, false);
                 yield return new LineSegment(activeCellRect.TopLeft, false);
@@ -537,7 +635,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 yield return new LineSegment(selectionRect.BottomLeft, false);
                 yield return new LineSegment(selectionRect.TopLeft, false);
             }
-            else if(selectionRect.BottomLeft == activeCellRect.BottomLeft)
+            else if(AreClose(selectionRect.BottomLeft, activeCellRect.BottomLeft))
             {
                 yield return new LineSegment(selectionRect.TopLeft, false);
                 yield return new LineSegment(selectionRect.TopRight, false);
@@ -547,7 +645,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 yield return new LineSegment(activeCellRect.TopLeft, false);
                 yield return new LineSegment(selectionRect.TopLeft, false);
             }
-            else if(selectionRect.BottomRight == activeCellRect.BottomRight)
+            else if(AreClose(selectionRect.BottomRight, activeCellRect.BottomRight))
             {
                 yield return new LineSegment(selectionRect.TopLeft, false);
                 yield return new LineSegment(selectionRect.TopRight, false);

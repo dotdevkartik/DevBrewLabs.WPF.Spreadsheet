@@ -30,11 +30,11 @@ The core data engine (`DevBrewLabs.Spreadsheet`) and virtualized WPF renderer (`
 
 | Dataset Size | Data Volume (Cells) | Load Time | Performance Rating |
 | :--- | :--- | :--- | :--- |
-| **100,000 Rows** | 1,000,000 Cells | **~80 ms** | ⚡ Instantaneous |
-| **500,000 Rows** | 5,000,000 Cells | **~300 ms** | ⚡ Ultra Fast |
-| **1,000,000 Rows** | 10,000,000 Cells | **800 ms – 1100 ms** | 🚀 Sub-Second Virtualized |
+| **100,000 Rows** | 1,000,000 Cells | **50 - 60 ms** | ⚡ Instantaneous |
+| **500,000 Rows** | 5,000,000 Cells | **~250 ms** | ⚡ Ultra Fast |
+| **1,000,000 Rows** | 10,000,000 Cells | **500 ms - 700 ms** | 🚀 Sub-Second Virtualized |
 
-> **Note:** Benchmarks measure end-to-end dataset generation, matrix allocation, engine loading, and first UI frame render in the **Performance** sample of the `SpreadsheetSampleExplorer` application.
+> **Note:** Benchmarks measure engine loading and first UI frame render in the **Performance** sample of the `SpreadsheetSampleExplorer` application (excludes data generation time).
 
 ---
 
