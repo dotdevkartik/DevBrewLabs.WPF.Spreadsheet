@@ -472,14 +472,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             }
         }
 
-        public void AddFilterTools(CellRange cellRange)
-        {
-            for(int col = cellRange.LeftColumn; col <= cellRange.RightColumn; col++)
-            {
-                
-            }
-        }
-
         public void UpdateSelectionRects()
         {
             if (SheetView == null) return;
