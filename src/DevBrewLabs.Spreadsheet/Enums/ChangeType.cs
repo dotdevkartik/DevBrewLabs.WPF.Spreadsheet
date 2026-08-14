@@ -1,4 +1,4 @@
-﻿namespace DevBrewLabs.Spreadsheet
+namespace DevBrewLabs.Spreadsheet
 {
     public enum CellChangeType
     {
@@ -31,6 +31,8 @@
         Clear,
         Move,
         Merge,
-        Value
+        Value,
+        Formula,
+        Style
     }
 }

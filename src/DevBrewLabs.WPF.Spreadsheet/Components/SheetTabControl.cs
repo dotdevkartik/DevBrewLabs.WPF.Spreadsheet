@@ -75,7 +75,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
             _vScrollBar.Value = sheetView.ScrollPosition.Y;
             sheetView.ScrollToHorizontalOffset(sheetView.ScrollPosition.X);
             sheetView.ScrollToVerticalOffset(sheetView.ScrollPosition.Y);
-            Spread.SelectionManager.RefreshInteractionLayers();
+            Spread.SheetViewPane.RefreshInteractionLayers();
         }
 
         private void OnAddSheetClick(object sender, RoutedEventArgs e)

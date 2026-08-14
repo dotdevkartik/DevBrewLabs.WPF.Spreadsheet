@@ -101,25 +101,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 Selection = sheetView.Selection
             });
 
-            RefreshInteractionLayers();
-        }
-
-        public void RefreshInteractionLayers()
-        {
-            var cellsInteractionLayer = Spread.SheetViewPane.CellsRegion.GetInteractionLayer() as UI.Interaction.CellsInteractionLayer;
-
-            if (cellsInteractionLayer != null && cellsInteractionLayer.IsLoaded)
-                cellsInteractionLayer.UpdateSelectionRects();
-
-            var rowHeadersInteractionLayer = Spread.SheetViewPane.RowHeadersRegion.GetInteractionLayer();
-
-            if (rowHeadersInteractionLayer != null && rowHeadersInteractionLayer.IsLoaded)
-                rowHeadersInteractionLayer.InvalidateVisual();
-
-            var columnHeadersInteractionLayer = Spread.SheetViewPane.ColumnHeadersRegion.GetInteractionLayer();
-
-            if (columnHeadersInteractionLayer != null && columnHeadersInteractionLayer.IsLoaded)
-                columnHeadersInteractionLayer.InvalidateVisual();
+            Spread.SheetViewPane.RefreshInteractionLayers();
         }
     }
 }

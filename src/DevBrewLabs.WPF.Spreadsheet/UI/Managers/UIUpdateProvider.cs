@@ -35,7 +35,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
         {
             Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
             {
-
                 if (!_spread.IsLoaded)
                     return;
 

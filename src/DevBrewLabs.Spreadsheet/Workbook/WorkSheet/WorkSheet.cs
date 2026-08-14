@@ -26,6 +26,7 @@ namespace DevBrewLabs.Spreadsheet
         private TopLeft _topLeft;
         private WorkSheetDataStore _dataStore;
         private SpanManager _spanManager;
+        private bool _suspendEvents;
 
         public string Name
         {
@@ -61,7 +62,6 @@ namespace DevBrewLabs.Spreadsheet
             }
         }
         public bool HasSpans => _spanManager.HasSpans;
-
         public IRows Rows => _rows;
         public IColumns Columns => _columns;
         public IRange Cells => _cells;
@@ -381,7 +381,7 @@ namespace DevBrewLabs.Spreadsheet
         public void RemoveSpan(int row, int column)
         {
             var range = _spanManager.GetSpanRange(row, column);
-            if (range == null)
+            if (range == default)
                 return;
 
             _spanManager.RemoveSpan(row, column);
@@ -656,74 +656,28 @@ namespace DevBrewLabs.Spreadsheet
             _workBook = null;
         }
 
-        #region private
-        internal struct RowSnapshot
-        {
-            public int OriginalRow { get; }
-            public object KeyValue { get; }
-            public Dictionary<int, CellData> Data { get; }
-
-            public RowSnapshot(int originalRow, object keyValue)
-            {
-                OriginalRow = originalRow;
-                KeyValue = keyValue;
-                Data = new Dictionary<int, CellData>();
-            }
-        }
-
-        internal class MultiLevelSnapshotComparer : IComparer<RowSnapshot>
-        {
-            private readonly SortOptions _options;
-            private readonly NaturalSortComparer _defaultComparer;
-            private readonly WorkSheet _sheet;
-
-            public MultiLevelSnapshotComparer(SortOptions options, WorkSheet sheet)
-            {
-                _options = options;
-                _sheet = sheet;
-                _defaultComparer = new NaturalSortComparer(options.MatchCase);
-            }
-
-            public int Compare(RowSnapshot x, RowSnapshot y)
-            {
-                foreach (var level in _options.SortLevels)
-                {
-                    object valX = GetValue(x, level.ColumnIndex);
-                    object valY = GetValue(y, level.ColumnIndex);
-
-                    int result;
-                    if (level.CustomComparer != null)
-                    {
-                        result = level.CustomComparer.Compare(valX, valY);
-                    }
-                    else
-                    {
-                        result = _defaultComparer.Compare(valX, valY);
-                    }
-
-                    if (result != 0)
-                    {
-                        return level.Ascending ? result : -result;
-                    }
-                }
-                return 0;
-            }
-
-            private object GetValue(RowSnapshot snapshot, int col)
-            {
-                if (snapshot.Data.TryGetValue(col, out var cellData))
-                {
-                    return cellData.Value;
-                }
-                
-                return _sheet.GetValue(snapshot.OriginalRow, col);
-            }
-        }
-        #endregion
-
         #region events
+        internal void ExecuteSupressed(Action action)
+        {
+            if (action == null)
+            {
+                return;
+            }
+
+            try
+            {
+                _suspendEvents = true;
+                action();
+            }
+            finally
+            {
+                _suspendEvents = false;
+            }
+        }
         internal void OnCellChanged(CellChangedEventArgs args)
         {
+            if (_suspendEvents) return;
+
             args.WorkSheet = this;
             if (_workBook.UpdateProvider != null && !_workBook.UpdateProvider.SuspendUpdates)
                 _workBook.UpdateProvider.CellChanged(this, args.Row, args.Column, args.OldValue, args.NewValue, args.Region, args.ChangeType);
@@ -733,7 +687,10 @@ namespace DevBrewLabs.Spreadsheet
 
         internal void OnRangeChanged(RangeChangedEventArgs args)
         {
+            if (_suspendEvents) return;
+
             args.WorkSheet = this;
+
             if (_workBook.UpdateProvider != null && !_workBook.UpdateProvider.SuspendUpdates)
                 _workBook.UpdateProvider.RangeChanged(this, args.Range, args.Region, args.ChangeType);
 
@@ -742,6 +699,8 @@ namespace DevBrewLabs.Spreadsheet
 
         internal void OnRowsChanged(RowChangedEventArgs args)
         {
+            if (_suspendEvents) return;
+
             args.WorkSheet = this;
             if (_workBook.UpdateProvider != null && !_workBook.UpdateProvider.SuspendUpdates)
                 _workBook.UpdateProvider.RowsChanged(this, args.Index, args.Count, args.Region, args.ChangeType);
@@ -751,6 +710,8 @@ namespace DevBrewLabs.Spreadsheet
 
         internal void OnColumnsChanged(ColumnChangedEventArgs args)
         {
+            if (_suspendEvents) return;
+
             args.WorkSheet = this;
 
             if (_workBook.UpdateProvider != null && !_workBook.UpdateProvider.SuspendUpdates)
@@ -957,6 +918,71 @@ namespace DevBrewLabs.Spreadsheet
                 _collection = null;
                 ActualDataSource = null;
                 _columnStore = null;
+            }
+        }
+        #endregion
+
+        #region private
+        private struct RowSnapshot
+        {
+            public int OriginalRow { get; }
+            public object KeyValue { get; }
+            public Dictionary<int, CellData> Data { get; }
+
+            public RowSnapshot(int originalRow, object keyValue)
+            {
+                OriginalRow = originalRow;
+                KeyValue = keyValue;
+                Data = new Dictionary<int, CellData>();
+            }
+        }
+
+        private class MultiLevelSnapshotComparer : IComparer<RowSnapshot>
+        {
+            private readonly SortOptions _options;
+            private readonly NaturalSortComparer _defaultComparer;
+            private readonly WorkSheet _sheet;
+
+            public MultiLevelSnapshotComparer(SortOptions options, WorkSheet sheet)
+            {
+                _options = options;
+                _sheet = sheet;
+                _defaultComparer = new NaturalSortComparer(options.MatchCase);
+            }
+
+            public int Compare(RowSnapshot x, RowSnapshot y)
+            {
+                foreach (var level in _options.SortLevels)
+                {
+                    object valX = GetValue(x, level.ColumnIndex);
+                    object valY = GetValue(y, level.ColumnIndex);
+
+                    int result;
+                    if (level.CustomComparer != null)
+                    {
+                        result = level.CustomComparer.Compare(valX, valY);
+                    }
+                    else
+                    {
+                        result = _defaultComparer.Compare(valX, valY);
+                    }
+
+                    if (result != 0)
+                    {
+                        return level.Ascending ? result : -result;
+                    }
+                }
+                return 0;
+            }
+
+            private object GetValue(RowSnapshot snapshot, int col)
+            {
+                if (snapshot.Data.TryGetValue(col, out var cellData))
+                {
+                    return cellData.Value;
+                }
+
+                return _sheet.GetValue(snapshot.OriginalRow, col);
             }
         }
         #endregion

@@ -236,6 +236,33 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             }
         }
 
+        public void RefreshInteractionLayers(bool rowHeaders = true, bool columnHeaders = true, bool cells = true)
+        {
+            if (rowHeaders)
+            {
+                var rowHeadersInteractionLayer = RowHeadersRegion.GetInteractionLayer();
+
+                if (rowHeadersInteractionLayer != null && rowHeadersInteractionLayer.IsLoaded)
+                    rowHeadersInteractionLayer.InvalidateVisual();
+            }
+
+            if (columnHeaders)
+            {
+                var columnHeadersInteractionLayer = ColumnHeadersRegion.GetInteractionLayer();
+
+                if (columnHeadersInteractionLayer != null && columnHeadersInteractionLayer.IsLoaded)
+                    columnHeadersInteractionLayer.InvalidateVisual();
+            }
+
+            if (cells)
+            {
+                var cellsInteractionLayer = CellsRegion.GetInteractionLayer() as CellsInteractionLayer;
+
+                if (cellsInteractionLayer != null && cellsInteractionLayer.IsLoaded)
+                    cellsInteractionLayer.UpdateSelectionRects();
+            }
+        }
+
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
         {
             base.OnRenderSizeChanged(sizeInfo);

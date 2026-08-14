@@ -1,6 +1,3 @@
-using DevBrewLabs.Spreadsheet.Data;
-using DevBrewLabs.Spreadsheet.Formatters;
-
 namespace DevBrewLabs.Spreadsheet
 {
     // Represents a cell or range of cells in the spreadsheet.
@@ -37,8 +34,5 @@ namespace DevBrewLabs.Spreadsheet
         /// Gets the column count of the range.
         /// </summary>
         int ColumnCount { get; }
-        /// <summary>
-        /// Gets the parent cell collection.
-        /// </summary>
     }
 }
