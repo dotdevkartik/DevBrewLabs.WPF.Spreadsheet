@@ -24,7 +24,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                     return;
                 }
 
-                _resizeManager.BeginResizeColumn(SheetView, hitTest.Column, (int)hitTest.Position.X);
+                _resizeManager.BeginResize(SheetView, hitTest.Column, (int)hitTest.Position.X);
                 Children.Add(_resizeManager.ResizeLine);
             }
             else
@@ -61,7 +61,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
             if (_resizeManager.IsResizing)
             {
-                _resizeManager.EndResizeColumn(SheetView);
+                _resizeManager.EndResize(SheetView);
                 Children.Remove(_resizeManager.ResizeLine);
                 SheetView.Spread.SheetTabControl.UpdateScrollbars();
             }
@@ -76,7 +76,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
             if(_resizeManager.IsResizing)
             {
-                _resizeManager.ResizeColumn(SheetView, (int)e.GetPosition(this).X);
+                _resizeManager.Resize(SheetView, (int)e.GetPosition(this).X);
                 return;
             }
 

@@ -17,7 +17,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             _resizingRow = -1;
         }
 
-        public void BeginResizeRow(ISheetView sheetView, int row, int rowLocation)
+        public override void BeginResize(ISheetView sheetView, int row, int rowLocation)
         {
             _rowLocation = rowLocation;
             _resizingRow = row;
@@ -33,7 +33,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             Spread.SuspendUpdates = true;
         }
 
-        public void ResizeRow(ISheetView sheetView, int currentLocation)
+        public override void Resize(ISheetView sheetView, int currentLocation)
         {
             var workSheet = sheetView.WorkSheet;
 
@@ -115,7 +115,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             Spread.Invalidate(true, false, false, false);
         }
 
-        public void EndResizeRow(ISheetView sheetView)
+        public override void EndResize(ISheetView sheetView)
         {
             if (_initialHeights != null)
             {

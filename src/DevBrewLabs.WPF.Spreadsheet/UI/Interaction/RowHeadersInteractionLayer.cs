@@ -26,7 +26,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                     return;
                 }
 
-                _resizeManager.BeginResizeRow(SheetView, hitTest.Row, (int)hitTest.Position.Y);
+                _resizeManager.BeginResize(SheetView, hitTest.Row, (int)hitTest.Position.Y);
                 Children.Add(_resizeManager.ResizeLine);
             }
             else
@@ -63,7 +63,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
             if (_resizeManager.IsResizing)
             {
-                _resizeManager.EndResizeRow(SheetView);
+                _resizeManager.EndResize(SheetView);
                 Children.Remove(_resizeManager.ResizeLine);
             }
 
@@ -77,7 +77,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
             if (_resizeManager.IsResizing)
             {
-                _resizeManager.ResizeRow(SheetView, (int)e.GetPosition(this).Y);
+                _resizeManager.Resize(SheetView, (int)e.GetPosition(this).Y);
                 return;
             }
 

@@ -17,7 +17,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             _resizingColumn = -1;           
         }
 
-        public void BeginResizeColumn(ISheetView sheetView, int column, int columnLocation)
+        public override void BeginResize(ISheetView sheetView, int column, int columnLocation)
         {
             _columnLocation = columnLocation;
             _resizingColumn = column;
@@ -33,7 +33,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             Spread.SuspendUpdates = true;
         }
 
-        public void ResizeColumn(ISheetView sheetView, int currentLocation)
+        public override void Resize(ISheetView sheetView, int currentLocation)
         {
             var workSheet = sheetView.WorkSheet;
 
@@ -115,7 +115,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             Spread.Invalidate(false, true, false, false);
         }
 
-        public void EndResizeColumn(ISheetView sheetView)
+        public override void EndResize(ISheetView sheetView)
         {
             if (_initialWidths != null)
             {
