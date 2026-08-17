@@ -88,7 +88,12 @@ namespace DevBrewLabs.Spreadsheet
                 _workSheet.ExecuteSupressed(() =>
                 {
                     ApplyToRange((row, column) => _workSheet.SetValue(row, column, value));
-                    OnRangeChanged(RangeChangeType.Value);
+
+                    _workSheet.OnRangeChanged(new RangeChangedEventArgs(
+                          SheetRegion.Cells,
+                          _workSheet,
+                          new CellRange(Row, Column, RowCount, ColumnCount),
+                          RangeChangeType.Value));
                 });
             }
         }
@@ -104,7 +109,12 @@ namespace DevBrewLabs.Spreadsheet
                 _workSheet.ExecuteSupressed(() =>
                 {
                     ApplyToRange((row, column) => _workSheet.SetFormula(row, column, value));
-                    OnRangeChanged(RangeChangeType.Formula);
+
+                    _workSheet.OnRangeChanged(new RangeChangedEventArgs(
+                          SheetRegion.Cells,
+                          _workSheet,
+                          new CellRange(Row, Column, RowCount, ColumnCount),
+                          RangeChangeType.Formula));
                 });
             }
         }
@@ -132,7 +142,12 @@ namespace DevBrewLabs.Spreadsheet
                 _workSheet.ExecuteSupressed(() =>
                 {
                     ApplyToRange((row, column) => _workSheet.SetStyleName(row, column, value));
-                    OnRangeChanged(RangeChangeType.Style);
+
+                    _workSheet.OnRangeChanged(new RangeChangedEventArgs(
+                          SheetRegion.Cells,
+                          _workSheet,
+                          new CellRange(Row, Column, RowCount, ColumnCount),
+                          RangeChangeType.StyleName));
                 });
             }
         }
@@ -148,7 +163,12 @@ namespace DevBrewLabs.Spreadsheet
                 _workSheet.ExecuteSupressed(() =>
                 {
                     ApplyToRange((row, column) => _workSheet.SetStyle(row, column, value));
-                    OnRangeChanged(RangeChangeType.Style);
+
+                    _workSheet.OnRangeChanged(new RangeChangedEventArgs(
+                       SheetRegion.Cells,
+                       _workSheet,
+                       new CellRange(Row, Column, RowCount, ColumnCount),
+                       RangeChangeType.Style));
                 });
             }
         }
@@ -426,13 +446,6 @@ namespace DevBrewLabs.Spreadsheet
         public void Dispose()
         {
             _cellCollection.Clear();
-        }
-
-        private void OnRangeChanged(RangeChangeType changeType)
-        {
-            _workSheet.OnRangeChanged(new RangeChangedEventArgs(SheetRegion.Cells, 
-                new CellRange(Row, Column, RowCount, ColumnCount),
-                changeType));
         }
     }
 }

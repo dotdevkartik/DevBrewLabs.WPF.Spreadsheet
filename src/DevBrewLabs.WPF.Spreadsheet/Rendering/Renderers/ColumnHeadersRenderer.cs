@@ -15,7 +15,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             var rows = (ColumnHeaderRows)workSheet.ColumnHeaders.Rows;
             var columns = (Columns)workSheet.Columns;
             var cells = workSheet.ColumnHeaders.Cells;
-            var viewport = (ViewPort)SheetView.ViewPort;
 
             double zoom = SheetView.ZoomFactor > 0 ? SheetView.ZoomFactor : 1.0;
             var renderContext = new RenderContext(zoom, SheetView.Spread.PixelPerDip, 5.0, true);
@@ -26,7 +25,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                 if (rowHeight == 0)
                     continue;
                 var headerRow = rows.GetItem(row);
-                var rowLocation = rows.GetLocation(row);
+                var rowLocation = SheetView.ViewPort.GetHeaderRowLocation(row);
                 var y = rowLocation * zoom;
                 var scaledRowHeight = rowHeight * zoom;
 
@@ -37,8 +36,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                         continue;
 
                     var headerColumn = columns.GetItem(col);
-                    var colLocation = columns.GetLocation(col);
-                    var x = (colLocation - viewport.LeftColumnLocation) * zoom;
+                    var colLocation = SheetView.ViewPort.GetColumnLocation(col);
+                    var x = (colLocation - SheetView.ViewPort.LeftColumnLocation) * zoom;
                     var scaledColumnWidth = columnWidth * zoom;
 
                     var cellRect = new Rect(x, y, scaledColumnWidth, scaledRowHeight);

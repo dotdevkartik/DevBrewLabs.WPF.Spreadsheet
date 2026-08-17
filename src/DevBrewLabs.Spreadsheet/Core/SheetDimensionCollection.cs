@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DevBrewLabs.Spreadsheet
 {
-    internal abstract class SheetDimensionCollection<T> where T : class
+    internal abstract class SheetDimensionCollection<T> : IDisposable where T : class
     {
-        protected internal SortedDictionary<int, T> InternalCollection;
-        protected abstract LocationCache<T> LocationCache { get; }
+        private SortedDictionary<int, T> _collection;
+
         public T this[int index]
         {
             get
@@ -15,23 +16,22 @@ namespace DevBrewLabs.Spreadsheet
             }
         }
 
+        public bool HasItems => _collection.Count > 0;
+
         internal SheetDimensionCollection()
         {
-            InternalCollection = new SortedDictionary<int, T>();
-        }
-
-        internal double GetLocation(int index)
-        {
-            return LocationCache.GetLocation(index);
-        }
-
-        internal void UpdateLocation(int fromIndex, double offset)
-        {
-            LocationCache.UpdateLocation(fromIndex, offset);
+            _collection = new SortedDictionary<int, T>();
         }
 
         public abstract void Insert(int index, int count);
+
         public abstract void Remove(int index, int count);
+
+        public int GetIndex(T item)
+        {
+            var result = _collection.FirstOrDefault(x => x.Value == item);
+            return result.Key;
+        }
 
         /// <summary>
         /// Gets item from collection. returns null if item doesn't exist.
@@ -55,7 +55,7 @@ namespace DevBrewLabs.Spreadsheet
         /// <returns></returns>
         protected T GetItem(int index, bool createIfNotExist)
         {
-            if (InternalCollection.TryGetValue(index, out T item))
+            if (_collection.TryGetValue(index, out T item))
             {
                 return item;
             }
@@ -75,7 +75,7 @@ namespace DevBrewLabs.Spreadsheet
         protected T AddItemInternal(int index)
         {
             var item = CreateItem(index);
-            InternalCollection.Add(index, item);
+            _collection.Add(index, item);
             return item;
         }
 
@@ -84,88 +84,11 @@ namespace DevBrewLabs.Spreadsheet
         /// </summary>
         /// <returns></returns>
         protected abstract T CreateItem(int index);
-    }
 
-    internal sealed class LocationCache<T>
-    {
-        private readonly Func<int> _count;
-        private readonly Func<double> _defaultSize;
-        private readonly IDictionary<int, T> _items;
-        private readonly Func<T, double> _getSize;
-
-        private double[] _locations;
-        private int _lastCalculated;
-
-        public LocationCache(
-            Func<int> count,
-            Func<double> defaultSize,
-            IDictionary<int, T> items,
-            Func<T, double> getSize)
+        public void Dispose()
         {
-            _count = count;
-            _defaultSize = defaultSize;
-            _items = items;
-            _getSize = getSize;
-        }
-
-        public double GetLocation(int index)
-        {
-            if (index <= 0)
-                return 0;
-
-            EnsureCapacity(index + 1);
-
-            while (_lastCalculated < index)
-            {
-                double size = _defaultSize();
-
-                if (_items.TryGetValue(_lastCalculated, out var item))
-                    size = _getSize(item);
-
-                _locations[_lastCalculated + 1] =
-                    _locations[_lastCalculated] + size;
-
-                _lastCalculated++;
-            }
-
-            return _locations[index];
-        }
-
-        public void UpdateLocation(int fromIndex, double delta)
-        {
-            if (delta == 0 || _locations == null)
-                return;
-
-            for (int i = fromIndex; i <= _lastCalculated; i++)
-                _locations[i] += delta;
-        }
-
-        public void Reset()
-        {
-            _lastCalculated = 0;
-
-            if (_locations != null && _locations.Length > 0)
-                _locations[0] = 0;
-        }
-
-        private void EnsureCapacity(int requiredCapacity = 0)
-        {
-            int count = Math.Max(_count() + 1, requiredCapacity);
-
-            if (_locations == null)
-            {
-                _locations = new double[Math.Max(16, count)];
-            }
-       
-            if (_locations.Length >= count)
-                return;
-
-            int size = _locations.Length;
-
-            while (size < count)
-                size *= 2;
-
-            Array.Resize(ref _locations, size);
+            _collection.Clear();
+            _collection = null;
         }
     }
 }

@@ -14,8 +14,9 @@ namespace DevBrewLabs.Spreadsheet
     {
         public event EventHandler<CellChangedEventArgs> CellChanged;
         public event EventHandler<RangeChangedEventArgs> RangeChanged;
-        public event EventHandler<RowChangedEventArgs> RowsChanged;
-        public event EventHandler<ColumnChangedEventArgs> ColumnsChanged;
+        public event EventHandler<RowChangedEventArgs> RowChanged;
+        public event EventHandler<ColumnChangedEventArgs> ColumnChanged;
+
         private string _name;
         private WorkBook _workBook;
         private Cells _cells;
@@ -132,6 +133,7 @@ namespace DevBrewLabs.Spreadsheet
 
             OnCellChanged(new CellChangedEventArgs(
                     SheetRegion.Cells,
+                    this,
                     row,
                     column,
                     existingStyle,
@@ -159,6 +161,7 @@ namespace DevBrewLabs.Spreadsheet
 
             OnCellChanged(new CellChangedEventArgs(
                     SheetRegion.Cells,
+                    this,
                     row,
                     column,
                     existingStyleName,
@@ -200,6 +203,7 @@ namespace DevBrewLabs.Spreadsheet
 
             OnCellChanged(new CellChangedEventArgs(
                 SheetRegion.Cells,
+                this,
                 row,
                 column,
                 existingValue,
@@ -242,6 +246,7 @@ namespace DevBrewLabs.Spreadsheet
 
             OnCellChanged(new CellChangedEventArgs(
                   SheetRegion.Cells,
+                  this,
                   row,
                   column,
                   existingFormula,
@@ -374,6 +379,7 @@ namespace DevBrewLabs.Spreadsheet
 
             OnRangeChanged(new RangeChangedEventArgs(
                      SheetRegion.Cells,
+                     this,
                      new CellRange(row, column, rowCount, columnCount),
                      RangeChangeType.Value));
         }
@@ -392,6 +398,7 @@ namespace DevBrewLabs.Spreadsheet
 
             OnRangeChanged(new RangeChangedEventArgs(
                      SheetRegion.Cells,
+                     this,
                      range,
                      RangeChangeType.Value));
         }
@@ -496,6 +503,7 @@ namespace DevBrewLabs.Spreadsheet
 
             OnRangeChanged(new RangeChangedEventArgs(
                      SheetRegion.Cells,
+                     this,
                      new CellRange(startRow, startCol, rows, cols),
                       RangeChangeType.Value));
         }
@@ -614,6 +622,7 @@ namespace DevBrewLabs.Spreadsheet
 
             OnRangeChanged(new RangeChangedEventArgs(
                  SheetRegion.Cells,
+                 this,
                 new CellRange(sortStartRow, targetStartCol, sortRowCount, targetEndCol - targetStartCol + 1),
                 RangeChangeType.Sort
             ));
@@ -674,50 +683,41 @@ namespace DevBrewLabs.Spreadsheet
                 _suspendEvents = false;
             }
         }
+
         internal void OnCellChanged(CellChangedEventArgs args)
         {
-            if (_suspendEvents) return;
+            _workBook?.ChangeListener.CellChanged(args);
 
-            args.WorkSheet = this;
-            if (_workBook.UpdateProvider != null && !_workBook.UpdateProvider.SuspendUpdates)
-                _workBook.UpdateProvider.CellChanged(this, args.Row, args.Column, args.OldValue, args.NewValue, args.Region, args.ChangeType);
+            if (_suspendEvents) return;
 
             CellChanged?.Invoke(this, args);
         }
 
         internal void OnRangeChanged(RangeChangedEventArgs args)
         {
+            _workBook?.ChangeListener.RangeChanged(args);
+
             if (_suspendEvents) return;
-
-            args.WorkSheet = this;
-
-            if (_workBook.UpdateProvider != null && !_workBook.UpdateProvider.SuspendUpdates)
-                _workBook.UpdateProvider.RangeChanged(this, args.Range, args.Region, args.ChangeType);
 
             RangeChanged?.Invoke(this, args);
         }
 
-        internal void OnRowsChanged(RowChangedEventArgs args)
+        internal void OnRowChanged(RowChangedEventArgs args)
         {
+            _workBook?.ChangeListener.RowChanged(args);
+
             if (_suspendEvents) return;
 
-            args.WorkSheet = this;
-            if (_workBook.UpdateProvider != null && !_workBook.UpdateProvider.SuspendUpdates)
-                _workBook.UpdateProvider.RowsChanged(this, args.Index, args.Count, args.Region, args.ChangeType);
-
-            RowsChanged?.Invoke(this, args);
+            RowChanged?.Invoke(this, args);
         }
 
-        internal void OnColumnsChanged(ColumnChangedEventArgs args)
+        internal void OnColumnChanged(ColumnChangedEventArgs args)
         {
+            _workBook?.ChangeListener.ColumnChanged(args);
+
             if (_suspendEvents) return;
 
-            args.WorkSheet = this;
-
-            if (_workBook.UpdateProvider != null && !_workBook.UpdateProvider.SuspendUpdates)
-                _workBook.UpdateProvider.ColumnsChanged(this, args.Index, args.Count, args.Region, args.ChangeType);
-
-            ColumnsChanged?.Invoke(this, args);
+            ColumnChanged?.Invoke(this, args);
         }
         #endregion
 

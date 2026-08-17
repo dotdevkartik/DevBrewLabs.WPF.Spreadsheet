@@ -9,14 +9,14 @@ namespace DevBrewLabs.Spreadsheet
     internal class WorkBook : IWorkBook
     {
         private WorkbookAdapter _dataProvider;
-        private IUpdateProvider _updateProvider;
+        private IChangeListener _changeListener;
         private Dictionary<string, IStyle> _namedStyles;
 
         public string Name { get; set; }
         public IWorkSheets WorkSheets { get; private set; }
         public ICalcEngine CalcEngine { get; private set; }
         public IStylePalette StylePalette { get; private set; }
-        internal IUpdateProvider UpdateProvider => _updateProvider;
+        internal IChangeListener ChangeListener => _changeListener;
 
         public WorkBook(string name)
         {
@@ -69,12 +69,12 @@ namespace DevBrewLabs.Spreadsheet
             rowHeaderStyle.BackColor = topLeftStyle.BackColor = columnHeaderStyle.BackColor = Drawing.CellColor.FromArgb(255, 240, 240, 240);
         }
 
-        internal WorkBook(string name, IUpdateProvider updateProvider) : this(name)
+        internal WorkBook(string name, IChangeListener updateProvider) : this(name)
         {
             if(updateProvider == null)
                 throw new ArgumentNullException(nameof(updateProvider));
 
-            _updateProvider = updateProvider;
+            _changeListener = updateProvider;
         }
 
         public void AddNamedStyle(string styleName, CellStyle style)

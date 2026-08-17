@@ -215,17 +215,17 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             switch (_sheetView.HeadersVisibility)
             {
                 case HeadersVisibility.Both:
-                    ColumnDefinitions[0].Width = new GridLength(_workSheet.RowHeaders.Width * zoom);
-                    RowDefinitions[0].Height = new GridLength(_workSheet.ColumnHeaders.Height * zoom);
+                    ColumnDefinitions[0].Width = new GridLength(_sheetView.GetRowHeaderWidth() * zoom);
+                    RowDefinitions[0].Height = new GridLength(_sheetView.GetColumnHeaderHeight() * zoom);
                     break;
 
                 case HeadersVisibility.Column:
                     ColumnDefinitions[0].Width = new GridLength(0);
-                    RowDefinitions[0].Height = new GridLength(_workSheet.ColumnHeaders.Height * zoom);
+                    RowDefinitions[0].Height = new GridLength(_sheetView.GetColumnHeaderHeight() * zoom);
                     break;
 
                 case HeadersVisibility.Row:
-                    ColumnDefinitions[0].Width = new GridLength(_workSheet.RowHeaders.Width * zoom);
+                    ColumnDefinitions[0].Width = new GridLength(_sheetView.GetRowHeaderWidth() * zoom);
                     RowDefinitions[0].Height = new GridLength(0);
                     break;
 

@@ -34,12 +34,13 @@ namespace DevBrewLabs.Spreadsheet
                 }
 
                 _width = value;
-                _parent.UpdateLocation(Index + 1, value - oldWidth);
 
-                _parent.RowHeaders.WorkSheet.OnColumnsChanged(new ColumnChangedEventArgs(
+                _parent.RowHeaders.WorkSheet.OnColumnChanged(new ColumnChangedEventArgs(
                     SheetRegion.RowHeader,
+                    _parent.RowHeaders.WorkSheet,
                     Index,
-                    1,
+                    oldWidth,
+                    value,
                     ColumnChangeType.Width));
             }
         }
@@ -52,21 +53,22 @@ namespace DevBrewLabs.Spreadsheet
             }
             set
             {
-                if (value == _styleName)
+                var oldValue = _styleName;
+
+                if (value == oldValue)
                 {
                     return;
                 }
 
-                if (_styleName != value)
-                {
-                    _parent.RowHeaders.WorkSheet.OnColumnsChanged(new ColumnChangedEventArgs(
-                       SheetRegion.RowHeader,
-                       Index,
-                        1,
-                        ColumnChangeType.Style));
-                }
-
                 _styleName = value;
+
+                _parent.RowHeaders.WorkSheet.OnColumnChanged(new ColumnChangedEventArgs(
+                      SheetRegion.RowHeader,
+                      _parent.RowHeaders.WorkSheet,
+                      Index,
+                      oldValue,
+                      value,
+                      ColumnChangeType.StyleName));
             }
         }
 
@@ -78,21 +80,22 @@ namespace DevBrewLabs.Spreadsheet
             }
             set
             {
-                if (value == _style)
+                var oldValue = _style;
+                if (value == oldValue)
                 {
                     return;
                 }
 
-                if (_style != value)
-                {
-                    _parent.RowHeaders.WorkSheet.OnColumnsChanged(new ColumnChangedEventArgs(
-                       SheetRegion.RowHeader,
-                       Index,
-                        1,
-                        ColumnChangeType.Style));
-                }
-
                 _style = value;
+
+                _parent.RowHeaders.WorkSheet.OnColumnChanged(new ColumnChangedEventArgs(
+                       SheetRegion.RowHeader,
+                       _parent.RowHeaders.WorkSheet,
+                       Index,
+                       oldValue,
+                       value,
+                       ColumnChangeType.Style));
+
             }
         }
 

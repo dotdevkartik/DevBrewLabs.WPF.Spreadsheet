@@ -37,12 +37,13 @@ namespace DevBrewLabs.Spreadsheet
                 }
 
                 _width = value;
-                _parent.UpdateLocation(Index + 1, value - oldWidth);
 
-                _parent.WorkSheet?.OnColumnsChanged(new ColumnChangedEventArgs(
+                _parent.WorkSheet?.OnColumnChanged(new ColumnChangedEventArgs(
                     SheetRegion.Cells,
+                    _parent.WorkSheet,
                     Index,
-                    1,
+                    oldWidth,
+                    value,
                     ColumnChangeType.Width));
             }
         }
@@ -55,18 +56,22 @@ namespace DevBrewLabs.Spreadsheet
             }
             set
             {
-                if (value == _styleName)
+                string oldStyleName = _styleName;
+
+                if (value == oldStyleName)
                 {
                     return;
                 }
 
                 _styleName = value;
 
-                _parent.WorkSheet?.OnColumnsChanged(new ColumnChangedEventArgs(
+                _parent.WorkSheet?.OnColumnChanged(new ColumnChangedEventArgs(
                     SheetRegion.Cells,
+                    _parent.WorkSheet,
                     Index,
-                    1,
-                    ColumnChangeType.Style));
+                    oldStyleName,
+                    value,
+                    ColumnChangeType.StyleName));
             }
         }
 
@@ -78,18 +83,22 @@ namespace DevBrewLabs.Spreadsheet
             }
             set
             {
-                if (value == _style)
+                var oldStyle = _style;
+
+                if (oldStyle == _style)
                 {
                     return;
                 }
 
                 if (_style != value)
                 {
-                    _parent.WorkSheet?.OnColumnsChanged(new ColumnChangedEventArgs(
+                    _parent.WorkSheet?.OnColumnChanged(new ColumnChangedEventArgs(
                        SheetRegion.Cells,
+                       _parent.WorkSheet,
                        Index,
-                        1,
-                        ColumnChangeType.Style));
+                       oldStyle,
+                       value,
+                       ColumnChangeType.Style));
                 }
 
                 _style = value;

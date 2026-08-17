@@ -17,7 +17,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             _resizingColumn = -1;           
         }
 
-        public override void BeginResize(ISheetView sheetView, int column, int columnLocation)
+        public override void BeginResize(SheetView sheetView, int column, int columnLocation)
         {
             _columnLocation = columnLocation;
             _resizingColumn = column;
@@ -33,7 +33,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             Spread.SuspendUpdates = true;
         }
 
-        public override void Resize(ISheetView sheetView, int currentLocation)
+        public override void Resize(SheetView sheetView, int currentLocation)
         {
             var workSheet = sheetView.WorkSheet;
 
@@ -41,7 +41,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             double logicalCurrentLocation = currentLocation / zoom;
 
             ResizeLine.X1 = ResizeLine.X2 = Math.Max(0, currentLocation);
-            ResizeLine.Y1 = workSheet.ColumnHeaders.Height * zoom;
+            ResizeLine.Y1 = sheetView.GetColumnHeaderHeight() * zoom;
             ResizeLine.Y2 = sheetView.Spread.SheetViewPane.ActualHeight;
             ResizeLine.Visibility = Visibility.Visible;
 
@@ -111,17 +111,17 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 }
             }
 
-            sheetView.ViewPort.As<ViewPort>().CalculateVisibleRange();
+            sheetView.ViewPort.CalculateVisibleRange();
             Spread.Invalidate(false, true, false, false);
         }
 
-        public override void EndResize(ISheetView sheetView)
+        public override void EndResize(SheetView sheetView)
         {
             if (_initialWidths != null)
             {
                 var workSheet = sheetView.WorkSheet;
                 
-                var action = new ColumnResizedAction { SheetView = (SheetView)sheetView };
+                var action = new ColumnResizedAction { SheetView = sheetView };
                 bool hasChanges = false;
                 
                 for (int i = 0; i < workSheet.ColumnCount; i++)

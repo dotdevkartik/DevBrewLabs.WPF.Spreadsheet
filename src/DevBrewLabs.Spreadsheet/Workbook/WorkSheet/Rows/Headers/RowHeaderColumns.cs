@@ -16,18 +16,11 @@ namespace DevBrewLabs.Spreadsheet
         }
 
         public RowHeaders RowHeaders { get; }
-        protected override LocationCache<IColumn> LocationCache { get; }
 
         public RowHeaderColumns(RowHeaders parent) : base()
         {
             RowHeaders = parent;
             _workSheet = parent.WorkSheet;
-
-            LocationCache = new LocationCache<IColumn>(
-                () => _workSheet.RowHeaders.ColumnCount,
-                () => _workSheet.RowHeaders.DefaultColumnWidth,
-                InternalCollection,
-                c => c.Width);
         }
 
         protected override IColumn CreateItem(int index)
@@ -49,14 +42,7 @@ namespace DevBrewLabs.Spreadsheet
 
         public int GetColumnIndex(IColumn column)
         {
-            var result = InternalCollection.FirstOrDefault(x => x.Value == column);
-            return result.Key;
-        }
-
-        public void Dispose()
-        {
-            InternalCollection.Clear();
-            InternalCollection = null;
+            return GetIndex(column);
         }
 
         public override void Insert(int index, int count)

@@ -14,7 +14,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
             var workSheet = (WorkSheet)SheetView.WorkSheet;
             var rows = (Rows)workSheet.Rows;
             var columns = (RowHeaderColumns)workSheet.RowHeaders.Columns;
-            var viewport = (ViewPort)SheetView.ViewPort;
+            var viewport = SheetView.ViewPort;
 
             double zoom = SheetView.ZoomFactor > 0 ? SheetView.ZoomFactor : 1.0;
             double halfPenWidth = SheetView.Spread.GridLinePen.Thickness * SheetView.Spread.PixelPerDip / 2;
@@ -29,7 +29,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
                 if (rowHeight == 0)
                     continue;
 
-                var rowLocation = rows.GetLocation(row);
+                var rowLocation = viewport.GetRowLocation(row);
                 var y = (rowLocation - viewport.TopRowLocation) * zoom;
                 var scaledRowHeight = rowHeight * zoom;
 
@@ -42,7 +42,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
                     if (columnWidth == 0)
                         continue;
 
-                    var colLocation = columns.GetLocation(col);
+                    var colLocation = viewport.GetHeaderColumnLocation(col);
                     var x = colLocation * zoom;
                     var scaledColumnWidth = columnWidth * zoom;
 
@@ -67,7 +67,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
                 {
                     if (row == 0 || rows.GetRowHeight(row - 1) > 0)
                     {
-                        var rowLocation = rows.GetLocation(row);
+                        var rowLocation = viewport.GetRowLocation(row);
                         var y = (rowLocation - viewport.TopRowLocation) * zoom;
                         DrawHiddenRowIndicator(context, y, leftColumn, rightColumn, columns, workSheet, zoom);
                     }
@@ -80,6 +80,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
         private void DrawHiddenRowIndicator(DrawingContext context, double y, int leftColumn, int rightColumn, RowHeaderColumns columns, WorkSheet workSheet, double zoom)
         {
             var pen = SheetView.Spread.GridLinePen;
+            var viewPort = SheetView.ViewPort;
             var defaultStyle = workSheet.WorkBook.GetNamedStyle(StyleKeys.DefaultRowHeaderStyleKey);
 
             double line1Y, line2Y;
@@ -102,7 +103,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
                 var columnWidth = columns.GetColumnWidth(col);
                 if (columnWidth == 0)
                     continue;
-                var colLocation = columns.GetLocation(col) * zoom;
+                var colLocation = viewPort.GetHeaderColumnLocation(col) * zoom;
                 var scaledColumnWidth = columnWidth * zoom;
                 var gapRect = new Rect(colLocation, rectTop, scaledColumnWidth, rectHeight);
 

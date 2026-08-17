@@ -3,7 +3,7 @@ using System.Windows;
 
 namespace DevBrewLabs.WPF.Spreadsheet.UI
 {
-    public interface IViewPort
+    internal interface IViewPort
     {
         /// <summary>
         /// Gets the visible cell range.

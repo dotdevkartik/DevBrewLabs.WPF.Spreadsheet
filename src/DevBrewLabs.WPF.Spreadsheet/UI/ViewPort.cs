@@ -12,6 +12,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
         private Rows _rows;
         private Columns _columns;
         private CellRange _viewRange;
+        private LocationCache<IRow> _rowLocCache;
+        private LocationCache<IColumn> _colLocCache;
+        private LocationCache<IRow> _headerRowLocCache;
+        private LocationCache<IColumn> _headerColLocCache;
 
         public double TopRowLocation { get; private set; }
         public double LeftColumnLocation { get; private set; }
@@ -26,7 +30,92 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
             _rows = _workSheet.Rows.As<Rows>();
             _columns = _workSheet.Columns.As<Columns>();
             _viewRange = new CellRange(0, 0, 0, 0);
+
+            _rowLocCache = new LocationCache<IRow>(
+                () => _workSheet.RowCount,
+                () => _workSheet.DefaultRowHeight,
+                _rows,
+                row => row.Height);
+
+            _colLocCache = new LocationCache<IColumn>(
+                () => _workSheet.ColumnCount,
+                () => _workSheet.DefaultColumnWidth,
+                _columns,
+                column => column.Width);
+
+            _headerRowLocCache = new LocationCache<IRow>(
+                () => _workSheet.ColumnHeaders.RowCount,
+                () => _workSheet.ColumnHeaders.DefaultRowHeight,
+                _workSheet.ColumnHeaders.Rows as ColumnHeaderRows,
+                row => row.Height);
+
+            _headerColLocCache = new LocationCache<IColumn>(
+                () => _workSheet.RowHeaders.ColumnCount,
+                () => _workSheet.RowHeaders.DefaultColumnWidth,
+                _workSheet.RowHeaders.Columns as RowHeaderColumns,
+                column => column.Width);
         }
+
+        internal double GetRowLocation(int index)
+        {
+            return _rowLocCache.GetLocation(index);
+        }
+
+        internal void UpdateRowLocation(int fromIndex, double offset)
+        {
+            _rowLocCache.UpdateLocation(fromIndex, offset);
+        }
+
+        internal double GetColumnLocation(int index)
+        {
+            return _colLocCache.GetLocation(index);
+        }
+
+        internal void UpdateColumnLocation(int fromIndex, double offset)
+        {
+            _colLocCache.UpdateLocation(fromIndex, offset);
+        }
+
+        /// <summary>
+        /// Get column header row location.
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        internal double GetHeaderRowLocation(int index)
+        {
+            return _headerRowLocCache.GetLocation(index);
+        }
+
+        /// <summary>
+        /// Update column header row location.
+        /// </summary>
+        /// <param name="fromIndex"></param>
+        /// <param name="offset"></param>
+        internal void UpdateHeaderRowLocation(int fromIndex, double offset)
+        {
+            _headerRowLocCache.UpdateLocation(fromIndex, offset);
+        }
+
+        /// <summary>
+        /// Get row header column location.
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        internal double GetHeaderColumnLocation(int index)
+        {
+            return _headerColLocCache.GetLocation(index);
+        }
+
+        /// <summary>
+        /// Update row header column location.
+        /// </summary>
+        /// <param name="fromIndex"></param>
+        /// <param name="offset"></param>
+        internal void UpdateHeaderColumnLocation(int fromIndex, double offset)
+        {
+            _headerColLocCache.UpdateLocation(fromIndex, offset);
+        }
+
 
         internal CellRange ShrinkRangeToViewPort(CellRange range)
         {
@@ -41,13 +130,13 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
 
         public Rect GetColumnRect(int column)
         {
-            return new Rect(_columns.GetLocation(column), _actualBounds.Top,
+            return new Rect(GetColumnLocation(column), _actualBounds.Top,
                 _columns.GetColumnWidth(column), _actualBounds.Height);
         }
 
         public Rect GetRowRect(int row)
         {
-            return new Rect(_actualBounds.Left, _rows.GetLocation(row), 
+            return new Rect(_actualBounds.Left, GetRowLocation(row),
                 _actualBounds.Width, _rows.GetRowHeight(row));
         }
 
@@ -60,7 +149,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
         {
             var topLeftCellRect = GetCellRect(topRow, leftColumn);
 
-            if(bottomRow > topRow || rightColumn > leftColumn)
+            if (bottomRow > topRow || rightColumn > leftColumn)
             {
                 var bottomRightCellRect = GetCellRect(bottomRow, rightColumn);
                 var rangeRect = new Rect(topLeftCellRect.TopLeft, bottomRightCellRect.BottomRight);
@@ -116,21 +205,21 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
                 colSpan = spanRange.ColumnCount;
             }
 
-            var colLocation = _columns.GetLocation(col);
-            var rowLocation = _rows.GetLocation(row);
+            var colLocation = GetColumnLocation(col);
+            var rowLocation = GetRowLocation(row);
             var width = _columns.GetColumnWidth(col);
             var height = _rows.GetRowHeight(row);
 
             if (rowSpan > 1)
             {
                 int bottomRow = row + rowSpan - 1;
-                height = (int)(_rows.GetLocation(bottomRow) - rowLocation + _rows.GetRowHeight(bottomRow));
+                height = (int)(GetRowLocation(bottomRow) - rowLocation + _rows.GetRowHeight(bottomRow));
             }
 
             if (colSpan > 1)
             {
                 int rightColumn = col + colSpan - 1;
-                width = (int)(_columns.GetLocation(rightColumn) - colLocation + _columns.GetColumnWidth(rightColumn));
+                width = (int)(GetColumnLocation(rightColumn) - colLocation + _columns.GetColumnWidth(rightColumn));
             }
 
             return new Rect(colLocation, rowLocation, width, height);
@@ -174,7 +263,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
             if (_workSheet.RowCount == 0)
                 return;
 
-            if (_rows.InternalCollection.Count == 0)
+            if (!_rows.HasItems)
             {
                 int defaultRowHeight = _workSheet.DefaultRowHeight;
                 int targetRow = (int)(_sheetView.ScrollPosition.Y / defaultRowHeight);
@@ -191,10 +280,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
             {
                 for (int row = ViewRange.TopRow; row < _workSheet.RowCount; row++)
                 {
-                    var rowLocation = _rows.GetLocation(row);
+                    var rowLocation = GetRowLocation(row);
                     if (IsTopRow(row, rowLocation))
                     {
-                        TopRowLocation = _sheetView.Spread.ScrollMode == SheetScrollMode.Pixel 
+                        TopRowLocation = _sheetView.Spread.ScrollMode == SheetScrollMode.Pixel
                             ? _sheetView.ScrollPosition.Y : rowLocation;
                         SetTopRow(row);
                         break;
@@ -205,8 +294,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
             {
                 for (int row = ViewRange.TopRow; row >= 0; row--)
                 {
-                    var rowLocation = _rows.GetLocation(row);
-                    if(IsTopRow(row, rowLocation))
+                    var rowLocation = GetRowLocation(row);
+                    if (IsTopRow(row, rowLocation))
                     {
                         TopRowLocation = _sheetView.Spread.ScrollMode == SheetScrollMode.Pixel
                             ? _sheetView.ScrollPosition.Y : rowLocation;
@@ -226,7 +315,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
             if (_workSheet.ColumnCount == 0)
                 return;
 
-            if (_columns.InternalCollection.Count == 0)
+            if (!_columns.HasItems)
             {
                 int defaultColumnWidth = _workSheet.DefaultColumnWidth;
                 int targetCol = (int)(_sheetView.ScrollPosition.X / defaultColumnWidth);
@@ -243,7 +332,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
             {
                 for (int col = ViewRange.LeftColumn; col < _workSheet.ColumnCount; col++)
                 {
-                    var colLocation = _columns.GetLocation(col);
+                    var colLocation = GetColumnLocation(col);
                     if (IsLeftColumn(col, colLocation))
                     {
                         LeftColumnLocation = _sheetView.Spread.ScrollMode == SheetScrollMode.Pixel
@@ -257,7 +346,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
             {
                 for (int col = ViewRange.LeftColumn; col >= 0; col--)
                 {
-                    var colLocation = _columns.GetLocation(col);
+                    var colLocation = GetColumnLocation(col);
                     if (IsLeftColumn(col, colLocation))
                     {
                         LeftColumnLocation = _sheetView.Spread.ScrollMode == SheetScrollMode.Pixel
@@ -288,7 +377,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
         private bool IsLeftColumn(int column, double colLocation)
         {
             return _sheetView.ScrollPosition.X >= colLocation &&
-                _sheetView.ScrollPosition.X < colLocation + _columns.GetColumnWidth(column);    
+                _sheetView.ScrollPosition.X < colLocation + _columns.GetColumnWidth(column);
         }
 
         public void SetTopRow(int row)
@@ -319,6 +408,91 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
         public override string ToString()
         {
             return $"TopRow:{ViewRange.TopRow}, BottomRow:{ViewRange.BottomRow}, LeftColumn:{ViewRange.LeftColumn}, RightColumn:{ViewRange.RightColumn}";
+        }
+
+        private sealed class LocationCache<T> where T : class
+        {
+            private readonly Func<int> _count;
+            private readonly Func<double> _defaultSize;
+            private readonly SheetDimensionCollection<T> _items;
+            private readonly Func<T, double> _getSize;
+
+            private double[] _locations;
+            private int _lastCalculated;
+
+            public LocationCache(
+                Func<int> count,
+                Func<double> defaultSize,
+                SheetDimensionCollection<T> items,
+                Func<T, double> getSize)
+            {
+                _count = count;
+                _defaultSize = defaultSize;
+                _items = items;
+                _getSize = getSize;
+            }
+
+            public double GetLocation(int index)
+            {
+                if (index <= 0)
+                    return 0;
+
+                EnsureCapacity(index + 1);
+
+                while (_lastCalculated < index)
+                {
+                    double size = _defaultSize();
+
+                    var item = _items.GetItem(index);
+
+                    if (item != null)
+                        size = _getSize(item);
+
+                    _locations[_lastCalculated + 1] =
+                        _locations[_lastCalculated] + size;
+
+                    _lastCalculated++;
+                }
+
+                return _locations[index];
+            }
+
+            public void UpdateLocation(int fromIndex, double delta)
+            {
+                if (delta == 0 || _locations == null)
+                    return;
+
+                for (int i = fromIndex; i <= _lastCalculated; i++)
+                    _locations[i] += delta;
+            }
+
+            public void Reset()
+            {
+                _lastCalculated = 0;
+
+                if (_locations != null && _locations.Length > 0)
+                    _locations[0] = 0;
+            }
+
+            private void EnsureCapacity(int requiredCapacity = 0)
+            {
+                int count = Math.Max(_count() + 1, requiredCapacity);
+
+                if (_locations == null)
+                {
+                    _locations = new double[Math.Max(16, count)];
+                }
+
+                if (_locations.Length >= count)
+                    return;
+
+                int size = _locations.Length;
+
+                while (size < count)
+                    size *= 2;
+
+                Array.Resize(ref _locations, size);
+            }
         }
     }
 }

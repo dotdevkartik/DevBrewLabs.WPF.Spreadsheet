@@ -28,7 +28,7 @@ namespace DevBrewLabs.Spreadsheet
                 if (value < 0)
                     throw new ArgumentException("Row height can't be negative.");
 
-                double oldHeight = Height;
+                var oldHeight = Height;
 
                 if (oldHeight == value)
                 {
@@ -36,12 +36,14 @@ namespace DevBrewLabs.Spreadsheet
                 }
 
                 _height = value;
-                _parent.UpdateLocation(Index + 1, value - oldHeight);
 
-                _parent.WorkSheet.OnRowsChanged(new RowChangedEventArgs(
+                _parent.WorkSheet.OnRowChanged(new RowChangedEventArgs(
                     SheetRegion.Cells,
+                    _parent.WorkSheet,
                     Index,
-                    1, RowChangeType.Height));
+                    oldHeight,
+                    value,
+                    RowChangeType.Height));
             }
         }
 
@@ -55,17 +57,20 @@ namespace DevBrewLabs.Spreadsheet
             }
             set
             {
-                if (_styleName == value)
+                string oldValue = _styleName;
+                if (oldValue == value)
                 {
                     return;
                 }
 
                 _styleName = value;
 
-                _parent.WorkSheet.OnRowsChanged(new RowChangedEventArgs(
+                _parent.WorkSheet.OnRowChanged(new RowChangedEventArgs(
                         SheetRegion.Cells,
+                        _parent.WorkSheet,
                         Index,
-                        1, RowChangeType.Style));
+                        oldValue,
+                        value, RowChangeType.StyleName));
             }
         }
 
@@ -77,21 +82,21 @@ namespace DevBrewLabs.Spreadsheet
             }
             set
             {
-                if (value == _style)
+                var oldValue = _style;
+
+                if (value == oldValue)
                 {
                     return;
                 }
 
-                if (_style != value)
-                {
-                    _parent.WorkSheet.OnRowsChanged(new RowChangedEventArgs(
-                       SheetRegion.Cells,
-                       Index,
-                        1,
-                        RowChangeType.Style));
-                }
-
                 _style = value;
+
+                _parent.WorkSheet.OnRowChanged(new RowChangedEventArgs(
+                        SheetRegion.Cells,
+                        _parent.WorkSheet,
+                        Index,
+                        oldValue,
+                        value, RowChangeType.Style));
             }
         }
 

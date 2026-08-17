@@ -3,6 +3,7 @@ using DevBrewLabs.Spreadsheet.Utils;
 using DevBrewLabs.WPF.Spreadsheet.Rendering.Text;
 using DevBrewLabs.WPF.Spreadsheet.UI;
 using System;
+using System.Collections.Generic;
 using System.Windows;
 
 namespace DevBrewLabs.WPF.Spreadsheet
@@ -47,7 +48,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
                 }
             }
         }
-        public IViewPort ViewPort => _viewPort;
+        public ViewPort ViewPort => _viewPort;
         public Point ScrollPosition { get; private set; }
         public SelectionMode SelectionMode { get; set; }
         public MouseWheelScrollDirection MouseWheelScrollDirection { get; set; }
@@ -79,7 +80,6 @@ namespace DevBrewLabs.WPF.Spreadsheet
             AutoSizeColumns = false;
         }
 
-        #region Public
         public void Copy()
         {
             Spread.ClipboardManager.Copy(this);
@@ -197,16 +197,12 @@ namespace DevBrewLabs.WPF.Spreadsheet
             _viewPort.CalculateVisibleRange();
             Spread.Invalidate(true, false, true);
         }
-        #endregion
 
-        #region Private
         private void SetHeadersVisibility()
         {
             Spread.SheetViewPane.UpdateHeadersSize();
         }
-        #endregion
 
-        #region Internal
         internal void InternalSetZoomFactor(double zoomFactor)
         {
             if (Math.Abs(_zoomFactor - zoomFactor) > 0.001)
@@ -219,23 +215,33 @@ namespace DevBrewLabs.WPF.Spreadsheet
         internal double GetRowHeaderWidth()
         {
             if (HeadersVisibility == HeadersVisibility.Row || HeadersVisibility == HeadersVisibility.Both)
-                return _workSheet.RowHeaders.Width;
-            else return 0;
+            {
+                int lastColumn = _workSheet.RowHeaders.ColumnCount - 1;
+                var columnWidth = _workSheet.RowHeaders.Columns.GetColumnWidth(lastColumn);
+                var columnLocation = _viewPort.GetHeaderColumnLocation(lastColumn);
+                return columnLocation + columnWidth;
+            }    
+            
+            return 0;
         }
 
         internal double GetColumnHeaderHeight()
         {
             if (HeadersVisibility == HeadersVisibility.Column || HeadersVisibility == HeadersVisibility.Both)
-                return _workSheet.ColumnHeaders.Height;
-            else return 0;
+            {
+                int lastRow = _workSheet.ColumnHeaders.RowCount - 1;
+                var rowHeight = _workSheet.ColumnHeaders.Rows.GetRowHeight(lastRow);
+                var rowLocation = _viewPort.GetHeaderRowLocation(lastRow);
+                return rowLocation + rowHeight;
+            }
+
+            return 0;
         }
 
         internal void SetSelection(CellRange range)
         {
             _selection = range;
         }
-
-        #endregion
 
         public override string ToString()
         {
@@ -344,5 +350,3 @@ namespace DevBrewLabs.WPF.Spreadsheet
         }
     }
 }
-
-

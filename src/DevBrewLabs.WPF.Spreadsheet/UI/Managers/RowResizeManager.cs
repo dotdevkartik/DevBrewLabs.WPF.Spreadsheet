@@ -17,7 +17,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             _resizingRow = -1;
         }
 
-        public override void BeginResize(ISheetView sheetView, int row, int rowLocation)
+        public override void BeginResize(SheetView sheetView, int row, int rowLocation)
         {
             _rowLocation = rowLocation;
             _resizingRow = row;
@@ -33,7 +33,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             Spread.SuspendUpdates = true;
         }
 
-        public override void Resize(ISheetView sheetView, int currentLocation)
+        public override void Resize(SheetView sheetView, int currentLocation)
         {
             var workSheet = sheetView.WorkSheet;
 
@@ -41,7 +41,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             double logicalCurrentLocation = currentLocation / zoom;
 
             ResizeLine.Y1 = ResizeLine.Y2 = Math.Max(0, currentLocation);
-            ResizeLine.X1 = workSheet.RowHeaders.Width * zoom;
+            ResizeLine.X1 = sheetView.GetRowHeaderWidth() * zoom;
             ResizeLine.X2 = sheetView.Spread.SheetViewPane.ActualWidth;
             ResizeLine.Visibility = Visibility.Visible;
 
@@ -111,17 +111,17 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 }
             }
 
-            sheetView.ViewPort.As<ViewPort>().CalculateVisibleRange();
+            sheetView.ViewPort.CalculateVisibleRange();
             Spread.Invalidate(true, false, false, false);
         }
 
-        public override void EndResize(ISheetView sheetView)
+        public override void EndResize(SheetView sheetView)
         {
             if (_initialHeights != null)
             {
                 var workSheet = sheetView.WorkSheet;
                 
-                var action = new RowResizedAction { SheetView = (SheetView)sheetView };
+                var action = new RowResizedAction { SheetView = sheetView };
                 bool hasChanges = false;
                 
                 for (int i = 0; i < workSheet.RowCount; i++)

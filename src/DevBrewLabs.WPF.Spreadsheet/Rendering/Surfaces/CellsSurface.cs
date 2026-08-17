@@ -67,7 +67,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
             for (int row = viewRange.TopRow; row <= viewRange.BottomRow; row++)
             {
-                var rowLocation = rows.GetLocation(row);
+                var rowLocation = sheetView.ViewPort.GetRowLocation(row);
                 double rowHeight = _workSheet.Rows.GetRowHeight(row);
 
                 if (point.Y >= rowLocation && point.Y < rowLocation + rowHeight)
@@ -76,7 +76,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                     y = rowLocation;
                     for (int col = viewRange.LeftColumn; col <= viewRange.RightColumn; col++)
                     {
-                        var colLocation = columns.GetLocation(col);
+                        var colLocation = sheetView.ViewPort.GetColumnLocation(col);
                         double columnWidth = _workSheet.Columns.GetColumnWidth(col);
 
                         if (point.X >= colLocation && point.X < colLocation + columnWidth)

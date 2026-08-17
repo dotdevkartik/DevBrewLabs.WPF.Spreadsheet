@@ -14,20 +14,6 @@ namespace DevBrewLabs.Spreadsheet
 
         public int RowCount { get; set; }
         public int DefaultRowHeight { get; set; }
-        public double Height
-        {
-            get
-            {
-                var row = _rows.GetItem(RowCount - 1);
-                var rowLocation = _rows.GetLocation(RowCount - 1);
-
-                if (row == null)
-                    return rowLocation + DefaultRowHeight;
-
-                return rowLocation + row.Height;
-            }
-        }
-
         public IRange Cells => _cells;
         public IRows Rows => _rows;
 
@@ -81,7 +67,14 @@ namespace DevBrewLabs.Spreadsheet
             if (GetStyle(row, column) == style) return;
             ushort styleId = WorkSheet.WorkBook.StylePalette.GetOrAdd(style);
             GetColumnData(column, true).SetStyleId(row, styleId);
-            OnCellChanged(row, column, CellChangeType.Style);
+
+            WorkSheet.OnCellChanged(new CellChangedEventArgs(
+                    SheetRegion.ColumnHeader,
+                    WorkSheet,
+                    row,
+                    column,
+                    null,
+                    null, CellChangeType.Style));
         }
 
         public string GetStyleName(int row, int column)
@@ -93,7 +86,14 @@ namespace DevBrewLabs.Spreadsheet
         {
             if (GetStyleName(row, column) == styleName) return;
             GetColumnData(column, true).SetStyleName(row, styleName);
-            OnCellChanged(row, column, CellChangeType.Style);
+
+            WorkSheet.OnCellChanged(new CellChangedEventArgs(
+                    SheetRegion.ColumnHeader,
+                    WorkSheet,
+                    row,
+                    column,
+                    null,
+                    null, CellChangeType.StyleName));
         }
 
         public object GetValue(int row, int column)
@@ -105,7 +105,14 @@ namespace DevBrewLabs.Spreadsheet
         {
             if (GetValue(row, column) == value) return;
             GetColumnData(column, true).SetValue(row, value);
-            OnCellChanged(row, column, CellChangeType.Value);
+
+            WorkSheet.OnCellChanged(new CellChangedEventArgs(
+                    SheetRegion.ColumnHeader,
+                    WorkSheet,
+                    row,
+                    column,
+                    null,
+                    null, CellChangeType.Value));
         }
 
         public bool HasFormula(int row, int column)
@@ -122,7 +129,14 @@ namespace DevBrewLabs.Spreadsheet
         {
             if (GetFormula(row, column) == formula) return;
             GetColumnData(column, true).SetFormula(row, formula);
-            OnCellChanged(row, column, CellChangeType.Formula);
+
+            WorkSheet.OnCellChanged(new CellChangedEventArgs(
+                    SheetRegion.ColumnHeader,
+                    WorkSheet,
+                    row,
+                    column,
+                    null,
+                    null, CellChangeType.Formula));
         }
 
         public IFormatter GetFormatter(int row, int column)
@@ -208,16 +222,6 @@ namespace DevBrewLabs.Spreadsheet
         public bool IsCovered(int row, int column)
         {
             throw new NotImplementedException();
-        }
-
-        private void OnCellChanged(int row, int column, CellChangeType changeType)
-        {
-            var sheet = (WorkSheet)WorkSheet;
-            var wb = (WorkBook)sheet.WorkBook;
-            if (wb.UpdateProvider != null && !wb.UpdateProvider.SuspendUpdates)
-            {
-                wb.UpdateProvider.CellChanged(sheet, row, column, null, null, SheetRegion.ColumnHeader, changeType);
-            }
         }
 
         public override void Dispose()

@@ -13,7 +13,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             var workSheet = (WorkSheet)SheetView.WorkSheet;
             var rows = (Rows)workSheet.Rows;
             var columns = (Columns)workSheet.Columns;
-            var viewport = (ViewPort)SheetView.ViewPort;
+            var viewport = SheetView.ViewPort;
             double zoom = SheetView.ZoomFactor > 0 ? SheetView.ZoomFactor : 1.0;
 
             double halfPenWidth = (SheetView.Spread.GridLinePen.Thickness * SheetView.Spread.PixelPerDip) / 2;
@@ -26,7 +26,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                 if (rowHeight == 0)
                     continue;
 
-                var rowLocation = rows.GetLocation(row);
+                var rowLocation = viewport.GetRowLocation(row);
                 double y = (rowLocation - viewport.TopRowLocation + rowHeight) * zoom;
                 guidelines.GuidelinesY.Add(y + halfPenWidth);
 
@@ -39,7 +39,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                     var colWidth = columns.GetColumnWidth(col);
                     if (colWidth == 0) continue;
 
-                    double x = (columns.GetLocation(col) - viewport.LeftColumnLocation) * zoom;
+                    double x = (viewport.GetColumnLocation(col) - viewport.LeftColumnLocation) * zoom;
                     double nextX = x + colWidth * zoom;
 
                     var anchor1 = workSheet.GetSpanCellRange(row, col);
@@ -80,7 +80,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             var workSheet = (WorkSheet)SheetView.WorkSheet;
             var rows = (Rows)workSheet.Rows;
             var columns = (Columns)workSheet.Columns;
-            var viewport = (ViewPort)SheetView.ViewPort;
+            var viewport = SheetView.ViewPort;
             double zoom = SheetView.ZoomFactor > 0 ? SheetView.ZoomFactor : 1.0;
 
             double halfPenWidth = (SheetView.Spread.GridLinePen.Thickness * SheetView.Spread.PixelPerDip) / 2;
@@ -93,7 +93,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                 if (columnWidth == 0)
                     continue;
 
-                var colLocation = columns.GetLocation(col);
+                var colLocation = viewport.GetColumnLocation(col);
                 double x = (colLocation - viewport.LeftColumnLocation + columnWidth) * zoom;
                 guidelines.GuidelinesX.Add(x + halfPenWidth);
 
@@ -106,7 +106,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                     var rowHeight = rows.GetRowHeight(row);
                     if (rowHeight == 0) continue;
 
-                    double y = (rows.GetLocation(row) - viewport.TopRowLocation) * zoom;
+                    double y = (viewport.GetRowLocation(row) - viewport.TopRowLocation) * zoom;
                     double nextY = y + rowHeight * zoom;
 
                     var anchor1 = workSheet.GetSpanCellRange(row, col);

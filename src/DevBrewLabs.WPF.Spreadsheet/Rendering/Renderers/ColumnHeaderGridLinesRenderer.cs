@@ -14,7 +14,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
             var workSheet = (WorkSheet)SheetView.WorkSheet;
             var rows = (ColumnHeaderRows)workSheet.ColumnHeaders.Rows;
             var columns = (Columns)workSheet.Columns;
-            var viewport = (ViewPort)SheetView.ViewPort;
 
             double zoom = SheetView.ZoomFactor > 0 ? SheetView.ZoomFactor : 1.0;
             double halfPenWidth = SheetView.Spread.GridLinePen.Thickness * SheetView.Spread.PixelPerDip / 2;
@@ -29,7 +28,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
                 if (rowHeight == 0)
                     continue;
                 
-                var rowLocation = rows.GetLocation(row);
+                var rowLocation = SheetView.ViewPort.GetHeaderRowLocation(row);
                 var y = rowLocation * zoom;
                 var scaledRowHeight = rowHeight * zoom;
 
@@ -42,8 +41,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
                     if (columnWidth == 0)
                         continue;
 
-                    var colLocation = columns.GetLocation(col);
-                    var x = (colLocation - viewport.LeftColumnLocation) * zoom;
+                    var colLocation = SheetView.ViewPort.GetColumnLocation(col);
+                    var x = (colLocation - SheetView.ViewPort.LeftColumnLocation) * zoom;
                     var scaledColumnWidth = columnWidth * zoom;
 
                     if (row == topRow)
@@ -67,8 +66,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
                         // Draw double line indicator only for the first hidden column in a contiguous block
                         if (col == 0 || columns.GetColumnWidth(col - 1) > 0)
                         {
-                            var colLocation = columns.GetLocation(col);
-                            var x = (colLocation - viewport.LeftColumnLocation) * zoom;
+                            var colLocation = SheetView.ViewPort.GetColumnLocation(col);
+                            var x = (colLocation - SheetView.ViewPort.LeftColumnLocation) * zoom;
                             DrawHiddenColumnIndicator(context, x, y, scaledRowHeight, workSheet);
                         }
                     }

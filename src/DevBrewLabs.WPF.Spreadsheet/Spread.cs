@@ -25,6 +25,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         private SheetTabControl _sheetTabControl;
         private UndoRedoManager _undoRedoManager;
         private WorkBook _workBook;
+        private WorksheetChangeListener _changeListener;
 
         #region Dependency Properties
         public static readonly DependencyProperty ScrollBarStyleProperty;
@@ -206,11 +207,11 @@ namespace DevBrewLabs.WPF.Spreadsheet
         {
             get
             {
-                return _workBook.UpdateProvider.SuspendUpdates;
+                return _changeListener.SuspendUpdates;
             }
             set
             {
-                _workBook.UpdateProvider.SuspendUpdates = value;
+                _changeListener.SuspendUpdates = value;
             }
         }
 
@@ -219,7 +220,8 @@ namespace DevBrewLabs.WPF.Spreadsheet
             UseLayoutRounding = true;
             TextOptions.SetTextFormattingMode(this, TextFormattingMode.Display);
             TextOptions.SetTextRenderingMode(this, TextRenderingMode.ClearType);
-            _workBook = new WorkBook("Book1", new UIUpdateProvider(this));
+            _changeListener = new WorksheetChangeListener(this);
+            _workBook = new WorkBook("Book1", _changeListener);
             _undoRedoManager = new UndoRedoManager(this);
             SheetViews = new SheetViewCollection(this);
             _renderEngine = new RenderEngine();
@@ -286,7 +288,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public void ScrollToRow(ISheetView sheetView, int row)
         {
             var workSheet = sheetView.WorkSheet;
-            SheetTabControl.VScrollBar.Value = ((Rows)workSheet.Rows).GetLocation(row);
+            SheetTabControl.VScrollBar.Value = ((SheetView)sheetView).ViewPort.GetRowLocation(row);
         }
 
         /// <summary>
@@ -297,7 +299,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public void ScrollToColumn(ISheetView sheetView, int column)
         {
             var workSheet = sheetView.WorkSheet;
-            SheetTabControl.HScrollBar.Value = ((Columns)workSheet.Columns).GetLocation(column);
+            SheetTabControl.HScrollBar.Value = ((SheetView)sheetView).ViewPort.GetColumnLocation(column);
         }
 
         /// <summary>
@@ -323,7 +325,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         /// <param name="column"></param>
         public void BeginEdit(int row, int column)
         {
-            _editingManager.BeginEdit(SheetViews.ActiveSheetView, row, column);
+            _editingManager.BeginEdit((SheetView)SheetViews.ActiveSheetView, row, column);
         }
 
         /// <summary>

@@ -20,8 +20,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             };
         }
 
-        public abstract void BeginResize(ISheetView sheetView, int index, int location);
-        public abstract void Resize(ISheetView sheetView, int currentLocation);
-        public abstract void EndResize(ISheetView sheetView);
+        public abstract void BeginResize(SheetView sheetView, int index, int location);
+        public abstract void Resize(SheetView sheetView, int currentLocation);
+        public abstract void EndResize(SheetView sheetView);
     }
 }

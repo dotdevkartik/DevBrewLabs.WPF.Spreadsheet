@@ -11,8 +11,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
         {
             var workSheet = SheetView.WorkSheet;
             double zoom = SheetView.ZoomFactor > 0 ? SheetView.ZoomFactor : 1.0;
-            var width = workSheet.RowHeaders.Width * zoom;
-            var height = workSheet.ColumnHeaders.Height * zoom;
+            var width = SheetView.GetRowHeaderWidth() * zoom;
+            var height = SheetView.GetColumnHeaderHeight() * zoom;
             var topLeft = workSheet.TopLeft;
             var style = workSheet.GetTopLeftStyle();
 

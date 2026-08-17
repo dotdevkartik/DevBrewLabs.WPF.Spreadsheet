@@ -5,6 +5,7 @@ namespace DevBrewLabs.Spreadsheet
         Value,
         Formula,
         Style,
+        StyleName,
         Merge,
         Unmerge
     }
@@ -14,7 +15,8 @@ namespace DevBrewLabs.Spreadsheet
         Insert,
         Delete,
         Height,
-        Style
+        Style,
+        StyleName
     }
 
     public enum ColumnChangeType
@@ -22,7 +24,8 @@ namespace DevBrewLabs.Spreadsheet
         Insert,
         Delete,
         Width,
-        Style
+        Style,
+        StyleName
     }
 
     public enum RangeChangeType
@@ -33,6 +36,7 @@ namespace DevBrewLabs.Spreadsheet
         Merge,
         Value,
         Formula,
-        Style
+        Style,
+        StyleName
     }
 }

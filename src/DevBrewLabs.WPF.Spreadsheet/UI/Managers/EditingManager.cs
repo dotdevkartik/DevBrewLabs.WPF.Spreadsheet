@@ -12,7 +12,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 {
     internal class EditingManager : UIManager
     {
-        private ISheetView _editingView;
+        private SheetView _editingView;
 
         public EditingManager(Spread spread) : base(spread)
         {
@@ -23,7 +23,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
         public bool IsEditing => ActiveEditor != null;
         internal bool UseCellValue { get; set; }
 
-        public void BeginEdit(ISheetView sheetView, int row, int column)
+        public void BeginEdit(SheetView sheetView, int row, int column)
         {
             if (IsEditing)
                 return;

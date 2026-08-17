@@ -4,9 +4,18 @@ namespace DevBrewLabs.Spreadsheet
 {
     public class SheetChangedEventArgs : EventArgs
     {
-        protected SheetChangedEventArgs(SheetRegion region)
+        protected SheetChangedEventArgs(SheetRegion region, IWorkSheet workSheet, object oldValue, object newValue)
         {
             Region = region;
+            WorkSheet = workSheet;
+            OldValue = oldValue;
+            NewValue = newValue;
+        }
+
+        protected SheetChangedEventArgs(SheetRegion region, IWorkSheet workSheet)
+        {
+            Region = region;
+            WorkSheet = workSheet;
         }
 
         public SheetChangedEventArgs(IWorkSheet workSheet)
@@ -14,7 +23,10 @@ namespace DevBrewLabs.Spreadsheet
             WorkSheet = workSheet;
         }
 
-        public IWorkSheet WorkSheet { get; internal set; }
+        public IWorkSheet WorkSheet { get; }
+        public object OldValue { get; }
+        public object NewValue { get; }
+
         internal SheetRegion Region { get; set; }
     }
 
@@ -22,28 +34,21 @@ namespace DevBrewLabs.Spreadsheet
     {
         public CellChangedEventArgs(
             SheetRegion region,
+            IWorkSheet workSheet,
             int row,
             int column,
             object oldValue,
             object newValue,
             CellChangeType changeType)
-            : base(region)
+            : base(region, workSheet, oldValue, newValue)
         {
             Row = row;
             Column = column;
-            OldValue = oldValue;
-            NewValue = newValue;
             ChangeType = changeType;
         }
 
         public int Row { get; }
-
         public int Column { get; }
-
-        public object OldValue { get; }
-
-        public object NewValue { get; }
-
         public CellChangeType ChangeType { get; }
     }
 
@@ -51,16 +56,16 @@ namespace DevBrewLabs.Spreadsheet
     {
         public RangeChangedEventArgs(
             SheetRegion region,
+            IWorkSheet workSheet,
             CellRange range,
             RangeChangeType changeType)
-            : base(region)
+            : base(region, workSheet)
         {
             Range = range;
             ChangeType = changeType;
         }
 
         public CellRange Range { get; }
-
         public RangeChangeType ChangeType { get; }
     }
 
@@ -68,20 +73,18 @@ namespace DevBrewLabs.Spreadsheet
     {
         public RowChangedEventArgs(
             SheetRegion region,
+            IWorkSheet workSheet,
             int index,
-            int count,
+            object oldValue,
+            object newValue,
             RowChangeType changeType)
-            : base(region)
+            : base(region, workSheet, oldValue, newValue)
         {
             Index = index;
-            Count = count;
             ChangeType = changeType;
         }
 
         public int Index { get; }
-
-        public int Count { get; }
-
         public RowChangeType ChangeType { get; }
     }
 
@@ -89,20 +92,18 @@ namespace DevBrewLabs.Spreadsheet
     {
         public ColumnChangedEventArgs(
             SheetRegion region,
+            IWorkSheet workSheet,
             int index,
-            int count,
+            object oldValue,
+            object newValue,
             ColumnChangeType changeType)
-            : base(region)
+            : base(region, workSheet, oldValue, newValue)
         {
             Index = index;
-            Count = count;
             ChangeType = changeType;
         }
 
         public int Index { get; }
-
-        public int Count { get; }
-
         public ColumnChangeType ChangeType { get; }
     }
 }
