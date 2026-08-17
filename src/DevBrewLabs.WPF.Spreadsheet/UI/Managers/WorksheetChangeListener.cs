@@ -34,156 +34,139 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
         public void OnWorksheetChanged(WorksheetChangedEventArgs args)
         {
-            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
+            if (!CanInvalidate())
             {
-                var sheetView = (SheetView)_spread.SheetViews.GetSheetView(args.Worksheet);
+                return;
+            }
 
-                if (!CanInvalidate())
-                {
-                    return;
-                }
-
-                _spread.SheetTabControl.UpdateScrollbars();
-                _spread.Invalidate();
-            }));
+            _spread.SheetTabControl.UpdateScrollbars();
+            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => _spread.Invalidate()));
         }
 
         public void CellChanged(CellChangedEventArgs args)
         {
-            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
+            var sheetView = (SheetView)_spread.SheetViews.GetSheetView(args.Worksheet);
+
+            if (!sheetView.ViewPort.ViewRange.ContainsCell(args.Row, args.Column))
+                return;
+
+            switch (args.ChangeType)
             {
-                var sheetView = (SheetView)_spread.SheetViews.GetSheetView(args.Worksheet);
+                case CellChangeType.Value:
+                case CellChangeType.Formula:
+                    if (sheetView.AutoSizeRows)
+                        sheetView.AutoSizeRow(args.Row);
+                    if (sheetView.AutoSizeColumns)
+                        sheetView.AutoSizeColumn(args.Column);
+                    break;
+            }
 
-                if (!sheetView.ViewPort.ViewRange.ContainsCell(args.Row, args.Column))
-                    return;
+            if (!CanInvalidate())
+            {
+                return;
+            }
 
-                switch (args.ChangeType)
-                {
-                    case CellChangeType.Value:
-                    case CellChangeType.Formula:
-                        if (sheetView.AutoSizeRows)
-                            sheetView.AutoSizeRow(args.Row);
-                        if (sheetView.AutoSizeColumns)
-                            sheetView.AutoSizeColumn(args.Column);
-                        break;
-                }
-
-                if (!CanInvalidate())
-                {
-                    return;
-                }
-
-                _spread.Invalidate();
-            }));
+            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => _spread.Invalidate()));
         }
 
         public void RangeChanged(RangeChangedEventArgs args)
         {
-            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
+            var sheetView = (SheetView)_spread.SheetViews.GetSheetView(args.Worksheet);
+
+            if (!sheetView.ViewPort.ViewRange.Intersects(args.Range))
             {
-                var sheetView = (SheetView)_spread.SheetViews.GetSheetView(args.Worksheet);
+                return;
+            }
 
-                if (!sheetView.ViewPort.ViewRange.Intersects(args.Range))
-                {
-                    return;
-                }
+            if (!CanInvalidate())
+            {
+                return;
+            }
 
-                if (!CanInvalidate())
-                {
-                    return;
-                }
-
-                _spread.Invalidate(true, false, true, false);
-            }));
+            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => _spread.Invalidate()));
         }
 
         public void ColumnChanged(ColumnChangedEventArgs args)
         {
-            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
+            var sheetView = (SheetView)_spread.SheetViews.GetSheetView(args.Worksheet);
+
+            switch (args.Region)
             {
-                var sheetView = (SheetView)_spread.SheetViews.GetSheetView(args.Worksheet);
+                case SheetRegion.RowHeader:
+                    switch (args.ChangeType)
+                    {
+                        case ColumnChangeType.Width:
+                            sheetView.ViewPort.UpdateHeaderColumnLocation(args.Index + 1, (int)args.NewValue - (int)args.OldValue);
+                            break;
+                    }
+                    break;
 
-                switch (args.Region)
-                {
-                    case SheetRegion.RowHeader:
-                        switch (args.ChangeType)
-                        {
-                            case ColumnChangeType.Width:
-                                sheetView.ViewPort.UpdateHeaderColumnLocation(args.Index + 1, (int)args.NewValue - (int)args.OldValue);
-                                break;
-                        }
-                        break;
+                case SheetRegion.Cells:
+                    switch (args.ChangeType)
+                    {
+                        case ColumnChangeType.Width:
+                            sheetView.ViewPort.UpdateColumnLocation(args.Index + 1, (int)args.NewValue - (int)args.OldValue);
+                            break;
+                    }
+                    break;
 
-                    case SheetRegion.Cells:
-                        switch (args.ChangeType)
-                        {
-                            case ColumnChangeType.Width:
-                                sheetView.ViewPort.UpdateColumnLocation(args.Index + 1, (int)args.NewValue - (int)args.OldValue);
-                                break;
-                        }
-                        break;
+            }
 
-                }
+            sheetView.ViewPort.CalculateVisibleRange();
 
-                sheetView.ViewPort.CalculateVisibleRange();
+            if (!sheetView.ViewPort.ViewRange.ContainsColumn(args.Index))
+            {
+                return;
+            }
 
-                if (!sheetView.ViewPort.ViewRange.ContainsColumn(args.Index))
-                {
-                    return;
-                }
+            if (!CanInvalidate())
+            {
+                return;
+            }
 
-                if (!CanInvalidate())
-                {
-                    return;
-                }
-
-                _spread.SheetTabControl.UpdateScrollbars();
-                _spread.Invalidate(false, true, true, false);
-            }));
+            _spread.SheetTabControl.UpdateScrollbars();
+            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => _spread.Invalidate()));
         }
 
         public void RowChanged(RowChangedEventArgs args)
         {
-            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
+            var sheetView = (SheetView)_spread.SheetViews.GetSheetView(args.Worksheet);
+
+            switch (args.Region)
             {
-                var sheetView = (SheetView)_spread.SheetViews.GetSheetView(args.Worksheet);
+                case SheetRegion.ColumnHeader:
+                    switch (args.ChangeType)
+                    {
+                        case RowChangeType.Height:
+                            sheetView.ViewPort.UpdateHeaderRowLocation(args.Index + 1, (int)args.NewValue - (int)args.OldValue);
+                            break;
+                    }
+                    break;
 
-                switch (args.Region)
-                {
-                    case SheetRegion.ColumnHeader:
-                        switch (args.ChangeType)
-                        {
-                            case RowChangeType.Height:
-                                sheetView.ViewPort.UpdateHeaderRowLocation(args.Index + 1, (int)args.NewValue - (int)args.OldValue);
-                                break;
-                        }
-                        break;
+                case SheetRegion.Cells:
+                    switch (args.ChangeType)
+                    {
+                        case RowChangeType.Height:
+                            sheetView.ViewPort.UpdateRowLocation(args.Index + 1, (int)args.NewValue - (int)args.OldValue);
+                            break;
+                    }
+                    break;
 
-                    case SheetRegion.Cells:
-                        switch (args.ChangeType)
-                        {
-                            case RowChangeType.Height:
-                                sheetView.ViewPort.UpdateRowLocation(args.Index + 1, (int)args.NewValue - (int)args.OldValue);
-                                break;
-                        }
-                        break;
+            }
 
-                }
+            sheetView.ViewPort.CalculateVisibleRange();
+            if (!sheetView.ViewPort.ViewRange.ContainsRow(args.Index))
+            {
+                return;
+            }
 
-                sheetView.ViewPort.CalculateVisibleRange();
-                if (!sheetView.ViewPort.ViewRange.ContainsRow(args.Index))
-                {
-                    return;
-                }
+            if (!CanInvalidate())
+            {
+                return;
+            }
 
-                if (!CanInvalidate())
-                {
-                    return;
-                }
-
-                _spread.SheetTabControl.UpdateScrollbars();
-                _spread.Invalidate(true, false, true, false);
-            }));
+            _spread.SheetTabControl.UpdateScrollbars();
+            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => _spread.Invalidate()));
         }
 
         private bool CanInvalidate()

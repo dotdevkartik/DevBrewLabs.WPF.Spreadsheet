@@ -70,7 +70,8 @@ namespace DevBrewLabs.WPF.Spreadsheet
 
         public ISheetView GetSheetView(IWorksheet workSheet)
         {
-            return _sheetViewStore[workSheet];
+            _sheetViewStore.TryGetValue(workSheet, out var sheetView);
+            return sheetView;
         }
 
         IEnumerator IEnumerable.GetEnumerator()
