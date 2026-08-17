@@ -45,29 +45,82 @@ namespace DevBrewLabs.WPF.Spreadsheet
         static Spread()
         {
             DefaultStyleKeyProperty.OverrideMetadata(typeof(Spread), new FrameworkPropertyMetadata(typeof(Spread)));
-            ZoomFactorProperty = DependencyProperty.Register("ZoomFactor", typeof(double), typeof(Spread),
-                new FrameworkPropertyMetadata(1.0, OnZoomFactorChanged, CoerceZoomFactor));
-            AllowZoomingProperty = DependencyProperty.Register("AllowZooming", typeof(bool), typeof(Spread), new PropertyMetadata(true));
-            ScrollModeProperty = DependencyProperty.Register("ScrollMode", typeof(SheetScrollMode), typeof(Spread),
+
+            ZoomFactorProperty = DependencyProperty.Register(
+                nameof(ZoomFactor),
+                typeof(double),
+                typeof(Spread),
+                new FrameworkPropertyMetadata(
+                    1.0,
+                    OnZoomFactorChanged,
+                    CoerceZoomFactor));
+
+            AllowZoomingProperty = DependencyProperty.Register(
+                nameof(AllowZooming),
+                typeof(bool),
+                typeof(Spread),
+                new PropertyMetadata(true));
+
+            ScrollModeProperty = DependencyProperty.Register(
+                nameof(ScrollMode),
+                typeof(SheetScrollMode),
+                typeof(Spread),
                 new PropertyMetadata(SheetScrollMode.Item));
-            SelectionBackgroundProperty = DependencyProperty.Register("SelectionBackground", typeof(Brush), typeof(Spread),
-                new PropertyMetadata(new SolidColorBrush(Color.FromArgb(50, 25, 25, 25))));
-            GridLineBrushProperty = DependencyProperty.Register("GridLineBrush", typeof(Brush), typeof(Spread), 
+
+            SelectionBackgroundProperty = DependencyProperty.Register(
+                nameof(SelectionBackground),
+                typeof(Brush),
+                typeof(Spread),
+                new PropertyMetadata(
+                    new SolidColorBrush(Color.FromArgb(50, 25, 25, 25))));
+
+            GridLineBrushProperty = DependencyProperty.Register(
+                nameof(GridLineBrush),
+                typeof(Brush),
+                typeof(Spread),
                 new PropertyMetadata(OnGridLineBrushChanged));
-            SelectionBorderBrushProperty = DependencyProperty.Register("SelectionBorderBrush", typeof(Brush), typeof(Spread),
+
+            SelectionBorderBrushProperty = DependencyProperty.Register(
+                nameof(SelectionBorderBrush),
+                typeof(Brush),
+                typeof(Spread),
                 new PropertyMetadata(OnSelectionBorderBrushChanged));
-            AllowRowResizeProperty = DependencyProperty.Register("AllowRowResize", typeof(bool), typeof(Spread), new PropertyMetadata(true));
-            AllowColumnResizeProperty =
-            DependencyProperty.Register("AllowColumnResize", typeof(bool), typeof(Spread), new PropertyMetadata(true));
-            ShowFormulaSuggestionsProperty =
-            DependencyProperty.Register("ShowFormulaSuggestions", typeof(bool), typeof(Spread), new PropertyMetadata(true));
-            IsSelectionAnimationEnabledProperty =
-            DependencyProperty.Register("IsSelectionAnimationEnabled", typeof(bool), typeof(Spread), new PropertyMetadata(false));
-            SheetTabsVisibilityProperty =
-            DependencyProperty.Register("SheetTabsVisibility", typeof(Visibility), typeof(Spread), new PropertyMetadata(Visibility.Visible));
-            ResourceDictionary res = (ResourceDictionary)Application.LoadComponent(new Uri("/DevBrewLabs.WPF.Spreadsheet;component/Themes/ScrollBarStyle.xaml", UriKind.Relative));
-            ScrollBarStyleProperty =
-            DependencyProperty.Register("ScrollBarStyle", typeof(Style), typeof(Spread), new PropertyMetadata((Style)res["ScrollBarStyle"]));
+
+            AllowRowResizeProperty = DependencyProperty.Register(
+                nameof(AllowRowResize),
+                typeof(bool),
+                typeof(Spread),
+                new PropertyMetadata(true));
+
+            AllowColumnResizeProperty = DependencyProperty.Register(
+                nameof(AllowColumnResize),
+                typeof(bool),
+                typeof(Spread),
+                new PropertyMetadata(true));
+
+            ShowFormulaSuggestionsProperty = DependencyProperty.Register(
+                nameof(ShowFormulaSuggestions),
+                typeof(bool),
+                typeof(Spread),
+                new PropertyMetadata(true));
+
+            IsSelectionAnimationEnabledProperty = DependencyProperty.Register(
+                nameof(IsSelectionAnimationEnabled),
+                typeof(bool),
+                typeof(Spread),
+                new PropertyMetadata(false));
+
+            SheetTabsVisibilityProperty = DependencyProperty.Register(
+                nameof(SheetTabsVisibility),
+                typeof(Visibility),
+                typeof(Spread),
+                new PropertyMetadata(Visibility.Visible));
+
+            ScrollBarStyleProperty = DependencyProperty.Register(
+                nameof(ScrollBarStyle),
+                typeof(Style),
+                typeof(Spread),
+                new PropertyMetadata(null));
         }
 
         /// <summary>
