@@ -56,21 +56,41 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
                 column => column.Width);
         }
 
+        /// <summary>
+        /// Get row location.
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         internal double GetRowLocation(int index)
         {
             return _rowLocCache.GetLocation(index);
         }
 
+        /// <summary>
+        /// Update row location in cache
+        /// </summary>
+        /// <param name="fromIndex"></param>
+        /// <param name="offset"></param>
         internal void UpdateRowLocation(int fromIndex, double offset)
         {
             _rowLocCache.UpdateLocation(fromIndex, offset);
         }
 
+        /// <summary>
+        /// Get column location
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         internal double GetColumnLocation(int index)
         {
             return _colLocCache.GetLocation(index);
         }
 
+        /// <summary>
+        /// Update column location in cache.
+        /// </summary>
+        /// <param name="fromIndex"></param>
+        /// <param name="offset"></param>
         internal void UpdateColumnLocation(int fromIndex, double offset)
         {
             _colLocCache.UpdateLocation(fromIndex, offset);
@@ -447,7 +467,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
 
                     if (item != null)
                         size = _getSize(item);
-
+                      
                     _locations[_lastCalculated + 1] =
                         _locations[_lastCalculated] + size;
 

@@ -94,7 +94,7 @@ namespace SpreadsheetSampleExplorer.Samples
         private CellRange GetTargetSortRange()
         {
             var selection = spread.SheetViews.ActiveSheetView.Selection;
-            if (selection != null && selection.RowCount > 1)
+            if (selection != default && selection.RowCount > 1)
             {
                 // Respect the exact selected range
                 return selection;
@@ -107,7 +107,7 @@ namespace SpreadsheetSampleExplorer.Samples
         private int GetTargetSortColumn()
         {
             var selection = spread.SheetViews.ActiveSheetView.Selection;
-            if (selection != null)
+            if (selection != default)
             {
                 // If a range is selected, sort by the first column of that range.
                 // If a single cell is selected (which defaults to sorting the whole table), sort by that cell's column.
