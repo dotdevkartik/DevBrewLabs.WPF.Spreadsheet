@@ -39,4 +39,12 @@ namespace DevBrewLabs.Spreadsheet
         Style,
         StyleName
     }
+
+    public enum WorksheetChangeType
+    {
+        RowCount,
+        ColumnCount,
+        DefaultRowHeight,
+        DefaultColumnWidth
+    }
 }

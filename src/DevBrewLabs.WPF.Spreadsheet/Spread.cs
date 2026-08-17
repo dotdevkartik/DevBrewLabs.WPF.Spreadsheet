@@ -24,7 +24,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         private SheetViewPane _sheetViewPane;
         private SheetTabControl _sheetTabControl;
         private UndoRedoManager _undoRedoManager;
-        private WorkBook _workBook;
+        private Workbook _workBook;
         private WorksheetChangeListener _changeListener;
 
         #region Dependency Properties
@@ -262,7 +262,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         /// <summary>
         ///  Gets the workbook.
         /// </summary>
-        public IWorkBook WorkBook => _workBook;
+        public IWorkbook WorkBook => _workBook;
         /// <summary>
         /// Gets the sheetview collection.
         /// </summary>
@@ -289,7 +289,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             TextOptions.SetTextFormattingMode(this, TextFormattingMode.Display);
             TextOptions.SetTextRenderingMode(this, TextRenderingMode.ClearType);
             _changeListener = new WorksheetChangeListener(this);
-            _workBook = new WorkBook("Book1", _changeListener);
+            _workBook = new Workbook("Book1", _changeListener);
             _undoRedoManager = new UndoRedoManager(this);
             SheetViews = new SheetViewCollection(this);
             _renderEngine = new RenderEngine();

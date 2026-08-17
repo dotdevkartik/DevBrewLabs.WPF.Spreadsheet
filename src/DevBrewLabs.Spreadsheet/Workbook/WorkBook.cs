@@ -6,25 +6,25 @@ using System.Collections.Generic;
 
 namespace DevBrewLabs.Spreadsheet
 {
-    internal class WorkBook : IWorkBook
+    internal class Workbook : IWorkbook
     {
         private WorkbookAdapter _dataProvider;
         private IChangeListener _changeListener;
         private Dictionary<string, IStyle> _namedStyles;
 
         public string Name { get; set; }
-        public IWorkSheets WorkSheets { get; private set; }
+        public IWorksheets WorkSheets { get; private set; }
         public ICalcEngine CalcEngine { get; private set; }
         public IStylePalette StylePalette { get; private set; }
         internal IChangeListener ChangeListener => _changeListener;
 
-        public WorkBook(string name)
+        public Workbook(string name)
         {
             if(string.IsNullOrEmpty(name))
                 throw new ArgumentNullException(nameof(name));
 
             Name = name;
-            WorkSheets = new WorkSheets(this);
+            WorkSheets = new Worksheets(this);
             _namedStyles = new Dictionary<string, IStyle>();
             _dataProvider = new WorkbookAdapter(this);
             CalcEngine = new SheetCalcEngine(_dataProvider);
@@ -69,7 +69,7 @@ namespace DevBrewLabs.Spreadsheet
             rowHeaderStyle.BackColor = topLeftStyle.BackColor = columnHeaderStyle.BackColor = Drawing.CellColor.FromArgb(255, 240, 240, 240);
         }
 
-        internal WorkBook(string name, IChangeListener updateProvider) : this(name)
+        internal Workbook(string name, IChangeListener updateProvider) : this(name)
         {
             if(updateProvider == null)
                 throw new ArgumentNullException(nameof(updateProvider));
@@ -118,12 +118,12 @@ namespace DevBrewLabs.Spreadsheet
 
         private class WorkbookAdapter : IDataAdapter, IDisposable
         {
-            private WorkBook _workBook;
+            private Workbook _workBook;
 
             public event ValueChangedEventHandler ValueChanged;
             public event FormulaChangedEventHandler FormulaChanged;
 
-            public WorkbookAdapter(WorkBook workBook)
+            public WorkbookAdapter(Workbook workBook)
             {
                 _workBook = workBook;
             }
@@ -142,13 +142,13 @@ namespace DevBrewLabs.Spreadsheet
 
             public void SetMetadata(string sheetName, int row, int column, object data)
             {
-                var worksheet = (WorkSheet)_workBook.WorkSheets.GetSheet(sheetName);
+                var worksheet = (Worksheet)_workBook.WorkSheets.GetSheet(sheetName);
                 worksheet.SetMetadata(row, column, data);
             }
 
             public object GetMetadata(string sheetName, int row, int column)
             {
-                var worksheet = (WorkSheet)_workBook.WorkSheets.GetSheet(sheetName);
+                var worksheet = (Worksheet)_workBook.WorkSheets.GetSheet(sheetName);
                 return worksheet.GetMetadata(row, column);
             }
 

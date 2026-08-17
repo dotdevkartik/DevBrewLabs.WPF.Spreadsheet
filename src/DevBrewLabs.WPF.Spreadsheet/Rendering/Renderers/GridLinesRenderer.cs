@@ -10,7 +10,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
     {
         private void DrawHorizontalGridlines(DrawingContext context, int topRow, int leftColumn, int bottomRow, int rightColumn)
         {
-            var workSheet = (WorkSheet)SheetView.WorkSheet;
+            var workSheet = (Worksheet)SheetView.WorkSheet;
             var rows = (Rows)workSheet.Rows;
             var columns = (Columns)workSheet.Columns;
             var viewport = SheetView.ViewPort;
@@ -77,7 +77,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
         private void DrawVerticalGridlines(DrawingContext context, int topRow, int leftColumn, int bottomRow, int rightColumn)
         {
-            var workSheet = (WorkSheet)SheetView.WorkSheet;
+            var workSheet = (Worksheet)SheetView.WorkSheet;
             var rows = (Rows)workSheet.Rows;
             var columns = (Columns)workSheet.Columns;
             var viewport = SheetView.ViewPort;

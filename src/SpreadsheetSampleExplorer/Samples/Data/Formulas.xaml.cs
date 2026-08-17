@@ -46,7 +46,7 @@ namespace SpreadsheetSampleExplorer.Samples
             spread.SuspendUpdates = false;
         }
 
-        private void SetupSalesSheet(IWorkSheet sheet)
+        private void SetupSalesSheet(IWorksheet sheet)
         {
             // Section Header Style
             var titleStyle = new CellStyle();
@@ -137,7 +137,7 @@ namespace SpreadsheetSampleExplorer.Samples
             }
         }
 
-        private void SetupCostSheet(IWorkSheet sheet)
+        private void SetupCostSheet(IWorksheet sheet)
         {
             // Section Header Style
             var titleStyle = new CellStyle();
@@ -222,7 +222,7 @@ namespace SpreadsheetSampleExplorer.Samples
             }
         }
 
-        private void SetupSummarySheet(IWorkSheet sheet)
+        private void SetupSummarySheet(IWorksheet sheet)
         {
             // Section Header Style
             var titleStyle = new CellStyle();

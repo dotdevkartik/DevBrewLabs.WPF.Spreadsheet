@@ -5,16 +5,16 @@ using System.Linq;
 
 namespace DevBrewLabs.Spreadsheet
 {
-    internal class WorkSheets : IWorkSheets
+    internal class Worksheets : IWorksheets
     {
-        private HashSet<IWorkSheet> _sheets;
-        private IWorkSheet _activeSheet;
-        private WorkBook _workBook;
+        private HashSet<IWorksheet> _sheets;
+        private IWorksheet _activeSheet;
+        private Workbook _workBook;
 
         public int Count => _sheets.Count;
-        public IWorkBook WorkBook => _workBook;
+        public IWorkbook WorkBook => _workBook;
 
-        public IWorkSheet this[string sheetName]
+        public IWorksheet this[string sheetName]
         {
             get
             {
@@ -22,7 +22,7 @@ namespace DevBrewLabs.Spreadsheet
             }
         }
 
-        public IWorkSheet this[int index]
+        public IWorksheet this[int index]
         {
             get
             {
@@ -30,7 +30,7 @@ namespace DevBrewLabs.Spreadsheet
             }
         }
 
-        public IWorkSheet ActiveSheet
+        public IWorksheet ActiveSheet
         {
             get
             {
@@ -62,22 +62,22 @@ namespace DevBrewLabs.Spreadsheet
             }
         }
 
-        public event EventHandler<SheetChangedEventArgs> SheetAdded;
-        public event EventHandler<SheetChangedEventArgs> SheetRemoved;
-        public event EventHandler<SheetChangedEventArgs> ActiveSheetChanged;
+        public event EventHandler<WorksheetAddedEventArgs> SheetAdded;
+        public event EventHandler<WorksheetRemovedEventArgs> SheetRemoved;
+        public event EventHandler<WorksheetEventArgs> ActiveSheetChanged;
 
-        internal WorkSheets(WorkBook workBook)
+        internal Worksheets(Workbook workBook)
         {
             _workBook = workBook;
-            _sheets = new HashSet<IWorkSheet>();
+            _sheets = new HashSet<IWorksheet>();
         }
 
-        public IWorkSheet AddSheet(string name)
+        public IWorksheet AddSheet(string name)
         {
             VerifySheetName(name);
-            var workSheet = new WorkSheet(_workBook, name);
+            var workSheet = new Worksheet(_workBook, name);
             _sheets.Add(workSheet);
-            SheetAdded?.Invoke(this, new SheetChangedEventArgs(workSheet));
+            SheetAdded?.Invoke(this, new WorksheetAddedEventArgs(workSheet));
             return workSheet;
         }
 
@@ -86,7 +86,7 @@ namespace DevBrewLabs.Spreadsheet
         /// </summary>
         /// <param name="name"></param>
         /// <exception cref="ArgumentException"></exception>
-        internal void VerifySheetName(string name, IWorkSheet currentSheet = null)
+        internal void VerifySheetName(string name, IWorksheet currentSheet = null)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -97,7 +97,7 @@ namespace DevBrewLabs.Spreadsheet
                 throw new ArgumentException($"Sheet with name '{name}' already exists.");
         }
 
-        public IWorkSheet GetSheet(string sheetName)
+        public IWorksheet GetSheet(string sheetName)
         {
             sheetName = sheetName.ToLowerInvariant();
 
@@ -108,7 +108,7 @@ namespace DevBrewLabs.Spreadsheet
             return sheet;
         }
 
-        public IWorkSheet GetSheet(int index)
+        public IWorksheet GetSheet(int index)
         {
             if (_sheets.Count <= index || index < 0)
                 throw new IndexOutOfRangeException("Sheet index is out of range.");
@@ -117,7 +117,7 @@ namespace DevBrewLabs.Spreadsheet
             return sheet;
         }
 
-        private void SetActiveSheet(IWorkSheet sheet)
+        private void SetActiveSheet(IWorksheet sheet)
         {
             if (!_sheets.Contains(sheet))
             {
@@ -135,7 +135,7 @@ namespace DevBrewLabs.Spreadsheet
             if (_activeSheet == sheet)
                 _activeSheet = null;
             sheet.Dispose();
-            SheetRemoved?.Invoke(this, new SheetChangedEventArgs(sheet));
+            SheetRemoved?.Invoke(this, new WorksheetRemovedEventArgs(sheet));
         }
 
         public void RemoveSheet(int index)
@@ -145,7 +145,7 @@ namespace DevBrewLabs.Spreadsheet
             if (_activeSheet == sheet)
                 _activeSheet = null;
             sheet.Dispose();
-            SheetRemoved?.Invoke(this, new SheetChangedEventArgs(sheet));
+            SheetRemoved?.Invoke(this, new WorksheetRemovedEventArgs(sheet));
         }
 
         public void Clear()
@@ -157,9 +157,9 @@ namespace DevBrewLabs.Spreadsheet
             _activeSheet = null;
         }
 
-        protected virtual void OnActiveSheetChanged(IWorkSheet sheet)
+        protected virtual void OnActiveSheetChanged(IWorksheet sheet)
         {
-            ActiveSheetChanged?.Invoke(this, new SheetChangedEventArgs(sheet));
+            ActiveSheetChanged?.Invoke(this, new WorksheetEventArgs(sheet));
         }
 
         public void Dispose()
@@ -170,7 +170,7 @@ namespace DevBrewLabs.Spreadsheet
             _activeSheet = null;
         }
 
-        public IEnumerator<IWorkSheet> GetEnumerator()
+        public IEnumerator<IWorksheet> GetEnumerator()
         {
             return _sheets.GetEnumerator();
         }

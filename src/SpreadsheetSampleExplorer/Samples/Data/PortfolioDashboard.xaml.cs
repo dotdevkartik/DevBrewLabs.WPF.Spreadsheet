@@ -357,7 +357,7 @@ namespace SpreadsheetSampleExplorer.Samples
             spread.SuspendUpdates = false;
         }
         
-        private void DrawCard(IWorkSheet ws, int startRow, int startCol, int colSpan, string title, object val, string sub1, string sub2)
+        private void DrawCard(IWorksheet ws, int startRow, int startCol, int colSpan, string title, object val, string sub1, string sub2)
         {
             ws.AddSpan(startRow, startCol, 1, colSpan);
             ws.Cells[startRow, startCol].Value = title;
@@ -378,7 +378,7 @@ namespace SpreadsheetSampleExplorer.Samples
             ws.Cells[startRow + 3, startCol].StyleName = "CardSubtext";
         }
 
-        private void UpdateRowStyles(IWorkSheet worksheet, int row, StockData stock)
+        private void UpdateRowStyles(IWorksheet worksheet, int row, StockData stock)
         {
             double diff = stock.CurrentPrice - stock.BasePrice;
             string targetStyle = diff >= 0 ? "GainStyle" : "LossStyle";
@@ -432,7 +432,7 @@ namespace SpreadsheetSampleExplorer.Samples
             spread.SuspendUpdates = false;
         }
         
-        private void UpdateBottomCards(IWorkSheet worksheet)
+        private void UpdateBottomCards(IWorksheet worksheet)
         {
             // Calculate top gainer / loser dynamically
             StockData topGainer = null;

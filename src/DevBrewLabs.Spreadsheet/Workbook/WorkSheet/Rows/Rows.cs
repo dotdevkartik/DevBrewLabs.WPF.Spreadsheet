@@ -4,9 +4,9 @@ namespace DevBrewLabs.Spreadsheet
 {
     internal class Rows : SheetDimensionCollection<IRow>, IRows
     {
-        public WorkSheet WorkSheet { get; }
+        public Worksheet WorkSheet { get; }
 
-        internal Rows(WorkSheet parent) : base()
+        internal Rows(Worksheet parent) : base()
         {
             WorkSheet = parent;
         }

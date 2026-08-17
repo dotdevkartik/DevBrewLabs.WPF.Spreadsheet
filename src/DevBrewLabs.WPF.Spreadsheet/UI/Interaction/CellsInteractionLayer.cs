@@ -306,7 +306,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                     {
                         for (int column = SheetView.Selection.LeftColumn; column <= SheetView.Selection.RightColumn; column++)
                         {
-                            var ws = (WorkSheet)SheetView.WorkSheet;
+                            var ws = (Worksheet)SheetView.WorkSheet;
                             ws.SetValue(row, column, null);
                             ws.SetFormula(row, column, null);
                         }

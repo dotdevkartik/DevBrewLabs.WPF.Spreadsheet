@@ -41,7 +41,7 @@ namespace SpreadsheetSampleExplorer.Samples
 
             spread.WorkBook.WorkSheets.SheetAdded += (s, e) =>
             {
-                styleAction(spread.SheetViews.GetSheetView(e.WorkSheet));
+                styleAction(spread.SheetViews.GetSheetView(e.AddedSheet));
             };
         }
 
@@ -145,7 +145,7 @@ namespace SpreadsheetSampleExplorer.Samples
             }
         }
 
-        private void SetupSheetDataSource(IWorkSheet worksheet)
+        private void SetupSheetDataSource(IWorksheet worksheet)
         {
             var customers = DataSource.GetCustomers().Take(100).ToList();
             worksheet.DataSource = customers;

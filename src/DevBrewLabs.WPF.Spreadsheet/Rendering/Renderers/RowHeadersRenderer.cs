@@ -54,7 +54,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             }
         }
 
-        private void AdjustHeaderWidth(IWorkSheet workSheet, Rows rows, RowHeaderColumns columns, int topRow, int leftColumn, int bottomRow, int rightColumn)
+        private void AdjustHeaderWidth(IWorksheet workSheet, Rows rows, RowHeaderColumns columns, int topRow, int leftColumn, int bottomRow, int rightColumn)
         {
             for (int col = leftColumn; col <= rightColumn; col++)
             {

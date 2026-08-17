@@ -5,7 +5,7 @@ namespace DevBrewLabs.Spreadsheet
 {
     internal class ColumnHeaderRows : SheetDimensionCollection<IRow>, IRows, IDisposable
     {
-        private WorkSheet _workSheet;
+        private Worksheet _workSheet;
 
         public ColumnHeaders ColumnHeaders { get; }
         internal ColumnHeaderRows(ColumnHeaders parent) : base()

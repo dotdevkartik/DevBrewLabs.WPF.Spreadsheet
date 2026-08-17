@@ -11,7 +11,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
         public void SelectCell(ISheetView sheetView, int row, int col)
         {
-            var workSheet = (WorkSheet)sheetView.WorkSheet;
+            var workSheet = (Worksheet)sheetView.WorkSheet;
             
             var anchor = workSheet.GetSpanCellRange(row, col);
             if (anchor != default)
@@ -61,7 +61,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
         public void SelectRange(ISheetView sheetView, int row, int column, int rowCount, int columnCount)
         {
             var selection = sheetView.Selection;
-            var workSheet = (WorkSheet)sheetView.WorkSheet;
+            var workSheet = (Worksheet)sheetView.WorkSheet;
 
             if (!workSheet.ContainsRange(row, column, rowCount, columnCount))
                 return;

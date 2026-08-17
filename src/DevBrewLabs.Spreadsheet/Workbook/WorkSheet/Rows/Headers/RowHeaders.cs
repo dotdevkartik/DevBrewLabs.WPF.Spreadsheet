@@ -18,7 +18,7 @@ namespace DevBrewLabs.Spreadsheet
 
         public bool HasSpans { get; }
 
-        internal RowHeaders(WorkSheet workSheet) : base(workSheet)
+        internal RowHeaders(Worksheet workSheet) : base(workSheet)
         {
             DefaultColumnWidth = 30;
             ColumnCount = 1;

@@ -29,7 +29,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 return;
 
             _editingView = sheetView;
-            var workSheet = (WorkSheet)sheetView.WorkSheet;
+            var workSheet = (Worksheet)sheetView.WorkSheet;
 
             var anchor = workSheet.GetSpanCellRange(row, column);
             if (anchor != default)

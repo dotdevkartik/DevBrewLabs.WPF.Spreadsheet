@@ -11,8 +11,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
     {
         protected override void OnRender(DrawingContext context, int topRow, int leftColumn, int bottomRow, int rightColumn)
         {
-            var workSheet = (WorkSheet)SheetView.WorkSheet;
-            var workBook = (WorkBook)workSheet.WorkBook;
+            var workSheet = (Worksheet)SheetView.WorkSheet;
+            var workBook = (Workbook)workSheet.WorkBook;
             var rows = (Rows)workSheet.Rows;
             var columns = (Columns)workSheet.Columns;
             var viewport = (ViewPort)SheetView.ViewPort;
@@ -48,7 +48,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             }
         }
 
-        private void RenderSingleCell(DrawingContext context, WorkSheet workSheet, WorkBook workBook, Rows rows, Columns columns, ViewPort viewport, int row, int col, double zoom, double penThickness, RenderContext renderContext)
+        private void RenderSingleCell(DrawingContext context, Worksheet workSheet, Workbook workBook, Rows rows, Columns columns, ViewPort viewport, int row, int col, double zoom, double penThickness, RenderContext renderContext)
         {
             var sheetRow = rows.GetItem(row);
             var sheetColumn = columns.GetItem(col);

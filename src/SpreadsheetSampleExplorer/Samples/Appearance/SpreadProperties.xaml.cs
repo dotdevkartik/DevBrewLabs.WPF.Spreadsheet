@@ -37,8 +37,6 @@ namespace SpreadsheetSampleExplorer.Samples
                     sheet.SetValue(r, c, $"Data {r},{c}");
                 }
             }
-
-            spread.Invalidate();
         }
 
         private void OnScrollModeChanged(object sender, SelectionChangedEventArgs e)

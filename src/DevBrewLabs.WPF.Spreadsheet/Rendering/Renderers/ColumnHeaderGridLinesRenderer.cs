@@ -11,7 +11,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
     {
         protected override void OnRender(DrawingContext context, int topRow, int leftColumn, int bottomRow, int rightColumn)
         {
-            var workSheet = (WorkSheet)SheetView.WorkSheet;
+            var workSheet = (Worksheet)SheetView.WorkSheet;
             var rows = (ColumnHeaderRows)workSheet.ColumnHeaders.Rows;
             var columns = (Columns)workSheet.Columns;
 
@@ -77,7 +77,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
             context.Pop();
         }
 
-        private void DrawHiddenColumnIndicator(DrawingContext context, double x, double rowLocation, double rowHeight, WorkSheet workSheet)
+        private void DrawHiddenColumnIndicator(DrawingContext context, double x, double rowLocation, double rowHeight, Worksheet workSheet)
         {
             var pen = SheetView.Spread.GridLinePen;
             var defaultStyle = workSheet.WorkBook.GetNamedStyle(StyleKeys.DefaultColumnHeaderStyleKey);

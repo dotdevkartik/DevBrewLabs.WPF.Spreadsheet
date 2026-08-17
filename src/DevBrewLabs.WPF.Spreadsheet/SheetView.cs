@@ -12,7 +12,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
     {
         private HeadersVisibility _headersVisibility;
         private ViewPort _viewPort;
-        private WorkSheet _workSheet;
+        private Worksheet _workSheet;
         private Rows _rows;
         private Cells _cells;
         private Columns _columns;
@@ -56,12 +56,12 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public int ActiveRow { get; internal set; }
         public int ActiveColumn { get; internal set; }
         public CellRange Selection => _selection;
-        public IWorkSheet WorkSheet => _workSheet;
+        public IWorksheet WorkSheet => _workSheet;
         public bool AutoSizeRows { get; set; }
         public bool AutoSizeColumns { get; set; }
         #endregion
 
-        public SheetView(Spread spread, WorkSheet worksheet)
+        public SheetView(Spread spread, Worksheet worksheet)
         {
             Spread = spread;
             _workSheet = worksheet;

@@ -13,9 +13,9 @@ namespace DevBrewLabs.Spreadsheet
             }
         }
 
-        public WorkSheet WorkSheet { get; }
+        public Worksheet WorkSheet { get; }
 
-        internal Columns(WorkSheet parent) : base()
+        internal Columns(Worksheet parent) : base()
         {
             WorkSheet = parent;
         }

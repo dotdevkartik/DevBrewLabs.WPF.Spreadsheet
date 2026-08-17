@@ -8,7 +8,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
     {
         private Rect _actualBounds;
         private SheetView _sheetView;
-        private WorkSheet _workSheet;
+        private Worksheet _workSheet;
         private Rows _rows;
         private Columns _columns;
         private CellRange _viewRange;
@@ -26,7 +26,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
         internal ViewPort(SheetView sheetView)
         {
             _sheetView = sheetView;
-            _workSheet = (WorkSheet)sheetView.WorkSheet;
+            _workSheet = (Worksheet)sheetView.WorkSheet;
             _rows = _workSheet.Rows.As<Rows>();
             _columns = _workSheet.Columns.As<Columns>();
             _viewRange = new CellRange(0, 0, 0, 0);

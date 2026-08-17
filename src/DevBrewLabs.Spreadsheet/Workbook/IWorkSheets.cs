@@ -3,20 +3,21 @@ using System.Collections.Generic;
 
 namespace DevBrewLabs.Spreadsheet
 {
-    public interface IWorkSheets : IEnumerable<IWorkSheet>, IDisposable
+    public interface IWorksheets : IEnumerable<IWorksheet>, IDisposable
     {
         /// <summary>
         /// Fired when a sheet is removed.
         /// </summary>
-        event EventHandler<SheetChangedEventArgs> SheetRemoved;
+        event EventHandler<WorksheetRemovedEventArgs> SheetRemoved;
         /// <summary>
         /// Fired when a sheet is added.
         /// </summary>
-        event EventHandler<SheetChangedEventArgs> SheetAdded;
+        event EventHandler<WorksheetAddedEventArgs> SheetAdded;
         /// <summary>
         /// Fired when active sheet is changed.
         /// </summary>
-        event EventHandler<SheetChangedEventArgs> ActiveSheetChanged;
+        event EventHandler<WorksheetEventArgs> ActiveSheetChanged;
+
         /// <summary>
         /// Gets the sheet count.
         /// </summary>
@@ -24,23 +25,23 @@ namespace DevBrewLabs.Spreadsheet
         /// <summary>
         /// Gets the parent workbook.
         /// </summary>
-        IWorkBook WorkBook { get; }
+        IWorkbook WorkBook { get; }
         /// <summary>
         /// Gets the sheet by name.
         /// </summary>
         /// <param name="sheetName"></param>
         /// <returns></returns>
-        IWorkSheet this[string sheetName] { get; }
+        IWorksheet this[string sheetName] { get; }
         /// <summary>
         /// Gets the sheet by index.
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        IWorkSheet this[int index] { get; }
+        IWorksheet this[int index] { get; }
         /// <summary>
         /// Gets or sets the active sheet.
         /// </summary>
-        IWorkSheet ActiveSheet { get; set; }
+        IWorksheet ActiveSheet { get; set; }
         /// <summary>
         /// Gets or sets the active sheet index.
         /// </summary>
@@ -52,7 +53,7 @@ namespace DevBrewLabs.Spreadsheet
         ///  Name of the sheet.
         /// </param>
         /// <returns></returns>
-        IWorkSheet AddSheet(string name);
+        IWorksheet AddSheet(string name);
         /// <summary>
         /// Removes the sheet.
         /// </summary>
@@ -72,12 +73,12 @@ namespace DevBrewLabs.Spreadsheet
         /// </summary>
         /// <param name="sheetName"></param>
         /// <returns></returns>
-        IWorkSheet GetSheet(string sheetName);
+        IWorksheet GetSheet(string sheetName);
         /// <summary>
         /// Gets sheet by index.
         /// </summary>
         /// <param name="sheetName"></param>
         /// <returns></returns>
-        IWorkSheet GetSheet(int index);
+        IWorksheet GetSheet(int index);
     }
 }

@@ -12,7 +12,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
     {
         private Spread _spread;
         private SheetView _sheetView;
-        private WorkSheet _workSheet;
+        private Worksheet _workSheet;
         private CellsInteractionLayer _cellInteractionLayer;
         private RowHeadersInteractionLayer _rowHeadersInteractionLayer;
         private ColumnHeadersInteractionLayer _columnHeadersInteractionLayer;
@@ -34,7 +34,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
         public void AttachSheet(SheetView sheetView)
         {
             _sheetView = sheetView;
-            _workSheet = (WorkSheet)sheetView.WorkSheet;
+            _workSheet = (Worksheet)sheetView.WorkSheet;
 
             CellsRegion.AttachSheet(sheetView);
             RowHeadersRegion.AttachSheet(sheetView);

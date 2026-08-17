@@ -5,7 +5,7 @@ namespace DevBrewLabs.Spreadsheet
 {
     internal class RowHeaderColumns : SheetDimensionCollection<IColumn>, IColumns, IDisposable
     {
-        private WorkSheet _workSheet;
+        private Worksheet _workSheet;
 
         public IColumn this[string address]
         {

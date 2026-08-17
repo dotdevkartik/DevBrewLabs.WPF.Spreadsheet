@@ -12,7 +12,7 @@ namespace DevBrewLabs.Spreadsheet
     {
         private int _rowCount;
         private int _columnCount;
-        private WorkSheet _workSheet;
+        private Worksheet _workSheet;
         private CellRange _cellRange;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -93,6 +93,7 @@ namespace DevBrewLabs.Spreadsheet
                           SheetRegion.Cells,
                           _workSheet,
                           new CellRange(Row, Column, RowCount, ColumnCount),
+                          null, null,
                           RangeChangeType.Value));
                 });
             }
@@ -114,6 +115,7 @@ namespace DevBrewLabs.Spreadsheet
                           SheetRegion.Cells,
                           _workSheet,
                           new CellRange(Row, Column, RowCount, ColumnCount),
+                          null, null,
                           RangeChangeType.Formula));
                 });
             }
@@ -147,6 +149,7 @@ namespace DevBrewLabs.Spreadsheet
                           SheetRegion.Cells,
                           _workSheet,
                           new CellRange(Row, Column, RowCount, ColumnCount),
+                          null, null,
                           RangeChangeType.StyleName));
                 });
             }
@@ -168,6 +171,7 @@ namespace DevBrewLabs.Spreadsheet
                        SheetRegion.Cells,
                        _workSheet,
                        new CellRange(Row, Column, RowCount, ColumnCount),
+                       null, null,
                        RangeChangeType.Style));
                 });
             }
@@ -235,11 +239,11 @@ namespace DevBrewLabs.Spreadsheet
             }
         }
 
-        public WorkSheet WorkSheet => _workSheet;
+        public Worksheet WorkSheet => _workSheet;
 
         public bool HasSpans { get; }
 
-        internal Cells(WorkSheet parent)
+        internal Cells(Worksheet parent)
         {
             _workSheet = parent;
             Row = Column = 0;

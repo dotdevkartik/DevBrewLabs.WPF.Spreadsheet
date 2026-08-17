@@ -31,11 +31,28 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             }
         }
 
+
+        public void OnWorksheetChanged(WorksheetChangedEventArgs args)
+        {
+            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
+            {
+                var sheetView = (SheetView)_spread.SheetViews.GetSheetView(args.Worksheet);
+
+                if (!CanInvalidate())
+                {
+                    return;
+                }
+
+                _spread.SheetTabControl.UpdateScrollbars();
+                _spread.Invalidate();
+            }));
+        }
+
         public void CellChanged(CellChangedEventArgs args)
         {
             Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
             {
-                var sheetView = (SheetView)_spread.SheetViews.GetSheetView(args.WorkSheet);
+                var sheetView = (SheetView)_spread.SheetViews.GetSheetView(args.Worksheet);
 
                 if (!sheetView.ViewPort.ViewRange.ContainsCell(args.Row, args.Column))
                     return;
@@ -64,7 +81,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
         {
             Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
             {
-                var sheetView = (SheetView)_spread.SheetViews.GetSheetView(args.WorkSheet);
+                var sheetView = (SheetView)_spread.SheetViews.GetSheetView(args.Worksheet);
 
                 if (!sheetView.ViewPort.ViewRange.Intersects(args.Range))
                 {
@@ -84,7 +101,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
         {
             Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
             {
-                var sheetView = (SheetView)_spread.SheetViews.GetSheetView(args.WorkSheet);
+                var sheetView = (SheetView)_spread.SheetViews.GetSheetView(args.Worksheet);
 
                 switch (args.Region)
                 {
@@ -129,7 +146,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
         {
             Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
             {
-                var sheetView = (SheetView)_spread.SheetViews.GetSheetView(args.WorkSheet);
+                var sheetView = (SheetView)_spread.SheetViews.GetSheetView(args.Worksheet);
 
                 switch (args.Region)
                 {

@@ -8,7 +8,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 {
     internal class CellsSurface : SheetViewSurface
     {
-        private WorkSheet _workSheet;
+        private Worksheet _workSheet;
         private DrawingGroup _drawing;
         private ViewPort _viewPort;
         private double _dragFillOffset;
@@ -22,7 +22,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
         public override void AttachSheet(SheetView sheetView)
         {
             base.AttachSheet(sheetView);
-            _workSheet = (WorkSheet)sheetView.WorkSheet;
+            _workSheet = (Worksheet)sheetView.WorkSheet;
             _drawing.Children.Clear();
             _drawing.Children.Add(sheetView.Spread.RenderEngine.CellsRenderer.Drawing);
             _drawing.Children.Add(sheetView.Spread.RenderEngine.GridLinesRenderer.Drawing);

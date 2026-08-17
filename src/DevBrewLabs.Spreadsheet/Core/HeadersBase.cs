@@ -4,11 +4,11 @@ namespace DevBrewLabs.Spreadsheet
 {
     internal abstract class HeadersBase : IDisposable
     {
-        protected WorkSheet _workSheet;
+        protected Worksheet _workSheet;
 
-        public WorkSheet WorkSheet => _workSheet;
+        public Worksheet WorkSheet => _workSheet;
 
-        internal HeadersBase(WorkSheet workSheet)
+        internal HeadersBase(Worksheet workSheet)
         {
             _workSheet = workSheet;
         }

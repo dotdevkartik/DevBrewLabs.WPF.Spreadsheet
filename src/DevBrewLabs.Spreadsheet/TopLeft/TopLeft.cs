@@ -2,11 +2,11 @@
 {
     public class TopLeft : ITopLeft
     {
-        public IWorkSheet WorkSheet { get; }
+        public IWorksheet WorkSheet { get; }
         public string StyleName { get; set; }
         public IStyle Style { get; set; }
 
-        internal TopLeft(IWorkSheet workSheet)
+        internal TopLeft(IWorksheet workSheet)
         {
             WorkSheet = workSheet;
         }

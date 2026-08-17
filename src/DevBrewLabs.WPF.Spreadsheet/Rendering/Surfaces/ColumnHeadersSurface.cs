@@ -8,7 +8,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 {
     internal class ColumnHeadersSurface : SheetViewSurface
     {
-        private WorkSheet _workSheet;
+        private Worksheet _workSheet;
         private ViewPort _viewPort;
         private readonly int _resizeDelta;
         private DrawingGroup _drawing;
@@ -22,7 +22,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
         public override void AttachSheet(SheetView sheetView)
         {
             base.AttachSheet(sheetView);
-            _workSheet = (WorkSheet)sheetView.WorkSheet;
+            _workSheet = (Worksheet)sheetView.WorkSheet;
             _viewPort = sheetView.ViewPort.As<ViewPort>();
 
             _drawing.Children.Clear();

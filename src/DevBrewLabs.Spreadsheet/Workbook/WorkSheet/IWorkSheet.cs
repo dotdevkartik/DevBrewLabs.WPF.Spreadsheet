@@ -3,7 +3,7 @@ using System;
 
 namespace DevBrewLabs.Spreadsheet
 {
-    public interface IWorkSheet : ICellContainer, IDisposable
+    public interface IWorksheet : ICellContainer, IDisposable
     {
         /// <summary>
         /// Fires when cell is modified.
@@ -25,7 +25,7 @@ namespace DevBrewLabs.Spreadsheet
         /// <summary>
         /// Gets the parent workbook.
         /// </summary>
-        IWorkBook WorkBook { get; }
+        IWorkbook WorkBook { get; }
         
         /// <summary>
         /// Gets or sets name for this sheet.
