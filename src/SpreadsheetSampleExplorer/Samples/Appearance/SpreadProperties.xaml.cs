@@ -27,15 +27,31 @@ namespace SpreadsheetSampleExplorer.Samples
         private void PopulateSampleData()
         {
             var sheet = spread.WorkBook.WorkSheets.ActiveSheet;
-            sheet.ColumnCount = 20;
-            sheet.RowCount = 50;
 
-            for (int r = 0; r < 20; r++)
+            try
             {
-                for (int c = 0; c < 10; c++)
+                // 1. Tell the UI to ignore updates temporarily
+                spread.SuspendUpdates = true;
+
+                sheet.ColumnCount = 20;
+                sheet.RowCount = 50;
+
+                object[,] data = new object[20, 10];
+                for (int r = 0; r < 20; r++)
                 {
-                    sheet.SetValue(r, c, $"Data {r},{c}");
+                    for (int c = 0; c < 10; c++)
+                    {
+                        data[r, c] = $"Data {r},{c}";
+                    }
                 }
+
+                sheet.Load(data);
+            }
+            finally
+            {
+                // 2. Turn updates back on. This will trigger ONE massive layout pass 
+                // instead of 200 tiny ones.
+                spread.SuspendUpdates = false;
             }
         }
 
