@@ -35,10 +35,10 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public static readonly DependencyProperty SelectionBorderBrushProperty;
         public static readonly DependencyProperty AllowRowResizeProperty;
         public static readonly DependencyProperty AllowColumnResizeProperty;
-        public static readonly DependencyProperty ShowFormulaSuggestionsProperty;
-        public static readonly DependencyProperty SheetTabsVisibilityProperty;
+        public static readonly DependencyProperty ShowTabStripProperty;
+        public static readonly DependencyProperty ShowAddNewSheetProperty;
         public static readonly DependencyProperty IsSelectionAnimationEnabledProperty;
-
+        public static readonly DependencyProperty ShowFormulaSuggestionsProperty;
         public static readonly DependencyProperty ZoomFactorProperty;
         public static readonly DependencyProperty AllowZoomingProperty;
 
@@ -110,11 +110,17 @@ namespace DevBrewLabs.WPF.Spreadsheet
                 typeof(Spread),
                 new PropertyMetadata(false));
 
-            SheetTabsVisibilityProperty = DependencyProperty.Register(
-                nameof(SheetTabsVisibility),
-                typeof(Visibility),
+            ShowTabStripProperty = DependencyProperty.Register(
+                nameof(ShowTabStrip),
+                typeof(bool),
                 typeof(Spread),
-                new PropertyMetadata(Visibility.Visible));
+                new PropertyMetadata(true));
+
+            ShowAddNewSheetProperty = DependencyProperty.Register(
+                nameof(ShowAddNewSheet),
+                typeof(bool),
+                typeof(Spread),
+                new PropertyMetadata(true));
 
             ScrollBarStyleProperty = DependencyProperty.Register(
                 nameof(ScrollBarStyle),
@@ -133,12 +139,21 @@ namespace DevBrewLabs.WPF.Spreadsheet
         }
 
         /// <summary>
-        /// Gets or sets whether the sheet tabs are visible.
+        /// Gets or sets whether the tab strip is visible.
         /// </summary>
-        public Visibility SheetTabsVisibility
+        public bool ShowTabStrip
         {
-            get { return (Visibility)GetValue(SheetTabsVisibilityProperty); }
-            set { SetValue(SheetTabsVisibilityProperty, value); }
+            get { return (bool)GetValue(ShowTabStripProperty); }
+            set { SetValue(ShowTabStripProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets whether the add new sheet button is visible.
+        /// </summary>
+        public bool ShowAddNewSheet
+        {
+            get { return (bool)GetValue(ShowAddNewSheetProperty); }
+            set { SetValue(ShowAddNewSheetProperty, value); }
         }
 
         /// <summary>
