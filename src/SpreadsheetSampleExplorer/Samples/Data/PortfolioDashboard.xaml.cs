@@ -378,7 +378,7 @@ namespace SpreadsheetSampleExplorer.Samples
             ws.Cells[startRow + 3, startCol].StyleName = "CardSubtext";
         }
 
-        private void UpdateRowStyles(DevBrewLabs.Spreadsheet.IWorkSheet worksheet, int row, StockData stock)
+        private void UpdateRowStyles(IWorkSheet worksheet, int row, StockData stock)
         {
             double diff = stock.CurrentPrice - stock.BasePrice;
             string targetStyle = diff >= 0 ? "GainStyle" : "LossStyle";
@@ -406,6 +406,8 @@ namespace SpreadsheetSampleExplorer.Samples
             var worksheet = spread.WorkBook.WorkSheets[0];
             if (spread.SheetViews.ActiveSheetView != spread.SheetViews.GetSheetView(worksheet))
                 return;
+
+            spread.SheetViews.ActiveSheetView.AutoSizeRows = false;
 
             worksheet.Cells[0, 4].Value = $"Ticks: {_tickCount}";
             worksheet.Cells[0, 6].Value = $"Last Update: {DateTime.Now:HH:mm:ss}";

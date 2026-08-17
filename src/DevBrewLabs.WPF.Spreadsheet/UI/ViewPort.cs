@@ -463,7 +463,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
                 {
                     double size = _defaultSize();
 
-                    var item = _items.GetItem(index);
+                    var item = _items.GetItem(_lastCalculated);
 
                     if (item != null)
                         size = _getSize(item);
