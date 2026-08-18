@@ -34,39 +34,36 @@ namespace DevBrewLabs.Spreadsheet
 
         private void AddDefaultStyles()
         {
+            var headerColor = Drawing.CellColor.FromArgb(255, 240, 240, 240);
+
             var rowHeaderStyle = new CellStyle
             {
-                FontSize = 14,
                 HorizontalAlignment = CellHorizontalAlignment.Center,
-                BackColor = Drawing.CellColor.Gray
+                VerticalAlignment = CellVerticalAlignment.Center,
+                BackColor = headerColor
             };
-
             AddNamedStyle(StyleKeys.DefaultRowHeaderStyleKey, rowHeaderStyle);
 
             var columnHeaderStyle = new CellStyle
             {
-                FontSize = 14,
                 HorizontalAlignment = CellHorizontalAlignment.Center,
-                BackColor = Drawing.CellColor.Gray
+                VerticalAlignment = CellVerticalAlignment.Center,
+                BackColor = headerColor
             };
-
             AddNamedStyle(StyleKeys.DefaultColumnHeaderStyleKey, columnHeaderStyle);
 
             var sheetStyle = new CellStyle
             {
-                BackColor = Drawing.CellColor.White,
-                AllowMultiLineText = true,
+                // Relying on CellStyle constructor defaults: Calibri 14pt, Black on White, NoWrap.
             };
-
             AddNamedStyle(StyleKeys.DefaultSheetStyleKey, sheetStyle);
 
             var topLeftStyle = new CellStyle
             {
+                BackColor = headerColor,
                 ForeColor = Drawing.CellColor.LightGray
             };
             AddNamedStyle(StyleKeys.DefaultTopLeftStyleKey, topLeftStyle);
-
-            rowHeaderStyle.BackColor = topLeftStyle.BackColor = columnHeaderStyle.BackColor = Drawing.CellColor.FromArgb(255, 240, 240, 240);
         }
 
         internal Workbook(string name, IChangeListener updateProvider) : this(name)
