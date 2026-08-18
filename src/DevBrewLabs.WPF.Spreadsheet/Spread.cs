@@ -541,7 +541,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
-            SheetTabControl.UpdateScrollbars();
+            SheetTabControl?.UpdateScrollbars();
             Invalidate();
         }
 
