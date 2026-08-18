@@ -91,7 +91,14 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             }
 
             var targetRange = new CellRange(targetRow, targetCol, targetRowCount, targetColCount);
-            targetRange = workSheet.ExpandSpanRange(targetRange);
+
+            bool isFullColumn = targetRowCount == workSheet.RowCount;
+            bool isFullRow = targetColCount == workSheet.ColumnCount;
+
+            if (!isFullColumn && !isFullRow)
+            {
+                targetRange = workSheet.ExpandSpanRange(targetRange);
+            }
 
             ((SheetView)sheetView).SetSelection(targetRange);
 

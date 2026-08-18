@@ -167,18 +167,13 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
 
         public Rect GetRangeRect(int topRow, int leftColumn, int bottomRow, int rightColumn)
         {
-            var topLeftCellRect = GetCellRect(topRow, leftColumn);
+            var x = GetColumnLocation(leftColumn);
+            var y = GetRowLocation(topRow);
 
-            if (bottomRow > topRow || rightColumn > leftColumn)
-            {
-                var bottomRightCellRect = GetCellRect(bottomRow, rightColumn);
-                var rangeRect = new Rect(topLeftCellRect.TopLeft, bottomRightCellRect.BottomRight);
-                return rangeRect;
-            }
-            else
-            {
-                return topLeftCellRect;
-            }
+            double right = GetColumnLocation(rightColumn) + _columns.GetColumnWidth(rightColumn);
+            double bottom = GetRowLocation(bottomRow) + _rows.GetRowHeight(bottomRow);
+
+            return new Rect(x, y, right - x, bottom - y);
         }
 
         public Rect GetViewRangeRect()
