@@ -3,6 +3,7 @@ using DevBrewLabs.Spreadsheet.Drawing;
 using DevBrewLabs.Spreadsheet.Styling;
 using System.Windows;
 using System.Windows.Controls;
+using SpreadsheetSampleExplorer.Data;
 
 namespace SpreadsheetSampleExplorer.Samples
 {
@@ -71,13 +72,7 @@ namespace SpreadsheetSampleExplorer.Samples
                 workSheet.SetStyle(6 + i, 1, new CellStyle { FontWeight = CellFontWeight.Bold });
             }
 
-            // Dummy data
-            int[,] data = {
-                { 150000, 165000, 120000, 115000, 90000, 95000 },
-                { 80000, 85000, 60000, 72000, 40000, 48000 },
-                { 45000, 42000, 35000, 38000, 25000, 22000 },
-                { 12000, 15000, 8000, 11000, 5000, 4500 }
-            };
+            int[,] data = DataSource.GetSpanningSalesData();
 
             for(int r = 0; r < 4; r++)
             {

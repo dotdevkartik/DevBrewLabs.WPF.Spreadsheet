@@ -2,6 +2,7 @@ using DevBrewLabs.Spreadsheet;
 using DevBrewLabs.Spreadsheet.Drawing;
 using DevBrewLabs.Spreadsheet.Styling;
 using System.Windows.Controls;
+using SpreadsheetSampleExplorer.Data;
 
 namespace SpreadsheetSampleExplorer.Samples
 {
@@ -71,14 +72,7 @@ namespace SpreadsheetSampleExplorer.Samples
                 cell.Style = headerStyle;
             }
 
-            // Data Rows (Regions: North, South, East, West) -> Rows 5, 6, 7, 8 in Excel (0-indexed: 4, 5, 6, 7)
-            object[][] sampleData = new object[][]
-            {
-                new object[] { "North Region", 1250, 45.00 },
-                new object[] { "South Region", 980,  52.50 },
-                new object[] { "East Region",  1420, 40.00 },
-                new object[] { "West Region",  1100, 60.00 }
-            };
+            object[][] sampleData = DataSource.GetRegionalSalesData();
 
             for (int i = 0; i < sampleData.Length; i++)
             {
@@ -162,15 +156,7 @@ namespace SpreadsheetSampleExplorer.Samples
                 cell.Style = headerStyle;
             }
 
-            // Expense Categories Data -> Rows 4, 5, 6, 7, 8 in Excel (0-indexed: 3, 4, 5, 6, 7)
-            object[][] expenseData = new object[][]
-            {
-                new object[] { "Research & Development",  15000, 18000, 16000, 20000 },
-                new object[] { "Sales & Marketing",       22000, 25000, 21000, 28000 },
-                new object[] { "Payroll & Benefits",      45000, 46000, 47000, 48000 },
-                new object[] { "IT & Infrastructure",     8000,  8500,  9000,  9500  },
-                new object[] { "Office & Admin",          5000,  5200,  5100,  5500  }
-            };
+            object[][] expenseData = DataSource.GetExpenseData();
 
             for (int i = 0; i < expenseData.Length; i++)
             {

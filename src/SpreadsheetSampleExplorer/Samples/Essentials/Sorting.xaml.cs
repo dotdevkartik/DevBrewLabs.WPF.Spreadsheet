@@ -5,6 +5,7 @@ using DevBrewLabs.Spreadsheet.Styling;
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using SpreadsheetSampleExplorer.Data;
 
 namespace SpreadsheetSampleExplorer.Samples
 {
@@ -28,39 +29,7 @@ namespace SpreadsheetSampleExplorer.Samples
             worksheet.RowCount = TotalRows + 1;
             worksheet.ColumnCount = TotalCols;
 
-            string[] firstNames = { "James", "Mary", "John", "Patricia", "Robert", "Jennifer", "Michael", "Linda", "William", "Elizabeth", "David", "Barbara", "Richard", "Susan", "Joseph", "Jessica", "Thomas", "Sarah", "Charles", "Karen" };
-            string[] lastNames = { "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez", "Hernandez", "Lopez", "Gonzalez", "Wilson", "Anderson", "Thomas", "Taylor", "Moore", "Jackson", "Martin" };
-            string[] categories = { "Electronics", "Software", "Hardware", "Cloud Services", "Consulting", "Office Supplies" };
-            string[] countries = { "United States", "Germany", "United Kingdom", "Canada", "Japan", "Australia", "France", "India" };
-            string[] statuses = { "Completed", "Pending", "Processing", "Cancelled", "Shipped" };
-
-            var rnd = new Random(123);
-            var data = new object[TotalRows + 1, TotalCols];
-
-            // Header labels in row 0
-            string[] headers = { "Order ID", "Customer Name", "Category", "Country", "Units Sold", "Unit Price ($)", "Total Revenue ($)", "Rating (1-5)", "Status" };
-            for (int col = 0; col < TotalCols; col++)
-            {
-                data[0, col] = headers[col];
-            }
-
-            for (int row = 1; row <= TotalRows; row++)
-            {
-                string name = $"{firstNames[rnd.Next(firstNames.Length)]} {lastNames[rnd.Next(lastNames.Length)]}";
-                int units = rnd.Next(1, 200);
-                double price = Math.Round(10.0 + rnd.NextDouble() * 490.0, 2);
-                double total = Math.Round(units * price, 2);
-
-                data[row, 0] = 1000 + row;
-                data[row, 1] = name;
-                data[row, 2] = categories[rnd.Next(categories.Length)];
-                data[row, 3] = countries[rnd.Next(countries.Length)];
-                data[row, 4] = units;
-                data[row, 5] = price;
-                data[row, 6] = total;
-                data[row, 7] = rnd.Next(1, 6);
-                data[row, 8] = statuses[rnd.Next(statuses.Length)];
-            }
+            var data = DataSource.GetSortableData(TotalRows, TotalCols);
 
             worksheet.Load(data);
 

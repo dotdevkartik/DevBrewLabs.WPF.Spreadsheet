@@ -2,6 +2,7 @@ using DevBrewLabs.WPF.Spreadsheet;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using SpreadsheetSampleExplorer.Data;
 
 namespace SpreadsheetSampleExplorer.Samples
 {
@@ -36,15 +37,7 @@ namespace SpreadsheetSampleExplorer.Samples
                 sheet.ColumnCount = 20;
                 sheet.RowCount = 50;
 
-                object[,] data = new object[20, 10];
-                for (int r = 0; r < 20; r++)
-                {
-                    for (int c = 0; c < 10; c++)
-                    {
-                        data[r, c] = $"Data {r},{c}";
-                    }
-                }
-
+                object[,] data = DataSource.GetSpreadPropertiesData(20, 10);
                 sheet.Load(data);
             }
             finally

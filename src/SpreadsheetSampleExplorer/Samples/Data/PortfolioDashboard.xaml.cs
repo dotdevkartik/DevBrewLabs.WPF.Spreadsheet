@@ -8,6 +8,8 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using SpreadsheetSampleExplorer.Data;
+using SpreadsheetSampleExplorer.Models;
 
 namespace SpreadsheetSampleExplorer.Samples
 {
@@ -68,26 +70,7 @@ namespace SpreadsheetSampleExplorer.Samples
         private Random _random = new Random();
         private int _tickCount = 90;
 
-        private class StockData
-        {
-            public string Ticker { get; set; }
-            public string Company { get; set; }
-            public int Shares { get; set; }
-            public double BasePrice { get; set; }
-            public double CurrentPrice { get; set; }
-        }
-
-        private List<StockData> _stocks = new List<StockData>()
-        {
-            new StockData { Ticker = "MSFT", Company = "Microsoft Corp.", Shares = 250, BasePrice = 415.50, CurrentPrice = 443.75 },
-            new StockData { Ticker = "AAPL", Company = "Apple Inc.", Shares = 300, BasePrice = 224.20, CurrentPrice = 226.54 },
-            new StockData { Ticker = "NVDA", Company = "NVIDIA Corp.", Shares = 180, BasePrice = 122.80, CurrentPrice = 125.46 },
-            new StockData { Ticker = "GOOGL", Company = "Alphabet Inc.", Shares = 200, BasePrice = 175.40, CurrentPrice = 182.17 },
-            new StockData { Ticker = "AMZN", Company = "Amazon.com Inc.", Shares = 150, BasePrice = 186.10, CurrentPrice = 201.21 },
-            new StockData { Ticker = "TSLA", Company = "Tesla Inc.", Shares = 120, BasePrice = 248.50, CurrentPrice = 255.16 },
-            new StockData { Ticker = "META", Company = "Meta Platforms", Shares = 100, BasePrice = 485.30, CurrentPrice = 502.77 },
-            new StockData { Ticker = "JPM", Company = "JPMorgan Chase", Shares = 350, BasePrice = 210.15, CurrentPrice = 218.17 }
-        };
+        private List<StockData> _stocks = DataSource.GetStocks();
 
         private CurrencyFormatter _currencyFormatter = new CurrencyFormatter();
         private PercentageFormatter _percentageFormatter = new PercentageFormatter();

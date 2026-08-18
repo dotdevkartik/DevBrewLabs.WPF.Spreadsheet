@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using SpreadsheetSampleExplorer.Data;
 
 namespace SpreadsheetSampleExplorer.Samples
 {
@@ -54,33 +55,7 @@ namespace SpreadsheetSampleExplorer.Samples
 
             var sampleData = await Task.Run(() =>
             {
-                string[] departments = { "Engineering", "Sales", "Marketing", "Finance", "Human Resources", "Operations", "Legal", "Product" };
-                string[] regions = { "North America", "Europe", "Asia Pacific", "Latin America", "Middle East" };
-                string[] statuses = { "Active", "Pending", "Completed", "On Hold", "Archived" };
-
-                var rnd = new Random(42);
-                var data = new object[rowCount, colCount];
-
-                string[] headers = { "ID", "Employee Ref", "Department", "Region", "Salary ($)", "Score", "Projects", "Status", "Year Joined", "Security Code" };
-                for (int col = 0; col < colCount; col++)
-                {
-                    data[0, col] = headers[col];
-                }
-
-                for (int row = 1; row < rowCount; row++)
-                {
-                    data[row, 0] = row;
-                    data[row, 1] = $"EMP-{100000 + row}";
-                    data[row, 2] = departments[rnd.Next(departments.Length)];
-                    data[row, 3] = regions[rnd.Next(regions.Length)];
-                    data[row, 4] = rnd.Next(45000, 185000);
-                    data[row, 5] = Math.Round(3.0 + rnd.NextDouble() * 2.0, 1);
-                    data[row, 6] = rnd.Next(1, 15);
-                    data[row, 7] = statuses[rnd.Next(statuses.Length)];
-                    data[row, 8] = rnd.Next(2010, 2026);
-                    data[row, 9] = $"SEC-{rnd.Next(1000, 9999)}";
-                }
-                return data;
+                return DataSource.GetEmployeesData(rowCount, colCount);
             });
 
             swPrep.Stop();

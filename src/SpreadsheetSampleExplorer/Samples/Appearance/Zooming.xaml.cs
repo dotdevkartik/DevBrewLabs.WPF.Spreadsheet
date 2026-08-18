@@ -3,6 +3,7 @@ using DevBrewLabs.WPF.Spreadsheet;
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using SpreadsheetSampleExplorer.Data;
 
 namespace SpreadsheetSampleExplorer.Samples
 {
@@ -31,28 +32,8 @@ namespace SpreadsheetSampleExplorer.Samples
             sheet.ColumnCount = 100;
             sheet.RowCount = 200;
 
-            sheet.SetValue(0, 0, "Quarter");
-            sheet.SetValue(0, 1, "Region");
-            sheet.SetValue(0, 2, "Sales Rep");
-            sheet.SetValue(0, 3, "Revenue ($)");
-            sheet.SetValue(0, 4, "Target ($)");
-            sheet.SetValue(0, 5, "Status");
-
-            string[] regions = { "North", "South", "East", "West" };
-            string[] reps = { "Alice Smith", "Bob Jones", "Carol Vance", "David Miller", "Eva Green" };
-
-            Random rand = new Random(42);
-            for (int r = 1; r <= 20; r++)
-            {
-                sheet.SetValue(r, 0, $"Q{(r % 4) + 1}");
-                sheet.SetValue(r, 1, regions[rand.Next(regions.Length)]);
-                sheet.SetValue(r, 2, reps[rand.Next(reps.Length)]);
-                int rev = rand.Next(15000, 95000);
-                int tgt = rand.Next(20000, 80000);
-                sheet.SetValue(r, 3, rev);
-                sheet.SetValue(r, 4, tgt);
-                sheet.SetValue(r, 5, rev >= tgt ? "Met Target" : "Under Target");
-            }
+            var data = DataSource.GetZoomingData(21, 6);
+            sheet.Load(data);
 
             spread.Invalidate();
         }

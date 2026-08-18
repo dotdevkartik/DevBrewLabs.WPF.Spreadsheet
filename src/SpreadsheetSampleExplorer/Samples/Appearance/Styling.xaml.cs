@@ -147,7 +147,7 @@ namespace SpreadsheetSampleExplorer.Samples
 
         private void SetupSheetDataSource(IWorksheet worksheet)
         {
-            var customers = DataSource.GetCustomers().Take(100).ToList();
+            var customers = DataSource.GetCustomers().ToList();
             worksheet.DataSource = customers;
             worksheet.Columns[0].DataMap = new PropertyDataMap("Id");
             worksheet.Columns[1].DataMap = new PropertyDataMap("Age");
