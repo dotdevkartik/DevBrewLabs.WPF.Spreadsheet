@@ -27,8 +27,28 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
         public void SelectColumn(ISheetView sheetView, int column)
         {
-            var workSheet = sheetView.WorkSheet;
-            ((SheetView)sheetView).ActiveRow = 0;
+            var workSheet = (Worksheet)sheetView.WorkSheet;
+            int activeRow = 0;
+
+            while (activeRow < workSheet.RowCount)
+            {
+                var anchor = workSheet.GetSpanCellRange(activeRow, column);
+                if (anchor != default)
+                {
+                    activeRow = anchor.BottomRow + 1;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            if (activeRow >= workSheet.RowCount)
+            {
+                activeRow = 0;
+            }
+
+            ((SheetView)sheetView).ActiveRow = activeRow;
             ((SheetView)sheetView).ActiveColumn = column;
             SelectRange(sheetView, 0, column, workSheet.RowCount, 1);
         }
@@ -41,9 +61,29 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
         public void SelectRow(ISheetView sheetView, int row)
         {
-            var workSheet = sheetView.WorkSheet;
+            var workSheet = (Worksheet)sheetView.WorkSheet;
+            int activeColumn = 0;
+
+            while (activeColumn < workSheet.ColumnCount)
+            {
+                var anchor = workSheet.GetSpanCellRange(row, activeColumn);
+                if (anchor != default)
+                {
+                    activeColumn = anchor.RightColumn + 1;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            if (activeColumn >= workSheet.ColumnCount)
+            {
+                activeColumn = 0;
+            }
+
             ((SheetView)sheetView).ActiveRow = row;
-            ((SheetView)sheetView).ActiveColumn = 0;
+            ((SheetView)sheetView).ActiveColumn = activeColumn;
             SelectRange(sheetView, row, 0, 1, workSheet.ColumnCount);
         }
 

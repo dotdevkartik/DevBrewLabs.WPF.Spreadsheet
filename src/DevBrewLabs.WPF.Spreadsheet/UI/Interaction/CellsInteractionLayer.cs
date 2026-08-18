@@ -19,6 +19,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
         private Rect _targetSelectionRect;
         private Rect _targetActiveCellRect;
         private bool _isFirstRender = true;
+        private int _lastActiveRow = -1;
+        private int _lastActiveColumn = -1;
+        private int _preferredColumn = -1;
+        private int _preferredRow = -1;
 
         public static readonly DependencyProperty AnimatedSelectionRectProperty =
             DependencyProperty.Register("AnimatedSelectionRect", typeof(Rect), typeof(CellsInteractionLayer),
@@ -116,9 +120,27 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             }
         }
 
+        private void UpdatePreferredCoordinatesBeforeMove()
+        {
+            if (SheetView.ActiveRow != _lastActiveRow || SheetView.ActiveColumn != _lastActiveColumn)
+            {
+                _preferredRow = SheetView.ActiveRow;
+                _preferredColumn = SheetView.ActiveColumn;
+            }
+        }
+
+        private void CommitCoordinatesAfterMove(int conceptuallyRequestedRow, int conceptuallyRequestedColumn)
+        {
+            _preferredRow = conceptuallyRequestedRow;
+            _preferredColumn = conceptuallyRequestedColumn;
+            _lastActiveRow = SheetView.ActiveRow;
+            _lastActiveColumn = SheetView.ActiveColumn;
+        }
+
         #region Keyboard Selection
         private void MoveDownCellSelection()
         {
+            UpdatePreferredCoordinatesBeforeMove();
             var workSheet = SheetView.WorkSheet;
             int rowSpan = Math.Max(1, workSheet.GetRowSpan(SheetView.ActiveRow, SheetView.ActiveColumn));
             int nextRow = SheetView.ActiveRow + rowSpan;
@@ -137,18 +159,22 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 }
             }
 
-            SheetView.SelectCell(nextRow, SheetView.ActiveColumn);
+            SheetView.SelectCell(nextRow, _preferredColumn);
+            CommitCoordinatesAfterMove(nextRow, _preferredColumn);
         }
 
         private void MoveUpCellSelection()
         {
+            UpdatePreferredCoordinatesBeforeMove();
             if (SheetView.ActiveRow == 0)
                 return;
 
-            if (SheetView.ActiveRow - 1 <= SheetView.ViewPort.ViewRange.TopRow)
+            int nextRow = SheetView.ActiveRow - 1;
+
+            if (nextRow <= SheetView.ViewPort.ViewRange.TopRow)
             {
-                double renderedRowHeight = SheetView.GetRowRenderedHeight(SheetView.ActiveRow - 1);
-                var rowRect = SheetView.ViewPort.GetRowRect(SheetView.ActiveRow - 1);
+                double renderedRowHeight = SheetView.GetRowRenderedHeight(nextRow);
+                var rowRect = SheetView.ViewPort.GetRowRect(nextRow);
 
                 if (renderedRowHeight < rowRect.Height)
                 {
@@ -156,11 +182,13 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 }
             }
 
-            SheetView.SelectCell(SheetView.ActiveRow - 1, SheetView.ActiveColumn);
+            SheetView.SelectCell(nextRow, _preferredColumn);
+            CommitCoordinatesAfterMove(nextRow, _preferredColumn);
         }
 
         private void MoveRightCellSelection()
         {
+            UpdatePreferredCoordinatesBeforeMove();
             var workSheet = SheetView.WorkSheet;
             int colSpan = Math.Max(1, workSheet.GetColumnSpan(SheetView.ActiveRow, SheetView.ActiveColumn));
             int nextCol = SheetView.ActiveColumn + colSpan;
@@ -179,18 +207,22 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 }
             }
 
-            SheetView.SelectCell(SheetView.ActiveRow, nextCol);
+            SheetView.SelectCell(_preferredRow, nextCol);
+            CommitCoordinatesAfterMove(_preferredRow, nextCol);
         }
 
         private void MoveLeftCellSelection()
         {
+            UpdatePreferredCoordinatesBeforeMove();
             if (SheetView.ActiveColumn == 0)
                 return;
 
-            if (SheetView.ActiveColumn - 1 <= SheetView.ViewPort.ViewRange.LeftColumn)
+            int nextCol = SheetView.ActiveColumn - 1;
+
+            if (nextCol <= SheetView.ViewPort.ViewRange.LeftColumn)
             {
-                double renderedColumnWidth = SheetView.GetColumnRenderedWidth(SheetView.ActiveColumn - 1);
-                var colRect = SheetView.ViewPort.GetColumnRect(SheetView.ActiveColumn - 1);
+                double renderedColumnWidth = SheetView.GetColumnRenderedWidth(nextCol);
+                var colRect = SheetView.ViewPort.GetColumnRect(nextCol);
 
                 if (renderedColumnWidth < colRect.Width)
                 {
@@ -198,7 +230,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 }
             }
 
-            SheetView.SelectCell(SheetView.ActiveRow, SheetView.ActiveColumn - 1);
+            SheetView.SelectCell(_preferredRow, nextCol);
+            CommitCoordinatesAfterMove(_preferredRow, nextCol);
         }
         #endregion
 
