@@ -136,18 +136,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
             _headerColLocCache.UpdateLocation(fromIndex, offset);
         }
 
-
-        internal CellRange ShrinkRangeToViewPort(CellRange range)
-        {
-            int topRow = range.TopRow < ViewRange.TopRow ? ViewRange.TopRow : range.TopRow;
-            int bottomRow = range.BottomRow > ViewRange.BottomRow ? ViewRange.BottomRow : range.BottomRow;
-            int leftColumn = range.LeftColumn < ViewRange.LeftColumn ? ViewRange.LeftColumn : range.LeftColumn;
-            int rightColumn = range.RightColumn > ViewRange.RightColumn ? ViewRange.RightColumn : range.RightColumn;
-            int rowCount = bottomRow + 1 - topRow;
-            int columnCount = rightColumn + 1 - leftColumn;
-            return new CellRange(topRow, leftColumn, rowCount, columnCount);
-        }
-
         public Rect GetColumnRect(int column)
         {
             var location = _sheetView.GetTemporaryColumnLocation(column) ?? GetColumnLocation(column);
@@ -169,6 +157,22 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
 
         public Rect GetRangeRect(int topRow, int leftColumn, int bottomRow, int rightColumn)
         {
+            // Expand boundaries to account for merged (span) cells that straddle the range edges,
+            // mirroring the span-aware logic in GetCellRect.
+            var topLeftSpan = _workSheet.GetSpanCellRange(topRow, leftColumn);
+            if (topLeftSpan != default)
+            {
+                topRow = Math.Min(topRow, topLeftSpan.TopRow);
+                leftColumn = Math.Min(leftColumn, topLeftSpan.LeftColumn);
+            }
+
+            var bottomRightSpan = _workSheet.GetSpanCellRange(bottomRow, rightColumn);
+            if (bottomRightSpan != default)
+            {
+                bottomRow = Math.Max(bottomRow, bottomRightSpan.BottomRow);
+                rightColumn = Math.Max(rightColumn, bottomRightSpan.RightColumn);
+            }
+
             var x = GetColumnLocation(leftColumn);
             var y = GetRowLocation(topRow);
 

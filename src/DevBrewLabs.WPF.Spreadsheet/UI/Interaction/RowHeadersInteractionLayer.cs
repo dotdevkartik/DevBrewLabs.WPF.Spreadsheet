@@ -14,14 +14,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
             if (hitTest.Element == VisualElement.RowHeaderResizeBar && SheetView.Spread.AllowRowResize)
             {
-                if (e.ClickCount == 2)
-                {
-                    SheetView.AutoSizeRow(hitTest.Row);
-                    SheetView.ViewPort.As<ViewPort>().CalculateVisibleRange();
-                    SheetView.Spread.Invalidate();
-                    return;
-                }
-
                 CaptureMouse();
                 SheetView.Spread.RowResizeManager.BeginResize(SheetView, hitTest.Row, (int)hitTest.Position.Y);
                 Children.Add(SheetView.Spread.RowResizeManager.ResizeLine);

@@ -175,6 +175,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
             workSheet.SetRawValue(numTextBox.Row, numTextBox.Column, numTextBox.Text);
 
+            if (sheetView.AutoSizeRows)
+                sheetView.AutoSizeRow(numTextBox.Row);
+            if (sheetView.AutoSizeColumns)
+                sheetView.AutoSizeColumn(numTextBox.Column);
+
             cellChangedAction.NewState.Value = workSheet.GetValue(numTextBox.Row, numTextBox.Column);
             cellChangedAction.NewState.Row = numTextBox.Row;
             cellChangedAction.NewState.Column = numTextBox.Column;
@@ -215,6 +220,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 ActiveEditor.Focus();
                 return false;
             }
+
+            if (sheetView.AutoSizeRows)
+                sheetView.AutoSizeRow(gcTextBox.Row);
+            if (sheetView.AutoSizeColumns)
+                sheetView.AutoSizeColumn(gcTextBox.Column);
 
             // We add undo/redo regardless of formula or value to support full history
             cellChangedAction.NewState.Value = workSheet.GetValue(gcTextBox.Row, gcTextBox.Column);

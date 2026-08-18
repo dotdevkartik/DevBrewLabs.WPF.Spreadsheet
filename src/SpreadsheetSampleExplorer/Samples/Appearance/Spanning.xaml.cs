@@ -89,7 +89,8 @@ namespace SpreadsheetSampleExplorer.Samples
                 BackColor = CellColor.FromArgb(255, 254, 249, 195), // Light yellow
                 ForeColor = CellColor.FromArgb(255, 113, 63, 18),
                 FontWeight = CellFontWeight.Bold,
-                FontSize = 14
+                FontSize = 14,
+                AllowMultiLineText = true
             });
             workSheet.SetValue(11, 1, " Executive Summary & Notes:\n\n - North America exceeded Enterprise targets by 10%.\n - Europe saw a surge in Cloud Storage adoption.\n - Asia Pacific slightly missed consulting targets; requires Q4 intervention.");
             

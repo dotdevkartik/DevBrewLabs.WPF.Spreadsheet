@@ -244,12 +244,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             {
                 if (editingManager.IsEditing)
                     return;
-
-                //if (!editingManager.EndEdit(true) && editingManager.ActiveEditor != null)
-                //{
-                //    editingManager.ActiveEditor.Focus();
-                //    return;
-                //}
             }
 
             if(e.Key == Key.Tab && editingManager.IsEditing && !TextEditor.IsShowingFormulaSuggestion)

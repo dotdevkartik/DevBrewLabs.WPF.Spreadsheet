@@ -14,12 +14,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
             if (hitTest.Element == VisualElement.ColumnHeaderResizeBar && SheetView.Spread.AllowColumnResize)
             {
-                if (e.ClickCount == 2)
-                {
-                    SheetView.AutoSizeColumn(hitTest.Column);
-                    return;
-                }
-
                 CaptureMouse();
                 SheetView.Spread.ColumnResizeManager.BeginResize(SheetView, hitTest.Column, (int)hitTest.Position.X);
                 Children.Add(SheetView.Spread.ColumnResizeManager.ResizeLine);

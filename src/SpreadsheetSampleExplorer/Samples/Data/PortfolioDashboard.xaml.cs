@@ -130,7 +130,7 @@ namespace SpreadsheetSampleExplorer.Samples
                     worksheet.Cells[r, c].StyleName = "CardWhite";
 
             // Row Heights
-            worksheet.Rows[0].Height = 50;
+            worksheet.Rows[0].Height = 40;
             worksheet.Rows[1].Height = 15; // Gap
             worksheet.Rows[2].Height = 25; // Card Title
             worksheet.Rows[3].Height = 40; // Card Value
@@ -163,7 +163,7 @@ namespace SpreadsheetSampleExplorer.Samples
 
             // Header
             worksheet.AddSpan(0, 0, 1, 3);
-            worksheet.Cells[0, 0].Value = "GLOBAL PORTFOLIO TERMINAL";
+            worksheet.Cells[0, 0].Value = "GLOBAL PORTFOLIO";
             worksheet.Cells[0, 0].StyleName = "GlobalHeader";
             
             worksheet.Cells[0, 3].Value = "● LIVE";
