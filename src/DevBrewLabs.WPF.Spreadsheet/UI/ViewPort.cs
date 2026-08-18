@@ -150,13 +150,15 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
 
         public Rect GetColumnRect(int column)
         {
-            return new Rect(GetColumnLocation(column), _actualBounds.Top,
+            var location = _sheetView.GetTemporaryColumnLocation(column) ?? GetColumnLocation(column);
+            return new Rect(location, _actualBounds.Top,
                 _columns.GetColumnWidth(column), _actualBounds.Height);
         }
 
         public Rect GetRowRect(int row)
         {
-            return new Rect(_actualBounds.Left, GetRowLocation(row),
+            var location = _sheetView.GetTemporaryRowLocation(row) ?? GetRowLocation(row);
+            return new Rect(_actualBounds.Left, location,
                 _actualBounds.Width, _rows.GetRowHeight(row));
         }
 

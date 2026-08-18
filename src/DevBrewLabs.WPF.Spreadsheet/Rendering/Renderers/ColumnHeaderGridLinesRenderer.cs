@@ -35,20 +35,14 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
                 guidelines.GuidelinesY.Add(y + halfPenWidth);
                 guidelines.GuidelinesY.Add(y + scaledRowHeight + halfPenWidth);
 
-                bool isResizing = SheetView.Spread.ColumnResizeManager.IsResizing;
-
                 for (int col = leftColumn; col <= rightColumn; col++)
                 {
-                    int columnWidth = isResizing ? 
-                        (((SheetView)SheetView).GetTemporaryColumnWidth(col) ?? columns.GetColumnWidth(col)) : 
-                        columns.GetColumnWidth(col);
+                    int columnWidth = ((SheetView)SheetView).GetTemporaryColumnWidth(col) ?? columns.GetColumnWidth(col);
 
                     if (columnWidth == 0)
                         continue;
 
-                    double colLocation = isResizing ? 
-                        ((SheetView)SheetView).GetTemporaryColumnLocation(col) : 
-                        SheetView.ViewPort.GetColumnLocation(col);
+                    double colLocation = ((SheetView)SheetView).GetTemporaryColumnLocation(col) ?? SheetView.ViewPort.GetColumnLocation(col);
 
                     var x = (colLocation - SheetView.ViewPort.LeftColumnLocation) * zoom;
                     var scaledColumnWidth = columnWidth * zoom;
@@ -69,15 +63,15 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
 
                 for (int col = minCol; col <= maxCol; col++)
                 {
-                    int currentWidth = isResizing ? (((SheetView)SheetView).GetTemporaryColumnWidth(col) ?? columns.GetColumnWidth(col)) : columns.GetColumnWidth(col);
+                    int currentWidth = ((SheetView)SheetView).GetTemporaryColumnWidth(col) ?? columns.GetColumnWidth(col);
                     if (currentWidth == 0)
                     {
                         // Draw double line indicator only for the first hidden column in a contiguous block
-                        int prevWidth = col == 0 ? 0 : (isResizing ? (((SheetView)SheetView).GetTemporaryColumnWidth(col - 1) ?? columns.GetColumnWidth(col - 1)) : columns.GetColumnWidth(col - 1));
+                        int prevWidth = col == 0 ? 0 : (((SheetView)SheetView).GetTemporaryColumnWidth(col - 1) ?? columns.GetColumnWidth(col - 1));
                         
                         if (col == 0 || prevWidth > 0)
                         {
-                            double colLocation = isResizing ? ((SheetView)SheetView).GetTemporaryColumnLocation(col) : SheetView.ViewPort.GetColumnLocation(col);
+                            double colLocation = ((SheetView)SheetView).GetTemporaryColumnLocation(col) ?? SheetView.ViewPort.GetColumnLocation(col);
                             var x = (colLocation - SheetView.ViewPort.LeftColumnLocation) * zoom;
                             DrawHiddenColumnIndicator(context, x, y, scaledRowHeight, workSheet);
                         }

@@ -23,20 +23,16 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
             GuidelineSet guidelines = new GuidelineSet();
             context.PushGuidelineSet(guidelines);
 
-            bool isResizing = SheetView.Spread.RowResizeManager.IsResizing;
+
 
             for (int row = topRow; row <= bottomRow; row++)
             {
-                int rowHeight = isResizing ? 
-                    (((SheetView)SheetView).GetTemporaryRowHeight(row) ?? rows.GetRowHeight(row)) : 
-                    rows.GetRowHeight(row);
+                int rowHeight = ((SheetView)SheetView).GetTemporaryRowHeight(row) ?? rows.GetRowHeight(row);
 
                 if (rowHeight == 0)
                     continue;
 
-                double rowLocation = isResizing ? 
-                    ((SheetView)SheetView).GetTemporaryRowLocation(row) : 
-                    viewport.GetRowLocation(row);
+                double rowLocation = ((SheetView)SheetView).GetTemporaryRowLocation(row) ?? viewport.GetRowLocation(row);
 
                 var y = (rowLocation - viewport.TopRowLocation) * zoom;
                 var scaledRowHeight = rowHeight * zoom;
@@ -71,14 +67,14 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
 
             for (int row = minRow; row <= maxRow; row++)
             {
-                int currentHeight = isResizing ? (((SheetView)SheetView).GetTemporaryRowHeight(row) ?? rows.GetRowHeight(row)) : rows.GetRowHeight(row);
+                int currentHeight = ((SheetView)SheetView).GetTemporaryRowHeight(row) ?? rows.GetRowHeight(row);
                 if (currentHeight == 0)
                 {
-                    int prevHeight = row == 0 ? 0 : (isResizing ? (((SheetView)SheetView).GetTemporaryRowHeight(row - 1) ?? rows.GetRowHeight(row - 1)) : rows.GetRowHeight(row - 1));
+                    int prevHeight = row == 0 ? 0 : (((SheetView)SheetView).GetTemporaryRowHeight(row - 1) ?? rows.GetRowHeight(row - 1));
                     
                     if (row == 0 || prevHeight > 0)
                     {
-                        double rowLocation = isResizing ? ((SheetView)SheetView).GetTemporaryRowLocation(row) : viewport.GetRowLocation(row);
+                        double rowLocation = ((SheetView)SheetView).GetTemporaryRowLocation(row) ?? viewport.GetRowLocation(row);
                         var y = (rowLocation - viewport.TopRowLocation) * zoom;
                         DrawHiddenRowIndicator(context, y, leftColumn, rightColumn, columns, workSheet, zoom);
                     }

@@ -240,7 +240,6 @@ namespace DevBrewLabs.WPF.Spreadsheet
             return 0;
         }
 
-
         internal void SetSelection(CellRange range)
         {
             _selection = range;
@@ -265,10 +264,10 @@ namespace DevBrewLabs.WPF.Spreadsheet
             _tempColumnWidths[column] = width;
         }
 
-        internal double GetTemporaryColumnLocation(int column)
+        internal double? GetTemporaryColumnLocation(int column)
         {
             if (_tempColumnWidths.Count == 0)
-                return ViewPort.GetColumnLocation(column);
+                return null;
 
             double loc = ViewPort.GetColumnLocation(column);
             foreach (var kvp in _tempColumnWidths)
@@ -286,10 +285,10 @@ namespace DevBrewLabs.WPF.Spreadsheet
             _tempRowHeights[row] = height;
         }
 
-        internal double GetTemporaryRowLocation(int row)
+        internal double? GetTemporaryRowLocation(int row)
         {
             if (_tempRowHeights.Count == 0)
-                return ViewPort.GetRowLocation(row);
+                return null;
 
             double loc = ViewPort.GetRowLocation(row);
             foreach (var kvp in _tempRowHeights)
