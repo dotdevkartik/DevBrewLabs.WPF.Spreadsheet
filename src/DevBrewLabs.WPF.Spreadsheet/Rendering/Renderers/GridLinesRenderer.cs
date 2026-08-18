@@ -43,9 +43,17 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                     double nextX = x + colWidth * zoom;
 
                     var anchor1 = workSheet.GetSpanCellRange(row, col);
-                    var anchor2 = workSheet.GetSpanCellRange(row + 1, col);
                     
-                    bool skip = anchor1 != default && anchor2 != default && anchor1.TopRow == anchor2.TopRow && anchor1.LeftColumn == anchor2.LeftColumn;
+                    bool skip = false;
+                    if (anchor1 != default && row < anchor1.BottomRow)
+                    {
+                        int nextRow = row + 1;
+                        while (nextRow <= anchor1.BottomRow && rows.GetRowHeight(nextRow) == 0)
+                            nextRow++;
+                            
+                        if (nextRow <= anchor1.BottomRow)
+                            skip = true;
+                    }
 
                     if (!skip)
                     {
@@ -110,9 +118,17 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                     double nextY = y + rowHeight * zoom;
 
                     var anchor1 = workSheet.GetSpanCellRange(row, col);
-                    var anchor2 = workSheet.GetSpanCellRange(row, col + 1);
                     
-                    bool skip = anchor1 != default && anchor2 != default && anchor1.TopRow == anchor2.TopRow && anchor1.LeftColumn == anchor2.LeftColumn;
+                    bool skip = false;
+                    if (anchor1 != default && col < anchor1.RightColumn)
+                    {
+                        int nextCol = col + 1;
+                        while (nextCol <= anchor1.RightColumn && columns.GetColumnWidth(nextCol) == 0)
+                            nextCol++;
+                            
+                        if (nextCol <= anchor1.RightColumn)
+                            skip = true;
+                    }
 
                     if (!skip)
                     {
