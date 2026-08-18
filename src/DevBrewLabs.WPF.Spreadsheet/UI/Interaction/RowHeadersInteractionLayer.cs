@@ -75,6 +75,16 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
             if (SheetView.Spread.RowResizeManager.IsResizing)
             {
+                // Cancel only if mouse exits vertically (Excel behaviour: horizontal movement is allowed)
+                var posInSpread = e.GetPosition(SheetView.Spread);
+                if (posInSpread.Y < 0 || posInSpread.Y > SheetView.Spread.ActualHeight)
+                {
+                    SheetView.Spread.RowResizeManager.CancelResize(SheetView);
+                    Children.Remove(SheetView.Spread.RowResizeManager.ResizeLine);
+                    ReleaseMouseCapture();
+                    return;
+                }
+
                 SheetView.Spread.RowResizeManager.Resize(SheetView, (int)e.GetPosition(this).Y);
                 return;
             }

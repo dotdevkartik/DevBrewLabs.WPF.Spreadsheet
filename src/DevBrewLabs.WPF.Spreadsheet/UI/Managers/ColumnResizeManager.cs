@@ -144,5 +144,25 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             Spread.SheetViewPane.RefreshInteractionLayers(false, true, true);
             Spread.SuspendUpdates = false;
         }
+
+        public override void CancelResize(SheetView sheetView)
+        {
+            if (!IsResizing)
+                return;
+
+            var view = (SheetView)sheetView;
+
+            // Discard any temporary widths — restores visual state to original
+            view.ClearTemporaryColumnWidths();
+
+            _resizingColumn = -1;
+            _columnLocation = -1;
+            _initialWidths = null;
+            ResizeLine.Visibility = Visibility.Collapsed;
+            Spread.SheetTabControl.UpdateScrollbars();
+            sheetView.ViewPort.CalculateVisibleRange();
+            Spread.SheetViewPane.RefreshInteractionLayers(false, true, true);
+            Spread.SuspendUpdates = false;
+        }
     }
 }
