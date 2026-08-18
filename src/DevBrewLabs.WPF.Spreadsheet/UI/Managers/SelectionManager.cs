@@ -11,7 +11,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
         public void SelectCell(ISheetView sheetView, int row, int col)
         {
-            var workSheet = (WorkSheet)sheetView.WorkSheet;
+            var workSheet = (Worksheet)sheetView.WorkSheet;
             
             var anchor = workSheet.GetSpanCellRange(row, col);
             if (anchor != default)
@@ -27,8 +27,28 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
         public void SelectColumn(ISheetView sheetView, int column)
         {
-            var workSheet = sheetView.WorkSheet;
-            ((SheetView)sheetView).ActiveRow = 0;
+            var workSheet = (Worksheet)sheetView.WorkSheet;
+            int activeRow = 0;
+
+            while (activeRow < workSheet.RowCount)
+            {
+                var anchor = workSheet.GetSpanCellRange(activeRow, column);
+                if (anchor != default)
+                {
+                    activeRow = anchor.BottomRow + 1;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            if (activeRow >= workSheet.RowCount)
+            {
+                activeRow = 0;
+            }
+
+            ((SheetView)sheetView).ActiveRow = activeRow;
             ((SheetView)sheetView).ActiveColumn = column;
             SelectRange(sheetView, 0, column, workSheet.RowCount, 1);
         }
@@ -41,9 +61,29 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
         public void SelectRow(ISheetView sheetView, int row)
         {
-            var workSheet = sheetView.WorkSheet;
+            var workSheet = (Worksheet)sheetView.WorkSheet;
+            int activeColumn = 0;
+
+            while (activeColumn < workSheet.ColumnCount)
+            {
+                var anchor = workSheet.GetSpanCellRange(row, activeColumn);
+                if (anchor != default)
+                {
+                    activeColumn = anchor.RightColumn + 1;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            if (activeColumn >= workSheet.ColumnCount)
+            {
+                activeColumn = 0;
+            }
+
             ((SheetView)sheetView).ActiveRow = row;
-            ((SheetView)sheetView).ActiveColumn = 0;
+            ((SheetView)sheetView).ActiveColumn = activeColumn;
             SelectRange(sheetView, row, 0, 1, workSheet.ColumnCount);
         }
 
@@ -61,7 +101,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
         public void SelectRange(ISheetView sheetView, int row, int column, int rowCount, int columnCount)
         {
             var selection = sheetView.Selection;
-            var workSheet = (WorkSheet)sheetView.WorkSheet;
+            var workSheet = (Worksheet)sheetView.WorkSheet;
 
             if (!workSheet.ContainsRange(row, column, rowCount, columnCount))
                 return;
@@ -91,7 +131,14 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             }
 
             var targetRange = new CellRange(targetRow, targetCol, targetRowCount, targetColCount);
-            targetRange = workSheet.ExpandSpanRange(targetRange);
+
+            bool isFullColumn = targetRowCount == workSheet.RowCount;
+            bool isFullRow = targetColCount == workSheet.ColumnCount;
+
+            if (!isFullColumn && !isFullRow)
+            {
+                targetRange = workSheet.ExpandSpanRange(targetRange);
+            }
 
             ((SheetView)sheetView).SetSelection(targetRange);
 
@@ -101,25 +148,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 Selection = sheetView.Selection
             });
 
-            RefreshInteractionLayers();
-        }
-
-        public void RefreshInteractionLayers()
-        {
-            var cellsInteractionLayer = Spread.SheetViewPane.CellsRegion.GetInteractionLayer() as UI.Interaction.CellsInteractionLayer;
-
-            if (cellsInteractionLayer != null && cellsInteractionLayer.IsLoaded)
-                cellsInteractionLayer.UpdateSelectionRects();
-
-            var rowHeadersInteractionLayer = Spread.SheetViewPane.RowHeadersRegion.GetInteractionLayer();
-
-            if (rowHeadersInteractionLayer != null && rowHeadersInteractionLayer.IsLoaded)
-                rowHeadersInteractionLayer.InvalidateVisual();
-
-            var columnHeadersInteractionLayer = Spread.SheetViewPane.ColumnHeadersRegion.GetInteractionLayer();
-
-            if (columnHeadersInteractionLayer != null && columnHeadersInteractionLayer.IsLoaded)
-                columnHeadersInteractionLayer.InvalidateVisual();
+            Spread.SheetViewPane.RefreshInteractionLayers();
         }
     }
 }

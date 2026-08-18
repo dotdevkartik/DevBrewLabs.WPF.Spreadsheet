@@ -75,7 +75,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
             _vScrollBar.Value = sheetView.ScrollPosition.Y;
             sheetView.ScrollToHorizontalOffset(sheetView.ScrollPosition.X);
             sheetView.ScrollToVerticalOffset(sheetView.ScrollPosition.Y);
-            Spread.SelectionManager.RefreshInteractionLayers();
+            Spread.SheetViewPane.RefreshInteractionLayers();
         }
 
         private void OnAddSheetClick(object sender, RoutedEventArgs e)
@@ -249,7 +249,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
         /// </summary>
         internal void UpdateScrollbars()
         {
-            var sheet = Spread.SheetViews.ActiveSheetView.WorkSheet;
+            var sheetView = (SheetView)Spread.SheetViews.ActiveSheetView;
+            var sheet = sheetView.WorkSheet;
             var columns = (Columns)sheet.Columns;
             var rows = (Rows)sheet.Rows;
             
@@ -258,7 +259,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
             
             if (sheet.ColumnCount > 0)
             {
-                var totalWidth = columns.GetLocation(sheet.ColumnCount - 1) + columns.GetColumnWidth(sheet.ColumnCount - 1);
+                var totalWidth = sheetView.ViewPort.GetColumnLocation(sheet.ColumnCount - 1) + columns.GetColumnWidth(sheet.ColumnCount - 1);
                 var maxScrollX = totalWidth - actualWidth + sheet.DefaultColumnWidth + 30;
                 _hScrollBar.Maximum = Math.Max(0, maxScrollX);
 
@@ -279,7 +280,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
             
             if (sheet.RowCount > 0)
             {
-                var totalHeight = rows.GetLocation(sheet.RowCount - 1) + rows.GetRowHeight(sheet.RowCount - 1);
+                var totalHeight = sheetView.ViewPort.GetRowLocation(sheet.RowCount - 1) + rows.GetRowHeight(sheet.RowCount - 1);
                 var maxScrollY = totalHeight - actualHeight + sheet.DefaultRowHeight + 30;
                 _vScrollBar.Maximum = Math.Max(0, maxScrollY);
 

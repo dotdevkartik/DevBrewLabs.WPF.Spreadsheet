@@ -13,11 +13,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Include="Data\Customers.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
+
 
   <ItemGroup>
     <ProjectReference Include="..\DevBrewLabs.WPF.Spreadsheet\DevBrewLabs.WPF.Spreadsheet.csproj" />

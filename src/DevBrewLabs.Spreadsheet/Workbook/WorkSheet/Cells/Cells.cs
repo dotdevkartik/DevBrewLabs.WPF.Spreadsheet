@@ -12,7 +12,8 @@ namespace DevBrewLabs.Spreadsheet
     {
         private int _rowCount;
         private int _columnCount;
-        private WorkSheet _workSheet;
+        private Worksheet _workSheet;
+        private CellRange _cellRange;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private readonly Dictionary<long, Cell> _cellCollection;
@@ -84,7 +85,17 @@ namespace DevBrewLabs.Spreadsheet
             }
             set
             {
-                ApplyToRange((row, column) => _workSheet.SetValue(row, column, value));
+                _workSheet.ExecuteSupressed(() =>
+                {
+                    ApplyToRange((row, column) => _workSheet.SetValue(row, column, value));
+
+                    _workSheet.OnRangeChanged(new RangeChangedEventArgs(
+                          SheetRegion.Cells,
+                          _workSheet,
+                          new CellRange(Row, Column, RowCount, ColumnCount),
+                          null, null,
+                          RangeChangeType.Value));
+                });
             }
         }
 
@@ -96,7 +107,17 @@ namespace DevBrewLabs.Spreadsheet
             }
             set
             {
-                ApplyToRange((row, column) => _workSheet.SetFormula(row, column, value));
+                _workSheet.ExecuteSupressed(() =>
+                {
+                    ApplyToRange((row, column) => _workSheet.SetFormula(row, column, value));
+
+                    _workSheet.OnRangeChanged(new RangeChangedEventArgs(
+                          SheetRegion.Cells,
+                          _workSheet,
+                          new CellRange(Row, Column, RowCount, ColumnCount),
+                          null, null,
+                          RangeChangeType.Formula));
+                });
             }
         }
 
@@ -120,7 +141,17 @@ namespace DevBrewLabs.Spreadsheet
             }
             set
             {
-                ApplyToRange((row, column) => _workSheet.SetStyleName(row, column, value));
+                _workSheet.ExecuteSupressed(() =>
+                {
+                    ApplyToRange((row, column) => _workSheet.SetStyleName(row, column, value));
+
+                    _workSheet.OnRangeChanged(new RangeChangedEventArgs(
+                          SheetRegion.Cells,
+                          _workSheet,
+                          new CellRange(Row, Column, RowCount, ColumnCount),
+                          null, null,
+                          RangeChangeType.StyleName));
+                });
             }
         }
 
@@ -132,7 +163,17 @@ namespace DevBrewLabs.Spreadsheet
             }
             set
             {
-                ApplyToRange((row, column) => _workSheet.SetStyle(row, column, value));
+                _workSheet.ExecuteSupressed(() =>
+                {
+                    ApplyToRange((row, column) => _workSheet.SetStyle(row, column, value));
+
+                    _workSheet.OnRangeChanged(new RangeChangedEventArgs(
+                       SheetRegion.Cells,
+                       _workSheet,
+                       new CellRange(Row, Column, RowCount, ColumnCount),
+                       null, null,
+                       RangeChangeType.Style));
+                });
             }
         }
 
@@ -198,11 +239,11 @@ namespace DevBrewLabs.Spreadsheet
             }
         }
 
-        public WorkSheet WorkSheet => _workSheet;
+        public Worksheet WorkSheet => _workSheet;
 
         public bool HasSpans { get; }
 
-        internal Cells(WorkSheet parent)
+        internal Cells(Worksheet parent)
         {
             _workSheet = parent;
             Row = Column = 0;
@@ -252,16 +293,6 @@ namespace DevBrewLabs.Spreadsheet
                 var val = _workSheet.GetValue(row, column);
                 if (val != null)
                     yield return new KeyValuePair<int, object>(row, val);
-            }
-        }
-
-        internal void ClearColumnCells(int column)
-        {
-            var columnCells = _cellCollection.Where(x => CellUtils.GetColumn(x.Key) == column).ToList();
-
-            foreach(var cell in columnCells)
-            {
-                _cellCollection.Remove(cell.Key);
             }
         }
 

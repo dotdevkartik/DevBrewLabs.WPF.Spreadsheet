@@ -11,10 +11,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
     {
         protected override void OnRender(DrawingContext context, int topRow, int leftColumn, int bottomRow, int rightColumn)
         {
-            var workSheet = (WorkSheet)SheetView.WorkSheet;
+            var workSheet = (Worksheet)SheetView.WorkSheet;
             var rows = (Rows)workSheet.Rows;
             var columns = (RowHeaderColumns)workSheet.RowHeaders.Columns;
-            var viewport = (ViewPort)SheetView.ViewPort;
+            var viewport = SheetView.ViewPort;
 
             double zoom = SheetView.ZoomFactor > 0 ? SheetView.ZoomFactor : 1.0;
             double halfPenWidth = SheetView.Spread.GridLinePen.Thickness * SheetView.Spread.PixelPerDip / 2;
@@ -23,13 +23,17 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
             GuidelineSet guidelines = new GuidelineSet();
             context.PushGuidelineSet(guidelines);
 
+
+
             for (int row = topRow; row <= bottomRow; row++)
             {
-                var rowHeight = rows.GetRowHeight(row);
+                int rowHeight = ((SheetView)SheetView).GetTemporaryRowHeight(row) ?? rows.GetRowHeight(row);
+
                 if (rowHeight == 0)
                     continue;
 
-                var rowLocation = rows.GetLocation(row);
+                double rowLocation = ((SheetView)SheetView).GetTemporaryRowLocation(row) ?? viewport.GetRowLocation(row);
+
                 var y = (rowLocation - viewport.TopRowLocation) * zoom;
                 var scaledRowHeight = rowHeight * zoom;
 
@@ -42,7 +46,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
                     if (columnWidth == 0)
                         continue;
 
-                    var colLocation = columns.GetLocation(col);
+                    var colLocation = viewport.GetHeaderColumnLocation(col);
                     var x = colLocation * zoom;
                     var scaledColumnWidth = columnWidth * zoom;
 
@@ -63,11 +67,14 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
 
             for (int row = minRow; row <= maxRow; row++)
             {
-                if (rows.GetRowHeight(row) == 0)
+                int currentHeight = ((SheetView)SheetView).GetTemporaryRowHeight(row) ?? rows.GetRowHeight(row);
+                if (currentHeight == 0)
                 {
-                    if (row == 0 || rows.GetRowHeight(row - 1) > 0)
+                    int prevHeight = row == 0 ? 0 : (((SheetView)SheetView).GetTemporaryRowHeight(row - 1) ?? rows.GetRowHeight(row - 1));
+                    
+                    if (row == 0 || prevHeight > 0)
                     {
-                        var rowLocation = rows.GetLocation(row);
+                        double rowLocation = ((SheetView)SheetView).GetTemporaryRowLocation(row) ?? viewport.GetRowLocation(row);
                         var y = (rowLocation - viewport.TopRowLocation) * zoom;
                         DrawHiddenRowIndicator(context, y, leftColumn, rightColumn, columns, workSheet, zoom);
                     }
@@ -77,22 +84,29 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
             context.Pop();
         }
 
-        private void DrawHiddenRowIndicator(DrawingContext context, double y, int leftColumn, int rightColumn, RowHeaderColumns columns, WorkSheet workSheet, double zoom)
+        private void DrawHiddenRowIndicator(DrawingContext context, double y, int leftColumn, int rightColumn, RowHeaderColumns columns, Worksheet workSheet, double zoom)
         {
             var pen = SheetView.Spread.GridLinePen;
+            var viewPort = SheetView.ViewPort;
             var defaultStyle = workSheet.WorkBook.GetNamedStyle(StyleKeys.DefaultRowHeaderStyleKey);
 
-            double line1Y, line2Y;
             if (y <= 0)
             {
-                line1Y = y + 1.5;
-                line2Y = y + 4.5;
+                for (int col = leftColumn; col <= rightColumn; col++)
+                {
+                    var columnWidth = columns.GetColumnWidth(col);
+                    if (columnWidth == 0)
+                        continue;
+                    var colLocation = viewPort.GetHeaderColumnLocation(col) * zoom;
+                    var scaledColumnWidth = columnWidth * zoom;
+
+                    context.DrawLine(pen, new Point(colLocation, y + 3.0), new Point(colLocation + scaledColumnWidth, y + 3.0));
+                }
+                return;
             }
-            else
-            {
-                line1Y = y - 1.5;
-                line2Y = y + 1.5;
-            }
+
+            double line1Y = y - 1.5;
+            double line2Y = y + 1.5;
 
             var rectTop = Math.Min(line1Y, line2Y) - 0.5;
             var rectHeight = Math.Abs(line2Y - line1Y) + 1.0;
@@ -102,7 +116,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
                 var columnWidth = columns.GetColumnWidth(col);
                 if (columnWidth == 0)
                     continue;
-                var colLocation = columns.GetLocation(col) * zoom;
+                var colLocation = viewPort.GetHeaderColumnLocation(col) * zoom;
                 var scaledColumnWidth = columnWidth * zoom;
                 var gapRect = new Rect(colLocation, rectTop, scaledColumnWidth, rectHeight);
 
@@ -116,7 +130,5 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
             }
         }
     }
+
 }
-
-
-

@@ -1,10 +1,11 @@
-﻿namespace DevBrewLabs.Spreadsheet
+namespace DevBrewLabs.Spreadsheet
 {
     public enum CellChangeType
     {
         Value,
         Formula,
         Style,
+        StyleName,
         Merge,
         Unmerge
     }
@@ -14,7 +15,8 @@
         Insert,
         Delete,
         Height,
-        Style
+        Style,
+        StyleName
     }
 
     public enum ColumnChangeType
@@ -22,7 +24,8 @@
         Insert,
         Delete,
         Width,
-        Style
+        Style,
+        StyleName
     }
 
     public enum RangeChangeType
@@ -31,6 +34,17 @@
         Clear,
         Move,
         Merge,
-        Value
+        Value,
+        Formula,
+        Style,
+        StyleName
+    }
+
+    public enum WorksheetChangeType
+    {
+        RowCount,
+        ColumnCount,
+        DefaultRowHeight,
+        DefaultColumnWidth
     }
 }

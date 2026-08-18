@@ -8,6 +8,8 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using SpreadsheetSampleExplorer.Data;
+using SpreadsheetSampleExplorer.Models;
 
 namespace SpreadsheetSampleExplorer.Samples
 {
@@ -68,26 +70,7 @@ namespace SpreadsheetSampleExplorer.Samples
         private Random _random = new Random();
         private int _tickCount = 90;
 
-        private class StockData
-        {
-            public string Ticker { get; set; }
-            public string Company { get; set; }
-            public int Shares { get; set; }
-            public double BasePrice { get; set; }
-            public double CurrentPrice { get; set; }
-        }
-
-        private List<StockData> _stocks = new List<StockData>()
-        {
-            new StockData { Ticker = "MSFT", Company = "Microsoft Corp.", Shares = 250, BasePrice = 415.50, CurrentPrice = 443.75 },
-            new StockData { Ticker = "AAPL", Company = "Apple Inc.", Shares = 300, BasePrice = 224.20, CurrentPrice = 226.54 },
-            new StockData { Ticker = "NVDA", Company = "NVIDIA Corp.", Shares = 180, BasePrice = 122.80, CurrentPrice = 125.46 },
-            new StockData { Ticker = "GOOGL", Company = "Alphabet Inc.", Shares = 200, BasePrice = 175.40, CurrentPrice = 182.17 },
-            new StockData { Ticker = "AMZN", Company = "Amazon.com Inc.", Shares = 150, BasePrice = 186.10, CurrentPrice = 201.21 },
-            new StockData { Ticker = "TSLA", Company = "Tesla Inc.", Shares = 120, BasePrice = 248.50, CurrentPrice = 255.16 },
-            new StockData { Ticker = "META", Company = "Meta Platforms", Shares = 100, BasePrice = 485.30, CurrentPrice = 502.77 },
-            new StockData { Ticker = "JPM", Company = "JPMorgan Chase", Shares = 350, BasePrice = 210.15, CurrentPrice = 218.17 }
-        };
+        private List<StockData> _stocks = DataSource.GetStocks();
 
         private CurrencyFormatter _currencyFormatter = new CurrencyFormatter();
         private PercentageFormatter _percentageFormatter = new PercentageFormatter();
@@ -147,7 +130,7 @@ namespace SpreadsheetSampleExplorer.Samples
                     worksheet.Cells[r, c].StyleName = "CardWhite";
 
             // Row Heights
-            worksheet.Rows[0].Height = 50;
+            worksheet.Rows[0].Height = 40;
             worksheet.Rows[1].Height = 15; // Gap
             worksheet.Rows[2].Height = 25; // Card Title
             worksheet.Rows[3].Height = 40; // Card Value
@@ -180,7 +163,7 @@ namespace SpreadsheetSampleExplorer.Samples
 
             // Header
             worksheet.AddSpan(0, 0, 1, 3);
-            worksheet.Cells[0, 0].Value = "GLOBAL PORTFOLIO TERMINAL";
+            worksheet.Cells[0, 0].Value = "GLOBAL PORTFOLIO";
             worksheet.Cells[0, 0].StyleName = "GlobalHeader";
             
             worksheet.Cells[0, 3].Value = "● LIVE";
@@ -357,7 +340,7 @@ namespace SpreadsheetSampleExplorer.Samples
             spread.SuspendUpdates = false;
         }
         
-        private void DrawCard(IWorkSheet ws, int startRow, int startCol, int colSpan, string title, object val, string sub1, string sub2)
+        private void DrawCard(IWorksheet ws, int startRow, int startCol, int colSpan, string title, object val, string sub1, string sub2)
         {
             ws.AddSpan(startRow, startCol, 1, colSpan);
             ws.Cells[startRow, startCol].Value = title;
@@ -378,7 +361,7 @@ namespace SpreadsheetSampleExplorer.Samples
             ws.Cells[startRow + 3, startCol].StyleName = "CardSubtext";
         }
 
-        private void UpdateRowStyles(DevBrewLabs.Spreadsheet.IWorkSheet worksheet, int row, StockData stock)
+        private void UpdateRowStyles(IWorksheet worksheet, int row, StockData stock)
         {
             double diff = stock.CurrentPrice - stock.BasePrice;
             string targetStyle = diff >= 0 ? "GainStyle" : "LossStyle";
@@ -407,6 +390,8 @@ namespace SpreadsheetSampleExplorer.Samples
             if (spread.SheetViews.ActiveSheetView != spread.SheetViews.GetSheetView(worksheet))
                 return;
 
+            spread.SheetViews.ActiveSheetView.AutoSizeRows = false;
+
             worksheet.Cells[0, 4].Value = $"Ticks: {_tickCount}";
             worksheet.Cells[0, 6].Value = $"Last Update: {DateTime.Now:HH:mm:ss}";
 
@@ -430,7 +415,7 @@ namespace SpreadsheetSampleExplorer.Samples
             spread.SuspendUpdates = false;
         }
         
-        private void UpdateBottomCards(IWorkSheet worksheet)
+        private void UpdateBottomCards(IWorksheet worksheet)
         {
             // Calculate top gainer / loser dynamically
             StockData topGainer = null;

@@ -12,7 +12,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 {
     internal class EditingManager : UIManager
     {
-        private ISheetView _editingView;
+        private SheetView _editingView;
 
         public EditingManager(Spread spread) : base(spread)
         {
@@ -23,13 +23,13 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
         public bool IsEditing => ActiveEditor != null;
         internal bool UseCellValue { get; set; }
 
-        public void BeginEdit(ISheetView sheetView, int row, int column)
+        public void BeginEdit(SheetView sheetView, int row, int column)
         {
             if (IsEditing)
                 return;
 
             _editingView = sheetView;
-            var workSheet = (WorkSheet)sheetView.WorkSheet;
+            var workSheet = (Worksheet)sheetView.WorkSheet;
 
             var anchor = workSheet.GetSpanCellRange(row, column);
             if (anchor != default)
@@ -175,6 +175,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
             workSheet.SetRawValue(numTextBox.Row, numTextBox.Column, numTextBox.Text);
 
+            if (sheetView.AutoSizeRows)
+                sheetView.AutoSizeRow(numTextBox.Row);
+            if (sheetView.AutoSizeColumns)
+                sheetView.AutoSizeColumn(numTextBox.Column);
+
             cellChangedAction.NewState.Value = workSheet.GetValue(numTextBox.Row, numTextBox.Column);
             cellChangedAction.NewState.Row = numTextBox.Row;
             cellChangedAction.NewState.Column = numTextBox.Column;
@@ -215,6 +220,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 ActiveEditor.Focus();
                 return false;
             }
+
+            if (sheetView.AutoSizeRows)
+                sheetView.AutoSizeRow(gcTextBox.Row);
+            if (sheetView.AutoSizeColumns)
+                sheetView.AutoSizeColumn(gcTextBox.Column);
 
             // We add undo/redo regardless of formula or value to support full history
             cellChangedAction.NewState.Value = workSheet.GetValue(gcTextBox.Row, gcTextBox.Column);

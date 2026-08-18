@@ -12,7 +12,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
     {
         private Spread _spread;
         private SheetView _sheetView;
-        private WorkSheet _workSheet;
+        private Worksheet _workSheet;
         private CellsInteractionLayer _cellInteractionLayer;
         private RowHeadersInteractionLayer _rowHeadersInteractionLayer;
         private ColumnHeadersInteractionLayer _columnHeadersInteractionLayer;
@@ -34,7 +34,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
         public void AttachSheet(SheetView sheetView)
         {
             _sheetView = sheetView;
-            _workSheet = (WorkSheet)sheetView.WorkSheet;
+            _workSheet = (Worksheet)sheetView.WorkSheet;
 
             CellsRegion.AttachSheet(sheetView);
             RowHeadersRegion.AttachSheet(sheetView);
@@ -215,17 +215,17 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             switch (_sheetView.HeadersVisibility)
             {
                 case HeadersVisibility.Both:
-                    ColumnDefinitions[0].Width = new GridLength(_workSheet.RowHeaders.Width * zoom);
-                    RowDefinitions[0].Height = new GridLength(_workSheet.ColumnHeaders.Height * zoom);
+                    ColumnDefinitions[0].Width = new GridLength(_sheetView.GetRowHeaderWidth() * zoom);
+                    RowDefinitions[0].Height = new GridLength(_sheetView.GetColumnHeaderHeight() * zoom);
                     break;
 
                 case HeadersVisibility.Column:
                     ColumnDefinitions[0].Width = new GridLength(0);
-                    RowDefinitions[0].Height = new GridLength(_workSheet.ColumnHeaders.Height * zoom);
+                    RowDefinitions[0].Height = new GridLength(_sheetView.GetColumnHeaderHeight() * zoom);
                     break;
 
                 case HeadersVisibility.Row:
-                    ColumnDefinitions[0].Width = new GridLength(_workSheet.RowHeaders.Width * zoom);
+                    ColumnDefinitions[0].Width = new GridLength(_sheetView.GetRowHeaderWidth() * zoom);
                     RowDefinitions[0].Height = new GridLength(0);
                     break;
 
@@ -233,6 +233,33 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                     ColumnDefinitions[0].Width = new GridLength(0);
                     RowDefinitions[0].Height = new GridLength(0);
                     break;
+            }
+        }
+
+        public void RefreshInteractionLayers(bool rowHeaders = true, bool columnHeaders = true, bool cells = true)
+        {
+            if (rowHeaders)
+            {
+                var rowHeadersInteractionLayer = RowHeadersRegion.GetInteractionLayer();
+
+                if (rowHeadersInteractionLayer != null && rowHeadersInteractionLayer.IsLoaded)
+                    rowHeadersInteractionLayer.InvalidateVisual();
+            }
+
+            if (columnHeaders)
+            {
+                var columnHeadersInteractionLayer = ColumnHeadersRegion.GetInteractionLayer();
+
+                if (columnHeadersInteractionLayer != null && columnHeadersInteractionLayer.IsLoaded)
+                    columnHeadersInteractionLayer.InvalidateVisual();
+            }
+
+            if (cells)
+            {
+                var cellsInteractionLayer = CellsRegion.GetInteractionLayer() as CellsInteractionLayer;
+
+                if (cellsInteractionLayer != null && cellsInteractionLayer.IsLoaded)
+                    cellsInteractionLayer.UpdateSelectionRects();
             }
         }
 

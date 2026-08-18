@@ -36,7 +36,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         /// <param name="row"></param>
         /// <param name="column"></param>
         /// <returns></returns>
-        public static IStyle GetCellStyle(this IWorkSheet workSheet, int rowIndex, int columnIndex, IRow row, IColumn column)
+        public static IStyle GetCellStyle(this IWorksheet workSheet, int rowIndex, int columnIndex, IRow row, IColumn column)
         {
             IStyle style = workSheet.GetStyle(rowIndex, columnIndex);
 
@@ -84,7 +84,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         /// <param name="row"></param>
         /// <param name="column"></param>
         /// <returns></returns>
-        public static IStyle GetColumnHeaderCellStyle(this IWorkSheet workSheet, int rowIndex, int columnIndex, IRow row, IColumn column)
+        public static IStyle GetColumnHeaderCellStyle(this IWorksheet workSheet, int rowIndex, int columnIndex, IRow row, IColumn column)
         {
             IStyle style = workSheet.ColumnHeaders.GetStyle(rowIndex, columnIndex);
 
@@ -132,7 +132,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         /// <param name="row"></param>
         /// <param name="column"></param>
         /// <returns></returns>
-        public static IStyle GetRowHeaderCellStyle(this IWorkSheet workSheet, int rowIndex, int columnIndex, IRow row, IColumn column)
+        public static IStyle GetRowHeaderCellStyle(this IWorksheet workSheet, int rowIndex, int columnIndex, IRow row, IColumn column)
         {
             IStyle style = workSheet.RowHeaders.GetStyle(rowIndex, columnIndex);
 
@@ -171,7 +171,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             return workSheet.WorkBook.GetNamedStyle(StyleKeys.DefaultRowHeaderStyleKey);
         }
 
-        public static IStyle GetTopLeftStyle(this IWorkSheet sheet)
+        public static IStyle GetTopLeftStyle(this IWorksheet sheet)
         {
             if (sheet.TopLeft.Style != null)
             {
@@ -195,7 +195,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         /// <param name="row"></param>
         /// <param name="column"></param>
         /// <returns></returns>
-        public static IFormatter GetCellFormatter(this IWorkSheet sheet, int rowIndex, int columnIndex, IRow row, IColumn column)
+        public static IFormatter GetCellFormatter(this IWorksheet sheet, int rowIndex, int columnIndex, IRow row, IColumn column)
         {
             IFormatter formatter = sheet.GetFormatter(rowIndex, columnIndex);
 

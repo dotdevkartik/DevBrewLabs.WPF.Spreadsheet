@@ -3,6 +3,7 @@ using DevBrewLabs.Spreadsheet.Utils;
 using DevBrewLabs.WPF.Spreadsheet.Rendering.Text;
 using DevBrewLabs.WPF.Spreadsheet.UI;
 using System;
+using System.Collections.Generic;
 using System.Windows;
 
 namespace DevBrewLabs.WPF.Spreadsheet
@@ -11,12 +12,14 @@ namespace DevBrewLabs.WPF.Spreadsheet
     {
         private HeadersVisibility _headersVisibility;
         private ViewPort _viewPort;
-        private WorkSheet _workSheet;
+        private Worksheet _workSheet;
         private Rows _rows;
         private Cells _cells;
         private Columns _columns;
         private double _zoomFactor = 1.0;
         private CellRange _selection;
+        private Dictionary<int, int> _tempColumnWidths = new Dictionary<int, int>();
+        private Dictionary<int, int> _tempRowHeights = new Dictionary<int, int>();
 
         #region Properties
         public GridLineVisibility GridLineVisibility { get; set; }
@@ -47,7 +50,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
                 }
             }
         }
-        public IViewPort ViewPort => _viewPort;
+        public ViewPort ViewPort => _viewPort;
         public Point ScrollPosition { get; private set; }
         public SelectionMode SelectionMode { get; set; }
         public MouseWheelScrollDirection MouseWheelScrollDirection { get; set; }
@@ -55,12 +58,12 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public int ActiveRow { get; internal set; }
         public int ActiveColumn { get; internal set; }
         public CellRange Selection => _selection;
-        public IWorkSheet WorkSheet => _workSheet;
+        public IWorksheet WorkSheet => _workSheet;
         public bool AutoSizeRows { get; set; }
         public bool AutoSizeColumns { get; set; }
         #endregion
 
-        public SheetView(Spread spread, WorkSheet worksheet)
+        public SheetView(Spread spread, Worksheet worksheet)
         {
             Spread = spread;
             _workSheet = worksheet;
@@ -79,7 +82,6 @@ namespace DevBrewLabs.WPF.Spreadsheet
             AutoSizeColumns = false;
         }
 
-        #region Public
         public void Copy()
         {
             Spread.ClipboardManager.Copy(this);
@@ -197,16 +199,12 @@ namespace DevBrewLabs.WPF.Spreadsheet
             _viewPort.CalculateVisibleRange();
             Spread.Invalidate(true, false, true);
         }
-        #endregion
 
-        #region Private
         private void SetHeadersVisibility()
         {
             Spread.SheetViewPane.UpdateHeadersSize();
         }
-        #endregion
 
-        #region Internal
         internal void InternalSetZoomFactor(double zoomFactor)
         {
             if (Math.Abs(_zoomFactor - zoomFactor) > 0.001)
@@ -219,15 +217,27 @@ namespace DevBrewLabs.WPF.Spreadsheet
         internal double GetRowHeaderWidth()
         {
             if (HeadersVisibility == HeadersVisibility.Row || HeadersVisibility == HeadersVisibility.Both)
-                return _workSheet.RowHeaders.Width;
-            else return 0;
+            {
+                int lastColumn = _workSheet.RowHeaders.ColumnCount - 1;
+                var columnWidth = _workSheet.RowHeaders.Columns.GetColumnWidth(lastColumn);
+                var columnLocation = _viewPort.GetHeaderColumnLocation(lastColumn);
+                return columnLocation + columnWidth;
+            }    
+            
+            return 0;
         }
 
         internal double GetColumnHeaderHeight()
         {
             if (HeadersVisibility == HeadersVisibility.Column || HeadersVisibility == HeadersVisibility.Both)
-                return _workSheet.ColumnHeaders.Height;
-            else return 0;
+            {
+                int lastRow = _workSheet.ColumnHeaders.RowCount - 1;
+                var rowHeight = _workSheet.ColumnHeaders.Rows.GetRowHeight(lastRow);
+                var rowLocation = _viewPort.GetHeaderRowLocation(lastRow);
+                return rowLocation + rowHeight;
+            }
+
+            return 0;
         }
 
         internal void SetSelection(CellRange range)
@@ -235,7 +245,71 @@ namespace DevBrewLabs.WPF.Spreadsheet
             _selection = range;
         }
 
-        #endregion
+        internal int? GetTemporaryColumnWidth(int column)
+        {
+            if (_tempColumnWidths.TryGetValue(column, out int width))
+                return width;
+            return null;
+        }
+
+        internal int? GetTemporaryRowHeight(int row)
+        {
+            if (_tempRowHeights.TryGetValue(row, out int height))
+                return height;
+            return null;
+        }
+
+        internal void SetTemporaryColumnWidth(int column, int width)
+        {
+            _tempColumnWidths[column] = width;
+        }
+
+        internal double? GetTemporaryColumnLocation(int column)
+        {
+            if (_tempColumnWidths.Count == 0)
+                return null;
+
+            double loc = ViewPort.GetColumnLocation(column);
+            foreach (var kvp in _tempColumnWidths)
+            {
+                if (kvp.Key < column)
+                {
+                    loc += kvp.Value - WorkSheet.Columns.GetColumnWidth(kvp.Key);
+                }
+            }
+            return loc;
+        }
+
+        internal void SetTemporaryRowHeight(int row, int height)
+        {
+            _tempRowHeights[row] = height;
+        }
+
+        internal double? GetTemporaryRowLocation(int row)
+        {
+            if (_tempRowHeights.Count == 0)
+                return null;
+
+            double loc = ViewPort.GetRowLocation(row);
+            foreach (var kvp in _tempRowHeights)
+            {
+                if (kvp.Key < row)
+                {
+                    loc += kvp.Value - WorkSheet.Rows.GetRowHeight(kvp.Key);
+                }
+            }
+            return loc;
+        }
+
+        internal void ClearTemporaryRowHeights()
+        {
+            _tempRowHeights.Clear();
+        }
+
+        internal void ClearTemporaryColumnWidths()
+        {
+            _tempColumnWidths.Clear();
+        }
 
         public override string ToString()
         {
@@ -344,5 +418,3 @@ namespace DevBrewLabs.WPF.Spreadsheet
         }
     }
 }
-
-

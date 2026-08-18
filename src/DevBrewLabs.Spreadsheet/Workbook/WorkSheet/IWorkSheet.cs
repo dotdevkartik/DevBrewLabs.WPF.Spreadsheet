@@ -1,10 +1,9 @@
 using DevBrewLabs.Spreadsheet.Sorting;
-using DevBrewLabs.Spreadsheet.Formatters;
 using System;
 
 namespace DevBrewLabs.Spreadsheet
 {
-    public interface IWorkSheet : ICellContainer, IDisposable
+    public interface IWorksheet : ICellContainer, IDisposable
     {
         /// <summary>
         /// Fires when cell is modified.
@@ -17,16 +16,16 @@ namespace DevBrewLabs.Spreadsheet
         /// <summary>
         /// Fires when row/rows changes.
         /// </summary>
-        event EventHandler<RowChangedEventArgs> RowsChanged;
+        event EventHandler<RowChangedEventArgs> RowChanged;
         /// <summary>
         /// Fires when column/columns changes.
         /// </summary>
-        event EventHandler<ColumnChangedEventArgs> ColumnsChanged;
+        event EventHandler<ColumnChangedEventArgs> ColumnChanged;
 
         /// <summary>
         /// Gets the parent workbook.
         /// </summary>
-        IWorkBook WorkBook { get; }
+        IWorkbook WorkBook { get; }
         
         /// <summary>
         /// Gets or sets name for this sheet.

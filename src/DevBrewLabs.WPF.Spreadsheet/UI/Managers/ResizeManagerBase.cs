@@ -1,4 +1,5 @@
-﻿using System.Windows;
+using DevBrewLabs.Spreadsheet;
+using System.Windows;
 using System.Windows.Media;
 using System.Windows.Shapes;
 
@@ -18,5 +19,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 Visibility = Visibility.Collapsed
             };
         }
+
+        public abstract void BeginResize(SheetView sheetView, int index, int location);
+        public abstract void Resize(SheetView sheetView, int currentLocation);
+        public abstract void EndResize(SheetView sheetView);
+        public abstract void CancelResize(SheetView sheetView);
     }
 }

@@ -14,22 +14,24 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             var rows = (Rows)workSheet.Rows;
             var columns = (RowHeaderColumns)workSheet.RowHeaders.Columns;
             var cells = workSheet.RowHeaders.Cells;
-            var viewport = (ViewPort)SheetView.ViewPort;
+            var viewport = SheetView.ViewPort;
             
             double zoom = SheetView.ZoomFactor > 0 ? SheetView.ZoomFactor : 1.0;
             AdjustHeaderWidth(workSheet, rows, columns, topRow, leftColumn, bottomRow, rightColumn);
 
             var renderContext = new RenderContext(zoom, SheetView.Spread.PixelPerDip, 5.0, true);
 
+
             for (int row = topRow; row <= bottomRow; row++)
             {
-                var rowHeight = rows.GetRowHeight(row);
+                int rowHeight = ((SheetView)SheetView).GetTemporaryRowHeight(row) ?? rows.GetRowHeight(row);
 
                 if (rowHeight == 0)
                     continue;
 
                 var sheetRow = rows.GetItem(row);
-                var rowLocation = rows.GetLocation(row);
+                double rowLocation = ((SheetView)SheetView).GetTemporaryRowLocation(row) ?? viewport.GetRowLocation(row);
+
                 var y = (rowLocation - viewport.TopRowLocation) * zoom;
                 var scaledRowHeight = rowHeight * zoom;
 
@@ -41,7 +43,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                         continue;
 
                     var sheetColumn = columns.GetItem(col);
-                    var colLocation = columns.GetLocation(col);
+                    var colLocation = viewport.GetHeaderColumnLocation(col);
                     var x = colLocation * zoom;
                     var scaledColumnWidth = columnWidth * zoom;
 
@@ -54,7 +56,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             }
         }
 
-        private void AdjustHeaderWidth(IWorkSheet workSheet, Rows rows, RowHeaderColumns columns, int topRow, int leftColumn, int bottomRow, int rightColumn)
+        private void AdjustHeaderWidth(IWorksheet workSheet, Rows rows, RowHeaderColumns columns, int topRow, int leftColumn, int bottomRow, int rightColumn)
         {
             for (int col = leftColumn; col <= rightColumn; col++)
             {

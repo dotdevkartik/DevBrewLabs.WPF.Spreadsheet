@@ -1,7 +1,8 @@
-﻿using DevBrewLabs.WPF.Spreadsheet;
+using DevBrewLabs.WPF.Spreadsheet;
 using DevBrewLabs.WPF.Spreadsheet.CellTypes;
 using System;
 using System.Windows.Controls;
+using SpreadsheetSampleExplorer.Data;
 
 namespace SpreadsheetSampleExplorer.Samples
 {
@@ -30,14 +31,8 @@ namespace SpreadsheetSampleExplorer.Samples
             worksheet.Columns[4].Locked = true;
             worksheet.Columns[4].CellType = new ButtonCellType() { Text = "Button" };
 
-            Random rnd = new Random();
-            for (int row = 0; row < 50; row++)
-            {
-                worksheet.Cells[row, 0].Value = $"Text {row + 1}";
-                worksheet.Cells[row, 1].Value = rnd.Next(1, 10) % 2 == 0 ? true : rnd.NextDouble() < 0.5 ? false : (bool?)null;
-                worksheet.Cells[row, 2].Value = rnd.Next(10000, 20000);
-                worksheet.Cells[row, 3].Value = new DateTime(rnd.Next(2001, 2020), rnd.Next(1, 12), rnd.Next(1, 28));
-            }
+            var data = DataSource.GetCellTypesData(50, 4);
+            worksheet.Load(data);
         }
     }
 }

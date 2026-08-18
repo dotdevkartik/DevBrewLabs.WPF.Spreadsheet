@@ -6,7 +6,7 @@ namespace DevBrewLabs.Spreadsheet
     internal class Cell : ICell, IDisposable
     {
         private Cells _parentRange;
-        private WorkSheet _workSheet;
+        private Worksheet _workSheet;
 
         public IFormatter Formatter
         {

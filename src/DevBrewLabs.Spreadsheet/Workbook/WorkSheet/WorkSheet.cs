@@ -10,14 +10,15 @@ using System.Data;
 
 namespace DevBrewLabs.Spreadsheet
 {
-    internal partial class WorkSheet : IWorkSheet
+    internal partial class Worksheet : IWorksheet
     {
         public event EventHandler<CellChangedEventArgs> CellChanged;
         public event EventHandler<RangeChangedEventArgs> RangeChanged;
-        public event EventHandler<RowChangedEventArgs> RowsChanged;
-        public event EventHandler<ColumnChangedEventArgs> ColumnsChanged;
+        public event EventHandler<RowChangedEventArgs> RowChanged;
+        public event EventHandler<ColumnChangedEventArgs> ColumnChanged;
+
         private string _name;
-        private WorkBook _workBook;
+        private Workbook _workBook;
         private Cells _cells;
         private Rows _rows;
         private Columns _columns;
@@ -26,6 +27,11 @@ namespace DevBrewLabs.Spreadsheet
         private TopLeft _topLeft;
         private WorkSheetDataStore _dataStore;
         private SpanManager _spanManager;
+        private bool _suspendEvents;
+        private int _rowCount;
+        private int _columnCount;
+        private int _defaultRowHeight;
+        private int _defaultColumnWidth;
 
         public string Name
         {
@@ -37,15 +43,111 @@ namespace DevBrewLabs.Spreadsheet
             {
                 if (_name != value)
                 {
-                    ((WorkSheets)_workBook.WorkSheets).VerifySheetName(value, this);
+                    ((Worksheets)_workBook.WorkSheets).VerifySheetName(value, this);
                     _name = value;
                 }
             }
         }
-        public int RowCount { get; set; }
-        public int ColumnCount { get; set; }
-        public int DefaultRowHeight { get; set; }
-        public int DefaultColumnWidth { get; set; }
+        public int RowCount
+        {
+            get
+            {
+                return _rowCount;
+            }
+            set 
+            {
+                var oldValue = _rowCount;
+
+                if(oldValue == value)
+                {
+                    return;
+                }
+
+                _rowCount = value;
+
+                OnWorksheetChanged(new WorksheetChangedEventArgs(SheetRegion.Cells, 
+                    this, 
+                    oldValue,
+                    value, 
+                    WorksheetChangeType.RowCount));
+            }
+        }
+
+        public int ColumnCount
+        {
+            get
+            {
+                return _columnCount;
+            }
+            set
+            {
+                var oldValue = _columnCount;
+
+                if (oldValue == value)
+                {
+                    return;
+                }
+
+                _columnCount = value;
+
+                OnWorksheetChanged(new WorksheetChangedEventArgs(SheetRegion.Cells,
+                    this,
+                    oldValue,
+                    value,
+                    WorksheetChangeType.ColumnCount));
+            }
+        }
+
+        public int DefaultRowHeight
+        {
+            get
+            {
+                return _defaultRowHeight;
+            }
+            set
+            {
+                var oldValue = _defaultRowHeight;
+
+                if (oldValue == value)
+                {
+                    return;
+                }
+
+                _defaultRowHeight = value;
+
+                OnWorksheetChanged(new WorksheetChangedEventArgs(SheetRegion.Cells,
+                    this,
+                    oldValue,
+                    value,
+                    WorksheetChangeType.DefaultRowHeight));
+            }
+        }
+
+        public int DefaultColumnWidth
+        {
+            get
+            {
+                return _defaultColumnWidth;
+            }
+            set
+            {
+                var oldValue = _defaultColumnWidth;
+
+                if (oldValue == value)
+                {
+                    return;
+                }
+
+                _defaultColumnWidth = value;
+
+                OnWorksheetChanged(new WorksheetChangedEventArgs(SheetRegion.Cells,
+                    this,
+                    oldValue,
+                    value,
+                    WorksheetChangeType.DefaultColumnWidth));
+            }
+        }
+
         public object DataSource
         {
             get
@@ -61,16 +163,15 @@ namespace DevBrewLabs.Spreadsheet
             }
         }
         public bool HasSpans => _spanManager.HasSpans;
-
         public IRows Rows => _rows;
         public IColumns Columns => _columns;
         public IRange Cells => _cells;
         public IRowHeaders RowHeaders => _rowHeaders;
         public IColumnHeaders ColumnHeaders => _columnHeaders;
         public ITopLeft TopLeft => _topLeft;
-        public IWorkBook WorkBook => _workBook;
+        public IWorkbook WorkBook => _workBook;
 
-        internal WorkSheet(WorkBook book, string name)
+        internal Worksheet(Workbook book, string name)
         {
             _workBook = book;
             Name = name;
@@ -132,6 +233,7 @@ namespace DevBrewLabs.Spreadsheet
 
             OnCellChanged(new CellChangedEventArgs(
                     SheetRegion.Cells,
+                    this,
                     row,
                     column,
                     existingStyle,
@@ -159,6 +261,7 @@ namespace DevBrewLabs.Spreadsheet
 
             OnCellChanged(new CellChangedEventArgs(
                     SheetRegion.Cells,
+                    this,
                     row,
                     column,
                     existingStyleName,
@@ -200,6 +303,7 @@ namespace DevBrewLabs.Spreadsheet
 
             OnCellChanged(new CellChangedEventArgs(
                 SheetRegion.Cells,
+                this,
                 row,
                 column,
                 existingValue,
@@ -242,6 +346,7 @@ namespace DevBrewLabs.Spreadsheet
 
             OnCellChanged(new CellChangedEventArgs(
                   SheetRegion.Cells,
+                  this,
                   row,
                   column,
                   existingFormula,
@@ -374,14 +479,16 @@ namespace DevBrewLabs.Spreadsheet
 
             OnRangeChanged(new RangeChangedEventArgs(
                      SheetRegion.Cells,
+                     this,
                      new CellRange(row, column, rowCount, columnCount),
+                     null, null,
                      RangeChangeType.Value));
         }
 
         public void RemoveSpan(int row, int column)
         {
             var range = _spanManager.GetSpanRange(row, column);
-            if (range == null)
+            if (range == default)
                 return;
 
             _spanManager.RemoveSpan(row, column);
@@ -392,7 +499,9 @@ namespace DevBrewLabs.Spreadsheet
 
             OnRangeChanged(new RangeChangedEventArgs(
                      SheetRegion.Cells,
+                     this,
                      range,
+                     null, null,
                      RangeChangeType.Value));
         }
 
@@ -496,7 +605,9 @@ namespace DevBrewLabs.Spreadsheet
 
             OnRangeChanged(new RangeChangedEventArgs(
                      SheetRegion.Cells,
+                     this,
                      new CellRange(startRow, startCol, rows, cols),
+                     null, null,
                       RangeChangeType.Value));
         }
 
@@ -614,7 +725,9 @@ namespace DevBrewLabs.Spreadsheet
 
             OnRangeChanged(new RangeChangedEventArgs(
                  SheetRegion.Cells,
+                 this,
                 new CellRange(sortStartRow, targetStartCol, sortRowCount, targetEndCol - targetStartCol + 1),
+                null, null,
                 RangeChangeType.Sort
             ));
         }
@@ -656,128 +769,85 @@ namespace DevBrewLabs.Spreadsheet
             _workBook = null;
         }
 
-        #region private
-        internal struct RowSnapshot
-        {
-            public int OriginalRow { get; }
-            public object KeyValue { get; }
-            public Dictionary<int, CellData> Data { get; }
-
-            public RowSnapshot(int originalRow, object keyValue)
-            {
-                OriginalRow = originalRow;
-                KeyValue = keyValue;
-                Data = new Dictionary<int, CellData>();
-            }
-        }
-
-        internal class MultiLevelSnapshotComparer : IComparer<RowSnapshot>
-        {
-            private readonly SortOptions _options;
-            private readonly NaturalSortComparer _defaultComparer;
-            private readonly WorkSheet _sheet;
-
-            public MultiLevelSnapshotComparer(SortOptions options, WorkSheet sheet)
-            {
-                _options = options;
-                _sheet = sheet;
-                _defaultComparer = new NaturalSortComparer(options.MatchCase);
-            }
-
-            public int Compare(RowSnapshot x, RowSnapshot y)
-            {
-                foreach (var level in _options.SortLevels)
-                {
-                    object valX = GetValue(x, level.ColumnIndex);
-                    object valY = GetValue(y, level.ColumnIndex);
-
-                    int result;
-                    if (level.CustomComparer != null)
-                    {
-                        result = level.CustomComparer.Compare(valX, valY);
-                    }
-                    else
-                    {
-                        result = _defaultComparer.Compare(valX, valY);
-                    }
-
-                    if (result != 0)
-                    {
-                        return level.Ascending ? result : -result;
-                    }
-                }
-                return 0;
-            }
-
-            private object GetValue(RowSnapshot snapshot, int col)
-            {
-                if (snapshot.Data.TryGetValue(col, out var cellData))
-                {
-                    return cellData.Value;
-                }
-                
-                return _sheet.GetValue(snapshot.OriginalRow, col);
-            }
-        }
-        #endregion
-
         #region events
+        internal void ExecuteSupressed(Action action)
+        {
+            if (action == null)
+            {
+                return;
+            }
+
+            try
+            {
+                _suspendEvents = true;
+                action();
+            }
+            finally
+            {
+                _suspendEvents = false;
+            }
+        }
+
         internal void OnCellChanged(CellChangedEventArgs args)
         {
-            args.WorkSheet = this;
-            if (_workBook.UpdateProvider != null && !_workBook.UpdateProvider.SuspendUpdates)
-                _workBook.UpdateProvider.CellChanged(this, args.Row, args.Column, args.OldValue, args.NewValue, args.Region, args.ChangeType);
+            _workBook?.ChangeListener.CellChanged(args);
+
+            if (_suspendEvents) return;
 
             CellChanged?.Invoke(this, args);
         }
 
         internal void OnRangeChanged(RangeChangedEventArgs args)
         {
-            args.WorkSheet = this;
-            if (_workBook.UpdateProvider != null && !_workBook.UpdateProvider.SuspendUpdates)
-                _workBook.UpdateProvider.RangeChanged(this, args.Range, args.Region, args.ChangeType);
+            _workBook?.ChangeListener.RangeChanged(args);
+
+            if (_suspendEvents) return;
 
             RangeChanged?.Invoke(this, args);
         }
 
-        internal void OnRowsChanged(RowChangedEventArgs args)
+        internal void OnRowChanged(RowChangedEventArgs args)
         {
-            args.WorkSheet = this;
-            if (_workBook.UpdateProvider != null && !_workBook.UpdateProvider.SuspendUpdates)
-                _workBook.UpdateProvider.RowsChanged(this, args.Index, args.Count, args.Region, args.ChangeType);
+            _workBook?.ChangeListener.RowChanged(args);
 
-            RowsChanged?.Invoke(this, args);
+            if (_suspendEvents) return;
+
+            RowChanged?.Invoke(this, args);
         }
 
-        internal void OnColumnsChanged(ColumnChangedEventArgs args)
+        internal void OnColumnChanged(ColumnChangedEventArgs args)
         {
-            args.WorkSheet = this;
+            _workBook?.ChangeListener.ColumnChanged(args);
 
-            if (_workBook.UpdateProvider != null && !_workBook.UpdateProvider.SuspendUpdates)
-                _workBook.UpdateProvider.ColumnsChanged(this, args.Index, args.Count, args.Region, args.ChangeType);
+            if (_suspendEvents) return;
 
-            ColumnsChanged?.Invoke(this, args);
+            ColumnChanged?.Invoke(this, args);
+        }
+
+        internal void OnWorksheetChanged(WorksheetChangedEventArgs args)
+        {
+            _workBook?.ChangeListener.OnWorksheetChanged(args);
         }
         #endregion
 
         #region worksheet datastore
         private class WorkSheetDataStore : IDisposable
         {
-            private WorkSheet _workSheet;
+            private Worksheet _workSheet;
             private DataCollection _collection;
             private Dictionary<int, ColumnData> _columnStore;
 
             public object ActualDataSource { get; private set; }
             public bool IsValid { get; private set; }
 
-            internal WorkSheetDataStore(WorkSheet worksheet)
+            internal WorkSheetDataStore(Worksheet worksheet)
             {
                 _workSheet = worksheet;
                 _columnStore = new Dictionary<int, ColumnData>();
                 InitializeUnboundDataStore();
             }
 
-            internal WorkSheetDataStore(WorkSheet worksheet, object dataSource) : this(worksheet)
+            internal WorkSheetDataStore(Worksheet worksheet, object dataSource) : this(worksheet)
             {
                 _workSheet = worksheet;
                 InitializeBoundDataStore(dataSource);
@@ -957,6 +1027,71 @@ namespace DevBrewLabs.Spreadsheet
                 _collection = null;
                 ActualDataSource = null;
                 _columnStore = null;
+            }
+        }
+        #endregion
+
+        #region private
+        private struct RowSnapshot
+        {
+            public int OriginalRow { get; }
+            public object KeyValue { get; }
+            public Dictionary<int, CellData> Data { get; }
+
+            public RowSnapshot(int originalRow, object keyValue)
+            {
+                OriginalRow = originalRow;
+                KeyValue = keyValue;
+                Data = new Dictionary<int, CellData>();
+            }
+        }
+
+        private class MultiLevelSnapshotComparer : IComparer<RowSnapshot>
+        {
+            private readonly SortOptions _options;
+            private readonly NaturalSortComparer _defaultComparer;
+            private readonly Worksheet _sheet;
+
+            public MultiLevelSnapshotComparer(SortOptions options, Worksheet sheet)
+            {
+                _options = options;
+                _sheet = sheet;
+                _defaultComparer = new NaturalSortComparer(options.MatchCase);
+            }
+
+            public int Compare(RowSnapshot x, RowSnapshot y)
+            {
+                foreach (var level in _options.SortLevels)
+                {
+                    object valX = GetValue(x, level.ColumnIndex);
+                    object valY = GetValue(y, level.ColumnIndex);
+
+                    int result;
+                    if (level.CustomComparer != null)
+                    {
+                        result = level.CustomComparer.Compare(valX, valY);
+                    }
+                    else
+                    {
+                        result = _defaultComparer.Compare(valX, valY);
+                    }
+
+                    if (result != 0)
+                    {
+                        return level.Ascending ? result : -result;
+                    }
+                }
+                return 0;
+            }
+
+            private object GetValue(RowSnapshot snapshot, int col)
+            {
+                if (snapshot.Data.TryGetValue(col, out var cellData))
+                {
+                    return cellData.Value;
+                }
+
+                return _sheet.GetValue(snapshot.OriginalRow, col);
             }
         }
         #endregion

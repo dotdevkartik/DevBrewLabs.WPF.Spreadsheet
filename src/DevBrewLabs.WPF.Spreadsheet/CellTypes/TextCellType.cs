@@ -1,6 +1,8 @@
 using DevBrewLabs.Spreadsheet;
+using DevBrewLabs.Spreadsheet.Drawing;
 using DevBrewLabs.Spreadsheet.Formatters;
 using DevBrewLabs.WPF.Spreadsheet.Rendering.Text;
+using DevBrewLabs.WPF.Spreadsheet.Styling;
 using DevBrewLabs.WPF.Spreadsheet.UI.Editors;
 using System.Windows;
 using System.Windows.Media;
@@ -37,13 +39,15 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
 
         public override EditorBase GetEditor(IStyle style)
         {
-            var editor = new TextEditor();
-            editor.FontFamily = Styling.WpfResourceCache.ToWpfFontFamily(style.FontFamily);
-            editor.Foreground = Styling.WpfResourceCache.GetBrush(style.ForeColor);
-            editor.Background = Styling.WpfResourceCache.GetBrush(style.BackColor);
-            editor.FontWeight = Styling.WpfResourceCache.ToWpfFontWeight(style.FontWeight);
-            editor.FontStyle = Styling.WpfResourceCache.ToWpfFontStyle(style.FontStyle);
-            editor.FontSize = style.FontSize;
+            var editor = new TextEditor
+            {
+                FontFamily = WpfResourceCache.ToWpfFontFamily(style.FontFamily),
+                Foreground = WpfResourceCache.GetBrush(style.ForeColor),
+                Background = WpfResourceCache.GetBrush(style.BackColor),
+                FontWeight = WpfResourceCache.ToWpfFontWeight(style.FontWeight),
+                FontStyle = WpfResourceCache.ToWpfFontStyle(style.FontStyle),
+                FontSize = style.FontSize
+            };
             return editor;
         }
     }

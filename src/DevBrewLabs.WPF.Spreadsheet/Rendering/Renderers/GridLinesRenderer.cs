@@ -10,10 +10,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
     {
         private void DrawHorizontalGridlines(DrawingContext context, int topRow, int leftColumn, int bottomRow, int rightColumn)
         {
-            var workSheet = (WorkSheet)SheetView.WorkSheet;
+            var workSheet = (Worksheet)SheetView.WorkSheet;
             var rows = (Rows)workSheet.Rows;
             var columns = (Columns)workSheet.Columns;
-            var viewport = (ViewPort)SheetView.ViewPort;
+            var viewport = SheetView.ViewPort;
             double zoom = SheetView.ZoomFactor > 0 ? SheetView.ZoomFactor : 1.0;
 
             double halfPenWidth = (SheetView.Spread.GridLinePen.Thickness * SheetView.Spread.PixelPerDip) / 2;
@@ -26,7 +26,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                 if (rowHeight == 0)
                     continue;
 
-                var rowLocation = rows.GetLocation(row);
+                var rowLocation = viewport.GetRowLocation(row);
                 double y = (rowLocation - viewport.TopRowLocation + rowHeight) * zoom;
                 guidelines.GuidelinesY.Add(y + halfPenWidth);
 
@@ -39,13 +39,21 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                     var colWidth = columns.GetColumnWidth(col);
                     if (colWidth == 0) continue;
 
-                    double x = (columns.GetLocation(col) - viewport.LeftColumnLocation) * zoom;
+                    double x = (viewport.GetColumnLocation(col) - viewport.LeftColumnLocation) * zoom;
                     double nextX = x + colWidth * zoom;
 
                     var anchor1 = workSheet.GetSpanCellRange(row, col);
-                    var anchor2 = workSheet.GetSpanCellRange(row + 1, col);
                     
-                    bool skip = anchor1 != default && anchor2 != default && anchor1.TopRow == anchor2.TopRow && anchor1.LeftColumn == anchor2.LeftColumn;
+                    bool skip = false;
+                    if (anchor1 != default && row < anchor1.BottomRow)
+                    {
+                        int nextRow = row + 1;
+                        while (nextRow <= anchor1.BottomRow && rows.GetRowHeight(nextRow) == 0)
+                            nextRow++;
+                            
+                        if (nextRow <= anchor1.BottomRow)
+                            skip = true;
+                    }
 
                     if (!skip)
                     {
@@ -77,10 +85,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
         private void DrawVerticalGridlines(DrawingContext context, int topRow, int leftColumn, int bottomRow, int rightColumn)
         {
-            var workSheet = (WorkSheet)SheetView.WorkSheet;
+            var workSheet = (Worksheet)SheetView.WorkSheet;
             var rows = (Rows)workSheet.Rows;
             var columns = (Columns)workSheet.Columns;
-            var viewport = (ViewPort)SheetView.ViewPort;
+            var viewport = SheetView.ViewPort;
             double zoom = SheetView.ZoomFactor > 0 ? SheetView.ZoomFactor : 1.0;
 
             double halfPenWidth = (SheetView.Spread.GridLinePen.Thickness * SheetView.Spread.PixelPerDip) / 2;
@@ -93,7 +101,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                 if (columnWidth == 0)
                     continue;
 
-                var colLocation = columns.GetLocation(col);
+                var colLocation = viewport.GetColumnLocation(col);
                 double x = (colLocation - viewport.LeftColumnLocation + columnWidth) * zoom;
                 guidelines.GuidelinesX.Add(x + halfPenWidth);
 
@@ -106,13 +114,21 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                     var rowHeight = rows.GetRowHeight(row);
                     if (rowHeight == 0) continue;
 
-                    double y = (rows.GetLocation(row) - viewport.TopRowLocation) * zoom;
+                    double y = (viewport.GetRowLocation(row) - viewport.TopRowLocation) * zoom;
                     double nextY = y + rowHeight * zoom;
 
                     var anchor1 = workSheet.GetSpanCellRange(row, col);
-                    var anchor2 = workSheet.GetSpanCellRange(row, col + 1);
                     
-                    bool skip = anchor1 != default && anchor2 != default && anchor1.TopRow == anchor2.TopRow && anchor1.LeftColumn == anchor2.LeftColumn;
+                    bool skip = false;
+                    if (anchor1 != default && col < anchor1.RightColumn)
+                    {
+                        int nextCol = col + 1;
+                        while (nextCol <= anchor1.RightColumn && columns.GetColumnWidth(nextCol) == 0)
+                            nextCol++;
+                            
+                        if (nextCol <= anchor1.RightColumn)
+                            skip = true;
+                    }
 
                     if (!skip)
                     {

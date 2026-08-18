@@ -11,8 +11,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
         {
             var workSheet = SheetView.WorkSheet;
             double zoom = SheetView.ZoomFactor > 0 ? SheetView.ZoomFactor : 1.0;
-            var width = workSheet.RowHeaders.Width * zoom;
-            var height = workSheet.ColumnHeaders.Height * zoom;
+            var width = SheetView.GetRowHeaderWidth() * zoom;
+            var height = SheetView.GetColumnHeaderHeight() * zoom;
             var topLeft = workSheet.TopLeft;
             var style = workSheet.GetTopLeftStyle();
 
@@ -22,11 +22,14 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             context.DrawRectangle(WpfResourceCache.GetBrush(style.BackColor), SheetView.Spread.GridLinePen, rect);
        
             var pathGeometry = new PathGeometry();
-            pathGeometry.Figures.Add(new PathFigure(new Point(5 * zoom, height - 5 * zoom), new PathSegment[]
+            
+            double margin = 3 * zoom;
+            double size = 10 * zoom;
+
+            pathGeometry.Figures.Add(new PathFigure(new Point(width - margin, height - margin), new PathSegment[]
             {
-                new LineSegment(new Point(width - 5 * zoom, 5 * zoom), false),
-                new LineSegment(new Point(width - 5 * zoom, height - 5 * zoom), false),
-                new LineSegment(new Point(5 * zoom, height - 5 * zoom), false)
+                new LineSegment(new Point(width - margin, height - margin - size), false),
+                new LineSegment(new Point(width - margin - size, height - margin), false)
             }, true));
 
             context.DrawGeometry(WpfResourceCache.GetBrush(style.ForeColor), null, pathGeometry);

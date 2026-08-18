@@ -7,7 +7,7 @@ namespace DevBrewLabs.Spreadsheet.Styling
         public CellStyle()
         {
             ForeColor = CellColor.Black;
-            BackColor = CellColor.Transparent;
+            BackColor = CellColor.White;
             FontSize = 14;
             FontFamily = new CellFontFamily("Calibri");
             FontWeight = CellFontWeight.Regular;

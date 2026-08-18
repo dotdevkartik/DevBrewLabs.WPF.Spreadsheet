@@ -3,9 +3,11 @@ using DevBrewLabs.Spreadsheet.Drawing;
 using DevBrewLabs.Spreadsheet.Styling;
 using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using SpreadsheetSampleExplorer.Data;
 
 namespace SpreadsheetSampleExplorer.Samples
 {
@@ -22,16 +24,16 @@ namespace SpreadsheetSampleExplorer.Samples
             Loaded += Performance_Loaded;
         }
 
-        private void Performance_Loaded(object sender, RoutedEventArgs e)
+        private async void Performance_Loaded(object sender, RoutedEventArgs e)
         {
             if (!_isInitialized)
             {
                 _isInitialized = true;
-                RunBenchmark();
+                await RunBenchmark();
             }
         }
 
-        private void RunBenchmark()
+        private async Task RunBenchmark()
         {
             int rowCount = 1000000;
             if (_cmbRowCount?.SelectedItem is ComboBoxItem item && int.TryParse(item.Tag?.ToString(), out int parsedCount))
@@ -43,95 +45,70 @@ namespace SpreadsheetSampleExplorer.Samples
 
             _txtTotalTime.Text = "Preparing data...";
 
-            // Dispatch to allow UI updates before running the benchmark loop
-            Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+            var swTotal = Stopwatch.StartNew();
+
+            // 1. Data Preparation
+            var swPrep = Stopwatch.StartNew();
+            var worksheet = spread.SheetViews.ActiveSheetView.WorkSheet;
+            worksheet.RowCount = rowCount;
+            worksheet.ColumnCount = colCount;
+
+            var sampleData = await Task.Run(() =>
             {
-                var swTotal = Stopwatch.StartNew();
+                return DataSource.GetEmployeesData(rowCount, colCount);
+            });
 
-                // 1. Data Preparation
-                var swPrep = Stopwatch.StartNew();
-                var worksheet = spread.SheetViews.ActiveSheetView.WorkSheet;
-                worksheet.RowCount = rowCount;
-                worksheet.ColumnCount = colCount;
+            swPrep.Stop();
 
-                string[] departments = { "Engineering", "Sales", "Marketing", "Finance", "Human Resources", "Operations", "Legal", "Product" };
-                string[] regions = { "North America", "Europe", "Asia Pacific", "Latin America", "Middle East" };
-                string[] statuses = { "Active", "Pending", "Completed", "On Hold", "Archived" };
+            // 2. Engine Loading
+            var swEngine = Stopwatch.StartNew();
 
-                var rnd = new Random(42);
-                var data = new object[rowCount, colCount];
 
-                string[] headers = { "ID", "Employee Ref", "Department", "Region", "Salary ($)", "Score", "Projects", "Status", "Year Joined", "Security Code" };
-                for (int col = 0; col < colCount; col++)
+            worksheet.Load(sampleData);
+
+            string headerStyleName = "ScrollHeaderStyle";
+            if (worksheet.WorkBook.GetNamedStyle(headerStyleName) == null)
+            {
+                var style = new CellStyle
                 {
-                    data[0, col] = headers[col];
-                }
+                    BackColor = CellColor.FromArgb(255, 16, 124, 65), // #107C41 Excel Green
+                    ForeColor = CellColor.White,
+                    FontWeight = CellFontWeight.Bold,
+                    HorizontalAlignment = CellHorizontalAlignment.Center
+                };
+                worksheet.WorkBook.AddNamedStyle(headerStyleName, style);
+            }
+            worksheet.Rows[0].StyleName = headerStyleName;
 
-                for (int row = 1; row < rowCount; row++)
-                {
-                    data[row, 0] = row;
-                    data[row, 1] = $"EMP-{100000 + row}";
-                    data[row, 2] = departments[rnd.Next(departments.Length)];
-                    data[row, 3] = regions[rnd.Next(regions.Length)];
-                    data[row, 4] = rnd.Next(45000, 185000);
-                    data[row, 5] = Math.Round(3.0 + rnd.NextDouble() * 2.0, 1);
-                    data[row, 6] = rnd.Next(1, 15);
-                    data[row, 7] = statuses[rnd.Next(statuses.Length)];
-                    data[row, 8] = rnd.Next(2010, 2026);
-                    data[row, 9] = $"SEC-{rnd.Next(1000, 9999)}";
-                }
-                swPrep.Stop();
+            worksheet.Columns[0].Width = 70;
+            worksheet.Columns[1].Width = 110;
+            worksheet.Columns[2].Width = 140;
+            worksheet.Columns[3].Width = 130;
+            worksheet.Columns[4].Width = 110;
+            worksheet.Columns[5].Width = 100;
+            worksheet.Columns[7].Width = 100;
+            swEngine.Stop();
 
-                // 2. Engine Loading
-                var swEngine = Stopwatch.StartNew();
-                worksheet.Load(data);
+            // 3. UI First Render Measure
+            var swRender = Stopwatch.StartNew();
 
-                string headerStyleName = "ScrollHeaderStyle";
-                if (worksheet.WorkBook.GetNamedStyle(headerStyleName) == null)
-                {
-                    var style = new CellStyle
-                    {
-                        BackColor = CellColor.FromArgb(255, 16, 124, 65), // #107C41 Excel Green
-                        ForeColor = CellColor.White,
-                        FontWeight = CellFontWeight.Bold,
-                        HorizontalAlignment = CellHorizontalAlignment.Center
-                    };
-                    worksheet.WorkBook.AddNamedStyle(headerStyleName, style);
-                }
-                worksheet.Rows[0].StyleName = headerStyleName;
+            swRender.Stop();
+            swTotal.Stop();
 
-                worksheet.Columns[0].Width = 70;
-                worksheet.Columns[1].Width = 110;
-                worksheet.Columns[2].Width = 140;
-                worksheet.Columns[3].Width = 130;
-                worksheet.Columns[4].Width = 110;
-                worksheet.Columns[5].Width = 100;
-                worksheet.Columns[7].Width = 100;
-                swEngine.Stop();
+            double prepMs = swPrep.Elapsed.TotalMilliseconds;
+            double loadMs = swEngine.Elapsed.TotalMilliseconds;
+            double renderMs = swRender.Elapsed.TotalMilliseconds;
+            double totalMs = swTotal.Elapsed.TotalMilliseconds;
 
-                // 3. UI First Render Measure
-                var swRender = Stopwatch.StartNew();
-                Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
-                {
-                    swRender.Stop();
-                    swTotal.Stop();
+            double spreadLoadMs = totalMs - prepMs;
 
-                    double prepMs = swPrep.Elapsed.TotalMilliseconds;
-                    double loadMs = swEngine.Elapsed.TotalMilliseconds;
-                    double renderMs = swRender.Elapsed.TotalMilliseconds;
-                    double totalMs = swTotal.Elapsed.TotalMilliseconds;
-                    
-                    double spreadLoadMs = totalMs - prepMs;
-
-                    _txtTotalTime.Text = $"{spreadLoadMs:N0} ms";
-                    _txtCellCount.Text = $"{rowCount:N0} rows × {colCount} cols ({rowCount * colCount:N0} cells)";
-                }));
-            }));
+            _txtTotalTime.Text = $"{spreadLoadMs:N0} ms";
+            _txtCellCount.Text = $"{rowCount:N0} rows × {colCount} cols ({rowCount * colCount:N0} cells)";
         }
 
-        private void OnRunBenchmarkClick(object sender, RoutedEventArgs e)
+        private async void OnRunBenchmarkClick(object sender, RoutedEventArgs e)
         {
-            RunBenchmark();
+            await RunBenchmark();
         }
     }
 }

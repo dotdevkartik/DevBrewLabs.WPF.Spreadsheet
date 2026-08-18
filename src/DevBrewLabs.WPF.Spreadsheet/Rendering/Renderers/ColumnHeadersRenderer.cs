@@ -1,7 +1,6 @@
 using DevBrewLabs.Spreadsheet;
 using DevBrewLabs.WPF.Spreadsheet.Rendering.Text;
 using DevBrewLabs.WPF.Spreadsheet.Styling;
-using DevBrewLabs.WPF.Spreadsheet.UI;
 using System.Windows;
 using System.Windows.Media;
 
@@ -15,7 +14,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             var rows = (ColumnHeaderRows)workSheet.ColumnHeaders.Rows;
             var columns = (Columns)workSheet.Columns;
             var cells = workSheet.ColumnHeaders.Cells;
-            var viewport = (ViewPort)SheetView.ViewPort;
 
             double zoom = SheetView.ZoomFactor > 0 ? SheetView.ZoomFactor : 1.0;
             var renderContext = new RenderContext(zoom, SheetView.Spread.PixelPerDip, 5.0, true);
@@ -26,19 +24,22 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                 if (rowHeight == 0)
                     continue;
                 var headerRow = rows.GetItem(row);
-                var rowLocation = rows.GetLocation(row);
+                var rowLocation = SheetView.ViewPort.GetHeaderRowLocation(row);
                 var y = rowLocation * zoom;
                 var scaledRowHeight = rowHeight * zoom;
 
+
                 for (int col = leftColumn; col <= rightColumn; col++)
                 {
-                    var columnWidth = columns.GetColumnWidth(col);
+                    int columnWidth = ((SheetView)SheetView).GetTemporaryColumnWidth(col) ?? columns.GetColumnWidth(col);
+
                     if (columnWidth == 0)
                         continue;
 
                     var headerColumn = columns.GetItem(col);
-                    var colLocation = columns.GetLocation(col);
-                    var x = (colLocation - viewport.LeftColumnLocation) * zoom;
+                    double colLocation = ((SheetView)SheetView).GetTemporaryColumnLocation(col) ?? SheetView.ViewPort.GetColumnLocation(col);
+
+                    var x = (colLocation - SheetView.ViewPort.LeftColumnLocation) * zoom;
                     var scaledColumnWidth = columnWidth * zoom;
 
                     var cellRect = new Rect(x, y, scaledColumnWidth, scaledRowHeight);

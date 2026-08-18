@@ -11,10 +11,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
     {
         protected override void OnRender(DrawingContext context, int topRow, int leftColumn, int bottomRow, int rightColumn)
         {
-            var workSheet = (WorkSheet)SheetView.WorkSheet;
+            var workSheet = (Worksheet)SheetView.WorkSheet;
             var rows = (ColumnHeaderRows)workSheet.ColumnHeaders.Rows;
             var columns = (Columns)workSheet.Columns;
-            var viewport = (ViewPort)SheetView.ViewPort;
 
             double zoom = SheetView.ZoomFactor > 0 ? SheetView.ZoomFactor : 1.0;
             double halfPenWidth = SheetView.Spread.GridLinePen.Thickness * SheetView.Spread.PixelPerDip / 2;
@@ -29,7 +28,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
                 if (rowHeight == 0)
                     continue;
                 
-                var rowLocation = rows.GetLocation(row);
+                var rowLocation = SheetView.ViewPort.GetHeaderRowLocation(row);
                 var y = rowLocation * zoom;
                 var scaledRowHeight = rowHeight * zoom;
 
@@ -38,12 +37,14 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
 
                 for (int col = leftColumn; col <= rightColumn; col++)
                 {
-                    var columnWidth = columns.GetColumnWidth(col);
+                    int columnWidth = ((SheetView)SheetView).GetTemporaryColumnWidth(col) ?? columns.GetColumnWidth(col);
+
                     if (columnWidth == 0)
                         continue;
 
-                    var colLocation = columns.GetLocation(col);
-                    var x = (colLocation - viewport.LeftColumnLocation) * zoom;
+                    double colLocation = ((SheetView)SheetView).GetTemporaryColumnLocation(col) ?? SheetView.ViewPort.GetColumnLocation(col);
+
+                    var x = (colLocation - SheetView.ViewPort.LeftColumnLocation) * zoom;
                     var scaledColumnWidth = columnWidth * zoom;
 
                     if (row == topRow)
@@ -62,13 +63,16 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
 
                 for (int col = minCol; col <= maxCol; col++)
                 {
-                    if (columns.GetColumnWidth(col) == 0)
+                    int currentWidth = ((SheetView)SheetView).GetTemporaryColumnWidth(col) ?? columns.GetColumnWidth(col);
+                    if (currentWidth == 0)
                     {
                         // Draw double line indicator only for the first hidden column in a contiguous block
-                        if (col == 0 || columns.GetColumnWidth(col - 1) > 0)
+                        int prevWidth = col == 0 ? 0 : (((SheetView)SheetView).GetTemporaryColumnWidth(col - 1) ?? columns.GetColumnWidth(col - 1));
+                        
+                        if (col == 0 || prevWidth > 0)
                         {
-                            var colLocation = columns.GetLocation(col);
-                            var x = (colLocation - viewport.LeftColumnLocation) * zoom;
+                            double colLocation = ((SheetView)SheetView).GetTemporaryColumnLocation(col) ?? SheetView.ViewPort.GetColumnLocation(col);
+                            var x = (colLocation - SheetView.ViewPort.LeftColumnLocation) * zoom;
                             DrawHiddenColumnIndicator(context, x, y, scaledRowHeight, workSheet);
                         }
                     }
@@ -78,22 +82,19 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
             context.Pop();
         }
 
-        private void DrawHiddenColumnIndicator(DrawingContext context, double x, double rowLocation, double rowHeight, WorkSheet workSheet)
+        private void DrawHiddenColumnIndicator(DrawingContext context, double x, double rowLocation, double rowHeight, Worksheet workSheet)
         {
             var pen = SheetView.Spread.GridLinePen;
             var defaultStyle = workSheet.WorkBook.GetNamedStyle(StyleKeys.DefaultColumnHeaderStyleKey);
 
-            double line1X, line2X;
             if (x <= 0)
             {
-                line1X = x + 1.5;
-                line2X = x + 4.5;
+                context.DrawLine(pen, new Point(x + 3.0, rowLocation), new Point(x + 3.0, rowLocation + rowHeight));
+                return;
             }
-            else
-            {
-                line1X = x - 1.5;
-                line2X = x + 1.5;
-            }
+
+            double line1X = x - 1.5;
+            double line2X = x + 1.5;
 
             var rectLeft = Math.Min(line1X, line2X) - 0.5;
             var rectWidth = Math.Abs(line2X - line1X) + 1.0;

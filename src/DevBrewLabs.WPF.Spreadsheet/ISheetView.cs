@@ -1,5 +1,4 @@
 using DevBrewLabs.Spreadsheet;
-using DevBrewLabs.WPF.Spreadsheet.UI;
 using System.Windows;
 
 namespace DevBrewLabs.WPF.Spreadsheet
@@ -26,10 +25,6 @@ namespace DevBrewLabs.WPF.Spreadsheet
         /// </summary>
         double ZoomFactor { get; set; }
         /// <summary>
-        /// Gets the sheet view port.
-        /// </summary>
-        IViewPort ViewPort { get; }
-        /// <summary>
         /// Gets the current scroll position.
         /// </summary>
         Point ScrollPosition { get; }
@@ -50,13 +45,21 @@ namespace DevBrewLabs.WPF.Spreadsheet
         /// </summary>
         int ActiveColumn { get; }
         /// <summary>
+        /// Gets or sets whether to automatically resize rows on cell change.
+        /// </summary>
+        bool AutoSizeRows { get; set; }
+        /// <summary>
+        /// Gets or sets whether to automatically resize columns on cell change.
+        /// </summary>
+        bool AutoSizeColumns { get; set; }
+        /// <summary>
         /// Gets the current selection.
         /// </summary>
         CellRange Selection { get; }
         /// <summary>
         /// Gets the underlying worksheet for this view.
         /// </summary>
-        IWorkSheet WorkSheet { get; }
+        IWorksheet WorkSheet { get; }
         /// <summary>
         /// Copies current selection to clipboard.
         /// </summary>
@@ -80,14 +83,6 @@ namespace DevBrewLabs.WPF.Spreadsheet
         /// </summary>
         /// <param name="offset"></param>
         void ScrollToVerticalOffset(double offset);
-        /// <summary>
-        /// Gets or sets whether to automatically resize rows on cell change.
-        /// </summary>
-        bool AutoSizeRows { get; set; }
-        /// <summary>
-        /// Gets or sets whether to automatically resize columns on cell change.
-        /// </summary>
-        bool AutoSizeColumns { get; set; }
         /// <summary>
         /// Auto sizes the row height based on cell text content.
         /// </summary>

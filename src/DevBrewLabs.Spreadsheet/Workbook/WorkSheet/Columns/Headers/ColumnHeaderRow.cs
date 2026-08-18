@@ -33,12 +33,13 @@ namespace DevBrewLabs.Spreadsheet
                 }
 
                 _height = value;
-                _parent.UpdateLocation(Index + 1, value - oldHeight);
 
-                _parent.ColumnHeaders.WorkSheet.OnRowsChanged(new RowChangedEventArgs(
+                _parent.ColumnHeaders.WorkSheet.OnRowChanged(new RowChangedEventArgs(
                     SheetRegion.ColumnHeader,
+                    _parent.ColumnHeaders.WorkSheet,
                     Index,
-                    1, RowChangeType.Height));
+                    oldHeight,
+                    value, RowChangeType.Height));
             }
         }
 
@@ -52,17 +53,21 @@ namespace DevBrewLabs.Spreadsheet
             }
             set
             {
-                if(_styleName == value)
+                string oldStyleName = _styleName;
+
+                if(oldStyleName == value)
                 {
                     return;
                 }
 
                 _styleName = value;
 
-                _parent.ColumnHeaders.WorkSheet.OnRowsChanged(new RowChangedEventArgs(
+                _parent.ColumnHeaders.WorkSheet.OnRowChanged(new RowChangedEventArgs(
                         SheetRegion.ColumnHeader,
+                        _parent.ColumnHeaders.WorkSheet,
                         Index,
-                        1, RowChangeType.Style));
+                        oldStyleName,
+                        value, RowChangeType.StyleName));
             }
         }
 
@@ -74,21 +79,21 @@ namespace DevBrewLabs.Spreadsheet
             }
             set
             {
-                if (value == _style)
+                var oldStyle = _style;
+
+                if (value == oldStyle)
                 {
                     return;
                 }
 
-                if (_style != value)
-                {
-                    _parent.ColumnHeaders.WorkSheet.OnRowsChanged(new RowChangedEventArgs(
-                       SheetRegion.ColumnHeader,
-                       Index,
-                        1,
-                        RowChangeType.Style));
-                }
-
                 _style = value;
+
+                _parent.ColumnHeaders.WorkSheet.OnRowChanged(new RowChangedEventArgs(
+                       SheetRegion.ColumnHeader,
+                       _parent.ColumnHeaders.WorkSheet,
+                       Index,
+                       oldStyle,
+                       value, RowChangeType.Style));
             }
         }
 

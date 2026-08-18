@@ -10,7 +10,7 @@ namespace DevBrewLabs.Spreadsheet
     {
         private int _rowCount;
         private int _columnCount;
-        private WorkSheet _workSheet;
+        private Worksheet _workSheet;
         private ColumnHeaders _columnHeaders;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -128,7 +128,7 @@ namespace DevBrewLabs.Spreadsheet
             set { ApplyToRange((r, c) => _columnHeaders.SetColumnSpan(r, c, value)); }
         }
 
-        public WorkSheet WorkSheet => _workSheet;
+        public Worksheet WorkSheet => _workSheet;
         public ColumnHeaders ColumnHeaders => _columnHeaders;
 
         public bool HasSpans { get; }

@@ -1,4 +1,4 @@
-﻿using DevBrewLabs.Spreadsheet.Data;
+using DevBrewLabs.Spreadsheet.Data;
 using DevBrewLabs.WPF.Spreadsheet;
 using SpreadsheetSampleExplorer.Data;
 using System.Linq;
@@ -20,7 +20,7 @@ namespace SpreadsheetSampleExplorer.Samples
 
         private void SetuDataTableBinding(ISheetView sheetView)
         {
-            var customers = DataSource.GetCustomersTable();
+            var customers = DataSource.GetCustomersTable(5000);
             var worksheet = sheetView.WorkSheet;
             worksheet.DataSource = customers;
             worksheet.Columns[0].DataMap = new DataColumnDataMap("Id");
@@ -36,7 +36,7 @@ namespace SpreadsheetSampleExplorer.Samples
 
         private void SetupListBinding(ISheetView sheetView)
         {
-            var customers = DataSource.GetCustomers().Take(100).ToList();
+            var customers = DataSource.GetCustomers(5000).ToList();
             var worksheet = sheetView.WorkSheet;
             worksheet.DataSource = customers;
             worksheet.Columns[0].DataMap = new PropertyDataMap("Id");

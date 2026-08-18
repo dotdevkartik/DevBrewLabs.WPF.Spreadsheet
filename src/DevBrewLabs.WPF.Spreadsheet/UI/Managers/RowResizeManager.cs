@@ -17,7 +17,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             _resizingRow = -1;
         }
 
-        public void BeginResizeRow(ISheetView sheetView, int row, int rowLocation)
+        public override void BeginResize(SheetView sheetView, int row, int rowLocation)
         {
             _rowLocation = rowLocation;
             _resizingRow = row;
@@ -33,44 +33,39 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             Spread.SuspendUpdates = true;
         }
 
-        public void ResizeRow(ISheetView sheetView, int currentLocation)
+        public override void Resize(SheetView sheetView, int currentLocation)
         {
             var workSheet = sheetView.WorkSheet;
 
             double zoom = sheetView.ZoomFactor > 0 ? sheetView.ZoomFactor : 1.0;
             double logicalCurrentLocation = currentLocation / zoom;
 
-            ResizeLine.Y1 = ResizeLine.Y2 = Math.Max(0, currentLocation);
-            ResizeLine.X1 = workSheet.RowHeaders.Width * zoom;
+            if (logicalCurrentLocation < 0)
+            {
+                logicalCurrentLocation = 0;
+                currentLocation = 0;
+            }
+
+            ResizeLine.Y1 = ResizeLine.Y2 = currentLocation;
+            ResizeLine.X1 = sheetView.GetRowHeaderWidth() * zoom;
             ResizeLine.X2 = sheetView.Spread.SheetViewPane.ActualWidth;
             ResizeLine.Visibility = Visibility.Visible;
+
+            var view = (SheetView)sheetView;
 
             if (_initialHeights == null || _resizingRow < 0 || _resizingRow >= workSheet.RowCount)
                 return;
 
+            view.ClearTemporaryRowHeights();
+
             if (logicalCurrentLocation >= _rowLocation)
             {
-                for (int r = 0; r < _resizingRow; r++)
-                {
-                    workSheet.Rows[r].Height = _initialHeights[r];
-                }
-
                 var newHeight = (int)(logicalCurrentLocation - _rowLocation);
-                workSheet.Rows[_resizingRow].Height = newHeight;
-
-                for (int r = _resizingRow + 1; r < workSheet.RowCount; r++)
-                {
-                    workSheet.Rows[r].Height = _initialHeights[r];
-                }
+                view.SetTemporaryRowHeight(_resizingRow, newHeight);
             }
             else
             {
-                workSheet.Rows[_resizingRow].Height = 0;
-
-                for (int r = _resizingRow + 1; r < workSheet.RowCount; r++)
-                {
-                    workSheet.Rows[r].Height = _initialHeights[r];
-                }
+                view.SetTemporaryRowHeight(_resizingRow, 0);
 
                 double currentTop = _rowLocation;
                 int activeRow = -1;
@@ -92,44 +87,41 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 {
                     for (int r = activeRow + 1; r < _resizingRow; r++)
                     {
-                        workSheet.Rows[r].Height = 0;
+                        view.SetTemporaryRowHeight(r, 0);
                     }
 
-                    workSheet.Rows[activeRow].Height = Math.Max(0, (int)(logicalCurrentLocation - activeRowTop));
-
-                    for (int r = 0; r < activeRow; r++)
-                    {
-                        workSheet.Rows[r].Height = _initialHeights[r];
-                    }
+                    view.SetTemporaryRowHeight(activeRow, Math.Max(0, (int)(logicalCurrentLocation - activeRowTop)));
                 }
                 else
                 {
                     for (int r = 0; r <= _resizingRow; r++)
                     {
-                        workSheet.Rows[r].Height = 0;
+                        view.SetTemporaryRowHeight(r, 0);
                     }
                 }
             }
 
-            sheetView.ViewPort.As<ViewPort>().CalculateVisibleRange();
+            sheetView.ViewPort.CalculateVisibleRange();
             Spread.Invalidate(true, false, false, false);
         }
 
-        public void EndResizeRow(ISheetView sheetView)
+        public override void EndResize(SheetView sheetView)
         {
             if (_initialHeights != null)
             {
                 var workSheet = sheetView.WorkSheet;
+                var view = (SheetView)sheetView;
                 
-                var action = new RowResizedAction { SheetView = (SheetView)sheetView };
+                var action = new RowResizedAction { SheetView = sheetView };
                 bool hasChanges = false;
                 
                 for (int i = 0; i < workSheet.RowCount; i++)
                 {
                     int oldHeight = _initialHeights[i];
-                    int newHeight = workSheet.Rows.GetRowHeight(i);
+                    int newHeight = view.GetTemporaryRowHeight(i) ?? oldHeight;
                     if (oldHeight != newHeight)
                     {
+                        workSheet.Rows[i].Height = newHeight;
                         action.OldHeights[i] = oldHeight;
                         action.NewHeights[i] = newHeight;
                         hasChanges = true;
@@ -140,6 +132,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 {
                     Spread.UndoRedoManager.AddAction(action);
                 }
+
+                view.ClearTemporaryRowHeights();
             }
 
             _resizingRow = -1;
@@ -147,6 +141,27 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             _initialHeights = null;
             ResizeLine.Visibility = Visibility.Collapsed;
             Spread.SheetTabControl.UpdateScrollbars();
+            Spread.SheetViewPane.RefreshInteractionLayers(true, false, true);
+            Spread.SuspendUpdates = false;
+        }
+
+        public override void CancelResize(SheetView sheetView)
+        {
+            if (!IsResizing)
+                return;
+
+            var view = (SheetView)sheetView;
+
+            // Discard any temporary heights — restores visual state to original
+            view.ClearTemporaryRowHeights();
+
+            _resizingRow = -1;
+            _rowLocation = -1;
+            _initialHeights = null;
+            ResizeLine.Visibility = Visibility.Collapsed;
+            Spread.SheetTabControl.UpdateScrollbars();
+            sheetView.ViewPort.CalculateVisibleRange();
+            Spread.SheetViewPane.RefreshInteractionLayers(true, false, true);
             Spread.SuspendUpdates = false;
         }
     }

@@ -1,5 +1,3 @@
-using DevBrewLabs.WPF.Spreadsheet.Rendering;
-using DevBrewLabs.WPF.Spreadsheet.UI.Managers;
 using System;
 using System.Windows;
 using System.Windows.Input;
@@ -9,8 +7,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 {
     internal class ColumnHeadersInteractionLayer : InteractionLayer
     {
-        private ColumnResizeManager _resizeManager;
-
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
             base.OnMouseLeftButtonDown(e);
@@ -18,14 +14,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
             if (hitTest.Element == VisualElement.ColumnHeaderResizeBar && SheetView.Spread.AllowColumnResize)
             {
-                if (e.ClickCount == 2)
-                {
-                    SheetView.AutoSizeColumn(hitTest.Column);
-                    return;
-                }
-
-                _resizeManager.BeginResizeColumn(SheetView, hitTest.Column, (int)hitTest.Position.X);
-                Children.Add(_resizeManager.ResizeLine);
+                CaptureMouse();
+                SheetView.Spread.ColumnResizeManager.BeginResize(SheetView, hitTest.Column, (int)hitTest.Position.X);
+                Children.Add(SheetView.Spread.ColumnResizeManager.ResizeLine);
             }
             else
             {
@@ -59,11 +50,12 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
             var hitTest = HitTest();
 
-            if (_resizeManager.IsResizing)
+            if (SheetView.Spread.ColumnResizeManager.IsResizing)
             {
-                _resizeManager.EndResizeColumn(SheetView);
-                Children.Remove(_resizeManager.ResizeLine);
+                SheetView.Spread.ColumnResizeManager.EndResize(SheetView);
+                Children.Remove(SheetView.Spread.ColumnResizeManager.ResizeLine);
                 SheetView.Spread.SheetTabControl.UpdateScrollbars();
+                ReleaseMouseCapture();
             }
 
             if(hitTest != null && hitTest.Element != VisualElement.ColumnHeaderResizeBar)
@@ -74,9 +66,19 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
         {
             base.OnMouseMove(e);
 
-            if(_resizeManager.IsResizing)
+            if(SheetView.Spread.ColumnResizeManager.IsResizing)
             {
-                _resizeManager.ResizeColumn(SheetView, (int)e.GetPosition(this).X);
+                // Cancel only if mouse exits horizontally (Excel behaviour: vertical movement is allowed)
+                var posInSpread = e.GetPosition(SheetView.Spread);
+                if (posInSpread.X < 0 || posInSpread.X > SheetView.Spread.ActualWidth)
+                {
+                    SheetView.Spread.ColumnResizeManager.CancelResize(SheetView);
+                    Children.Remove(SheetView.Spread.ColumnResizeManager.ResizeLine);
+                    ReleaseMouseCapture();
+                    return;
+                }
+
+                SheetView.Spread.ColumnResizeManager.Resize(SheetView, (int)e.GetPosition(this).X);
                 return;
             }
 
@@ -100,7 +102,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             int leftColumn = Math.Min(hitTest.Column, SheetView.ActiveColumn);
             int rightColumn = Math.Max(hitTest.Column, SheetView.ActiveColumn);
             SheetView.SelectColumns(leftColumn, rightColumn - leftColumn + 1);
-        }      
+        }
 
         protected override void OnRender(DrawingContext dc)
         {
@@ -115,30 +117,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 new Point(selectionRangeRect.Left * zoom, ActualHeight), 
                 new Point(selectionRangeRect.Right * zoom, ActualHeight));
             dc.Pop();
-        }
-
-        public override void AttachToRegion(SheetViewSurface region)
-        {
-            base.AttachToRegion(region);
-
-            if (_resizeManager == null)
-                _resizeManager = new ColumnResizeManager(region.SheetView.Spread);
-        }
-
-        public override void DetachFromRegion()
-        {
-            base.DetachFromRegion();
-            if (_resizeManager != null)
-            {
-                _resizeManager.Dispose();
-                _resizeManager = null;
-            }
-        }
-
-        protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
-        {
-            base.OnRenderSizeChanged(sizeInfo);
-            //Clip = new RectangleGeometry(new Rect(0, 0, ActualWidth, ActualHeight + 0.5));
         }
     }
 }

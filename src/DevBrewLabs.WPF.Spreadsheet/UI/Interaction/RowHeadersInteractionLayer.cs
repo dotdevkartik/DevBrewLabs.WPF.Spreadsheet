@@ -1,5 +1,3 @@
-using DevBrewLabs.WPF.Spreadsheet.Rendering;
-using DevBrewLabs.WPF.Spreadsheet.UI.Managers;
 using System;
 using System.Windows;
 using System.Windows.Input;
@@ -9,8 +7,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 {
     internal class RowHeadersInteractionLayer : InteractionLayer
     {
-        private RowResizeManager _resizeManager;
-
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
             base.OnMouseLeftButtonDown(e);
@@ -18,16 +14,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
             if (hitTest.Element == VisualElement.RowHeaderResizeBar && SheetView.Spread.AllowRowResize)
             {
-                if (e.ClickCount == 2)
-                {
-                    SheetView.AutoSizeRow(hitTest.Row);
-                    SheetView.ViewPort.As<ViewPort>().CalculateVisibleRange();
-                    SheetView.Spread.Invalidate();
-                    return;
-                }
-
-                _resizeManager.BeginResizeRow(SheetView, hitTest.Row, (int)hitTest.Position.Y);
-                Children.Add(_resizeManager.ResizeLine);
+                CaptureMouse();
+                SheetView.Spread.RowResizeManager.BeginResize(SheetView, hitTest.Row, (int)hitTest.Position.Y);
+                Children.Add(SheetView.Spread.RowResizeManager.ResizeLine);
             }
             else
             {
@@ -61,10 +50,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             base.OnMouseLeftButtonUp(e);
             var hitTest = HitTest();
 
-            if (_resizeManager.IsResizing)
+            if (SheetView.Spread.RowResizeManager.IsResizing)
             {
-                _resizeManager.EndResizeRow(SheetView);
-                Children.Remove(_resizeManager.ResizeLine);
+                SheetView.Spread.RowResizeManager.EndResize(SheetView);
+                Children.Remove(SheetView.Spread.RowResizeManager.ResizeLine);
+                ReleaseMouseCapture();
             }
 
             if (hitTest != null && hitTest.Element != VisualElement.RowHeaderResizeBar)
@@ -75,9 +65,19 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
         {
             base.OnMouseMove(e);
 
-            if (_resizeManager.IsResizing)
+            if (SheetView.Spread.RowResizeManager.IsResizing)
             {
-                _resizeManager.ResizeRow(SheetView, (int)e.GetPosition(this).Y);
+                // Cancel only if mouse exits vertically (Excel behaviour: horizontal movement is allowed)
+                var posInSpread = e.GetPosition(SheetView.Spread);
+                if (posInSpread.Y < 0 || posInSpread.Y > SheetView.Spread.ActualHeight)
+                {
+                    SheetView.Spread.RowResizeManager.CancelResize(SheetView);
+                    Children.Remove(SheetView.Spread.RowResizeManager.ResizeLine);
+                    ReleaseMouseCapture();
+                    return;
+                }
+
+                SheetView.Spread.RowResizeManager.Resize(SheetView, (int)e.GetPosition(this).Y);
                 return;
             }
 
@@ -116,30 +116,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 new Point(ActualWidth, selectionRangeRect.Top * zoom),
                 new Point(ActualWidth, selectionRangeRect.Bottom * zoom));
             dc.Pop();
-        }
-
-        public override void AttachToRegion(SheetViewSurface region)
-        {
-            base.AttachToRegion(region);
-
-            if (_resizeManager == null)
-                _resizeManager = new RowResizeManager(region.SheetView.Spread);
-        }
-
-        public override void DetachFromRegion()
-        {
-            base.DetachFromRegion();
-            if (_resizeManager != null)
-            {
-                _resizeManager.Dispose();
-                _resizeManager = null;
-            }
-        }
-
-        protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
-        {
-            base.OnRenderSizeChanged(sizeInfo);
-            //Clip = new RectangleGeometry(new Rect(0, 0, ActualWidth + 0.5, ActualHeight));
         }
     }
 }

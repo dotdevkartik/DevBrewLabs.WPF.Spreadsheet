@@ -9,7 +9,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
     internal class RenderEngine : IRenderEngine, IDisposable
     {
         private SheetView _sheetView;
-        private WorkSheet _workSheet;
+        private Worksheet _workSheet;
         private DispatcherProcessingDisabled _dispatcherDisabled;
 
         #region Renderers
@@ -36,7 +36,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
         public void SetRenderSheet(SheetView sheetView)
         {
             _sheetView = sheetView;
-            _workSheet = (WorkSheet)sheetView.WorkSheet;
+            _workSheet = (Worksheet)sheetView.WorkSheet;
             CellsRenderer.SetRenderSheet(sheetView);
             GridLinesRenderer.SetRenderSheet(sheetView);
             RowHeadersRenderer.SetRenderSheet(sheetView);

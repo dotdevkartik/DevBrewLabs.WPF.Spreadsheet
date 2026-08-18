@@ -4,7 +4,7 @@ using System;
 
 namespace DevBrewLabs.Spreadsheet
 {
-    public interface IWorkBook : IDisposable, IStyleProvider
+    public interface IWorkbook : IDisposable, IStyleProvider
     {
         /// <summary>
         /// Gets or sets the name for this workbook.
@@ -13,7 +13,7 @@ namespace DevBrewLabs.Spreadsheet
         /// <summary>
         /// Gets the sheet collection of this workbook.
         /// </summary>
-        IWorkSheets WorkSheets { get; }
+        IWorksheets WorkSheets { get; }
         /// <summary>
         /// Gets the calculation engine of this worksheet.
         /// </summary>

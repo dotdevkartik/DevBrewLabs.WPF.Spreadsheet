@@ -20,11 +20,14 @@ namespace DevBrewLabs.WPF.Spreadsheet
         private ClipboardManager _clipboardManager;
         private SelectionManager _selectionManager;
         private EditingManager _editingManager;
+        private RowResizeManager _rowResizeManager;
+        private ColumnResizeManager _columnResizeManager;
         private RenderEngine _renderEngine;
         private SheetViewPane _sheetViewPane;
         private SheetTabControl _sheetTabControl;
         private UndoRedoManager _undoRedoManager;
-        private WorkBook _workBook;
+        private Workbook _workBook;
+        private WorksheetChangeListener _changeListener;
 
         #region Dependency Properties
         public static readonly DependencyProperty ScrollBarStyleProperty;
@@ -34,39 +37,98 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public static readonly DependencyProperty SelectionBorderBrushProperty;
         public static readonly DependencyProperty AllowRowResizeProperty;
         public static readonly DependencyProperty AllowColumnResizeProperty;
-        public static readonly DependencyProperty ShowFormulaSuggestionsProperty;
-        public static readonly DependencyProperty SheetTabsVisibilityProperty;
+        public static readonly DependencyProperty ShowTabStripProperty;
+        public static readonly DependencyProperty ShowAddNewSheetProperty;
         public static readonly DependencyProperty IsSelectionAnimationEnabledProperty;
-
+        public static readonly DependencyProperty ShowFormulaSuggestionsProperty;
         public static readonly DependencyProperty ZoomFactorProperty;
         public static readonly DependencyProperty AllowZoomingProperty;
 
         static Spread()
         {
             DefaultStyleKeyProperty.OverrideMetadata(typeof(Spread), new FrameworkPropertyMetadata(typeof(Spread)));
-            ZoomFactorProperty = DependencyProperty.Register("ZoomFactor", typeof(double), typeof(Spread),
-                new FrameworkPropertyMetadata(1.0, OnZoomFactorChanged, CoerceZoomFactor));
-            AllowZoomingProperty = DependencyProperty.Register("AllowZooming", typeof(bool), typeof(Spread), new PropertyMetadata(true));
-            ScrollModeProperty = DependencyProperty.Register("ScrollMode", typeof(SheetScrollMode), typeof(Spread),
+
+            ZoomFactorProperty = DependencyProperty.Register(
+                nameof(ZoomFactor),
+                typeof(double),
+                typeof(Spread),
+                new FrameworkPropertyMetadata(
+                    1.0,
+                    OnZoomFactorChanged,
+                    CoerceZoomFactor));
+
+            AllowZoomingProperty = DependencyProperty.Register(
+                nameof(AllowZooming),
+                typeof(bool),
+                typeof(Spread),
+                new PropertyMetadata(true));
+
+            ScrollModeProperty = DependencyProperty.Register(
+                nameof(ScrollMode),
+                typeof(SheetScrollMode),
+                typeof(Spread),
                 new PropertyMetadata(SheetScrollMode.Item));
-            SelectionBackgroundProperty = DependencyProperty.Register("SelectionBackground", typeof(Brush), typeof(Spread),
-                new PropertyMetadata(new SolidColorBrush(Color.FromArgb(50, 25, 25, 25))));
-            GridLineBrushProperty = DependencyProperty.Register("GridLineBrush", typeof(Brush), typeof(Spread), 
+
+            SelectionBackgroundProperty = DependencyProperty.Register(
+                nameof(SelectionBackground),
+                typeof(Brush),
+                typeof(Spread),
+                new PropertyMetadata(
+                    new SolidColorBrush(Color.FromArgb(50, 25, 25, 25))));
+
+            GridLineBrushProperty = DependencyProperty.Register(
+                nameof(GridLineBrush),
+                typeof(Brush),
+                typeof(Spread),
                 new PropertyMetadata(OnGridLineBrushChanged));
-            SelectionBorderBrushProperty = DependencyProperty.Register("SelectionBorderBrush", typeof(Brush), typeof(Spread),
+
+            SelectionBorderBrushProperty = DependencyProperty.Register(
+                nameof(SelectionBorderBrush),
+                typeof(Brush),
+                typeof(Spread),
                 new PropertyMetadata(OnSelectionBorderBrushChanged));
-            AllowRowResizeProperty = DependencyProperty.Register("AllowRowResize", typeof(bool), typeof(Spread), new PropertyMetadata(true));
-            AllowColumnResizeProperty =
-            DependencyProperty.Register("AllowColumnResize", typeof(bool), typeof(Spread), new PropertyMetadata(true));
-            ShowFormulaSuggestionsProperty =
-            DependencyProperty.Register("ShowFormulaSuggestions", typeof(bool), typeof(Spread), new PropertyMetadata(true));
-            IsSelectionAnimationEnabledProperty =
-            DependencyProperty.Register("IsSelectionAnimationEnabled", typeof(bool), typeof(Spread), new PropertyMetadata(false));
-            SheetTabsVisibilityProperty =
-            DependencyProperty.Register("SheetTabsVisibility", typeof(Visibility), typeof(Spread), new PropertyMetadata(Visibility.Visible));
-            ResourceDictionary res = (ResourceDictionary)Application.LoadComponent(new Uri("/DevBrewLabs.WPF.Spreadsheet;component/Themes/ScrollBarStyle.xaml", UriKind.Relative));
-            ScrollBarStyleProperty =
-            DependencyProperty.Register("ScrollBarStyle", typeof(Style), typeof(Spread), new PropertyMetadata((Style)res["ScrollBarStyle"]));
+
+            AllowRowResizeProperty = DependencyProperty.Register(
+                nameof(AllowRowResize),
+                typeof(bool),
+                typeof(Spread),
+                new PropertyMetadata(true));
+
+            AllowColumnResizeProperty = DependencyProperty.Register(
+                nameof(AllowColumnResize),
+                typeof(bool),
+                typeof(Spread),
+                new PropertyMetadata(true));
+
+            ShowFormulaSuggestionsProperty = DependencyProperty.Register(
+                nameof(ShowFormulaSuggestions),
+                typeof(bool),
+                typeof(Spread),
+                new PropertyMetadata(true));
+
+            IsSelectionAnimationEnabledProperty = DependencyProperty.Register(
+                nameof(IsSelectionAnimationEnabled),
+                typeof(bool),
+                typeof(Spread),
+                new PropertyMetadata(false));
+
+            ShowTabStripProperty = DependencyProperty.Register(
+                nameof(ShowTabStrip),
+                typeof(bool),
+                typeof(Spread),
+                new PropertyMetadata(true));
+
+            ShowAddNewSheetProperty = DependencyProperty.Register(
+                nameof(ShowAddNewSheet),
+                typeof(bool),
+                typeof(Spread),
+                new PropertyMetadata(true));
+
+            ScrollBarStyleProperty = DependencyProperty.Register(
+                nameof(ScrollBarStyle),
+                typeof(Style),
+                typeof(Spread),
+                new PropertyMetadata(null));
         }
 
         /// <summary>
@@ -79,12 +141,21 @@ namespace DevBrewLabs.WPF.Spreadsheet
         }
 
         /// <summary>
-        /// Gets or sets whether the sheet tabs are visible.
+        /// Gets or sets whether the tab strip is visible.
         /// </summary>
-        public Visibility SheetTabsVisibility
+        public bool ShowTabStrip
         {
-            get { return (Visibility)GetValue(SheetTabsVisibilityProperty); }
-            set { SetValue(SheetTabsVisibilityProperty, value); }
+            get { return (bool)GetValue(ShowTabStripProperty); }
+            set { SetValue(ShowTabStripProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets whether the add new sheet button is visible.
+        /// </summary>
+        public bool ShowAddNewSheet
+        {
+            get { return (bool)GetValue(ShowAddNewSheetProperty); }
+            set { SetValue(ShowAddNewSheetProperty, value); }
         }
 
         /// <summary>
@@ -193,7 +264,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         /// <summary>
         ///  Gets the workbook.
         /// </summary>
-        public IWorkBook WorkBook => _workBook;
+        public IWorkbook WorkBook => _workBook;
         /// <summary>
         /// Gets the sheetview collection.
         /// </summary>
@@ -206,11 +277,11 @@ namespace DevBrewLabs.WPF.Spreadsheet
         {
             get
             {
-                return _workBook.UpdateProvider.SuspendUpdates;
+                return _changeListener.SuspendUpdates;
             }
             set
             {
-                _workBook.UpdateProvider.SuspendUpdates = value;
+                _changeListener.SuspendUpdates = value;
             }
         }
 
@@ -219,7 +290,8 @@ namespace DevBrewLabs.WPF.Spreadsheet
             UseLayoutRounding = true;
             TextOptions.SetTextFormattingMode(this, TextFormattingMode.Display);
             TextOptions.SetTextRenderingMode(this, TextRenderingMode.ClearType);
-            _workBook = new WorkBook("Book1", new UIUpdateProvider(this));
+            _changeListener = new WorksheetChangeListener(this);
+            _workBook = new Workbook("Book1", _changeListener);
             _undoRedoManager = new UndoRedoManager(this);
             SheetViews = new SheetViewCollection(this);
             _renderEngine = new RenderEngine();
@@ -236,6 +308,8 @@ namespace DevBrewLabs.WPF.Spreadsheet
             _editingManager = new EditingManager(this);
             _selectionManager = new SelectionManager(this);
             _clipboardManager = new ClipboardManager(this);
+            _rowResizeManager = new RowResizeManager(this);
+            _columnResizeManager = new ColumnResizeManager(this);
             _zoomManager = new ZoomManager(this);
             SelectCell(0, 0);
             Loaded += OnLoaded;
@@ -286,7 +360,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public void ScrollToRow(ISheetView sheetView, int row)
         {
             var workSheet = sheetView.WorkSheet;
-            SheetTabControl.VScrollBar.Value = ((Rows)workSheet.Rows).GetLocation(row);
+            SheetTabControl.VScrollBar.Value = ((SheetView)sheetView).ViewPort.GetRowLocation(row);
         }
 
         /// <summary>
@@ -297,7 +371,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public void ScrollToColumn(ISheetView sheetView, int column)
         {
             var workSheet = sheetView.WorkSheet;
-            SheetTabControl.HScrollBar.Value = ((Columns)workSheet.Columns).GetLocation(column);
+            SheetTabControl.HScrollBar.Value = ((SheetView)sheetView).ViewPort.GetColumnLocation(column);
         }
 
         /// <summary>
@@ -323,7 +397,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         /// <param name="column"></param>
         public void BeginEdit(int row, int column)
         {
-            _editingManager.BeginEdit(SheetViews.ActiveSheetView, row, column);
+            _editingManager.BeginEdit((SheetView)SheetViews.ActiveSheetView, row, column);
         }
 
         /// <summary>
@@ -467,6 +541,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
+            SheetTabControl?.UpdateScrollbars();
             Invalidate();
         }
 
@@ -497,6 +572,8 @@ namespace DevBrewLabs.WPF.Spreadsheet
         internal SheetViewPane SheetViewPane => _sheetViewPane;
         internal SheetTabControl SheetTabControl => _sheetTabControl;
         internal UndoRedoManager UndoRedoManager => _undoRedoManager;
+        internal RowResizeManager RowResizeManager => _rowResizeManager;
+        internal ColumnResizeManager ColumnResizeManager => _columnResizeManager;
         internal FormulaTextBox FormulaTextBox { get; set; }
         internal Pen GridLinePen { get; private set; }
         internal Pen SelectionBorderPen { get; private set; }

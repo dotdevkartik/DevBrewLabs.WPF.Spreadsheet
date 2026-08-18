@@ -41,7 +41,7 @@ namespace SpreadsheetSampleExplorer.Samples
 
             spread.WorkBook.WorkSheets.SheetAdded += (s, e) =>
             {
-                styleAction(spread.SheetViews.GetSheetView(e.WorkSheet));
+                styleAction(spread.SheetViews.GetSheetView(e.AddedSheet));
             };
         }
 
@@ -145,9 +145,9 @@ namespace SpreadsheetSampleExplorer.Samples
             }
         }
 
-        private void SetupSheetDataSource(IWorkSheet worksheet)
+        private void SetupSheetDataSource(IWorksheet worksheet)
         {
-            var customers = DataSource.GetCustomers().Take(100).ToList();
+            var customers = DataSource.GetCustomers().ToList();
             worksheet.DataSource = customers;
             worksheet.Columns[0].DataMap = new PropertyDataMap("Id");
             worksheet.Columns[1].DataMap = new PropertyDataMap("Age");

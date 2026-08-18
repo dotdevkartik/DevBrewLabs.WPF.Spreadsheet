@@ -11,10 +11,6 @@ namespace DevBrewLabs.Spreadsheet
         /// </summary>
         int DefaultColumnWidth { get; set; }
         /// <summary>
-        /// Gets the row headers width.
-        /// </summary>
-        double Width { get; }
-        /// <summary>
         /// Gets the row header cells
         /// </summary>
         IRange Cells { get; }

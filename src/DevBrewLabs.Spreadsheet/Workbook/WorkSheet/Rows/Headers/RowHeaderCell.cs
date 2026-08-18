@@ -7,7 +7,7 @@ namespace DevBrewLabs.Spreadsheet
     internal class RowHeaderCell : ICell, IDisposable
     {
         private RowHeaderCells _parentRange;
-        private WorkSheet _workSheet;
+        private Worksheet _workSheet;
 
         public int Row { get; set; }
         public int Column { get; set; }
@@ -23,7 +23,7 @@ namespace DevBrewLabs.Spreadsheet
         public IStyle Style { get; set; }
         public string StyleName { get; set; }
 
-        public WorkSheet WorkSheet => _workSheet;
+        public Worksheet WorkSheet => _workSheet;
 
         internal RowHeaderCell(RowHeaderCells parent)
         {
