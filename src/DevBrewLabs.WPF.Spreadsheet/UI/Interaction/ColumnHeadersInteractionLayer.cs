@@ -20,6 +20,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                     return;
                 }
 
+                CaptureMouse();
                 SheetView.Spread.ColumnResizeManager.BeginResize(SheetView, hitTest.Column, (int)hitTest.Position.X);
                 Children.Add(SheetView.Spread.ColumnResizeManager.ResizeLine);
             }
@@ -60,6 +61,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 SheetView.Spread.ColumnResizeManager.EndResize(SheetView);
                 Children.Remove(SheetView.Spread.ColumnResizeManager.ResizeLine);
                 SheetView.Spread.SheetTabControl.UpdateScrollbars();
+                ReleaseMouseCapture();
             }
 
             if(hitTest != null && hitTest.Element != VisualElement.ColumnHeaderResizeBar)

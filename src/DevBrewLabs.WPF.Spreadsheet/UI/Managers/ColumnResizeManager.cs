@@ -40,7 +40,13 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             double zoom = sheetView.ZoomFactor > 0 ? sheetView.ZoomFactor : 1.0;
             double logicalCurrentLocation = currentLocation / zoom;
 
-            ResizeLine.X1 = ResizeLine.X2 = Math.Max(0, currentLocation);
+            if (logicalCurrentLocation < 0)
+            {
+                logicalCurrentLocation = 0;
+                currentLocation = 0;
+            }
+
+            ResizeLine.X1 = ResizeLine.X2 = currentLocation;
             ResizeLine.Y1 = sheetView.GetColumnHeaderHeight() * zoom;
             ResizeLine.Y2 = sheetView.Spread.SheetViewPane.ActualHeight;
             ResizeLine.Visibility = Visibility.Visible;

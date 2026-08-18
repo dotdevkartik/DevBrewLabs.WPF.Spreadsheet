@@ -22,6 +22,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                     return;
                 }
 
+                CaptureMouse();
                 SheetView.Spread.RowResizeManager.BeginResize(SheetView, hitTest.Row, (int)hitTest.Position.Y);
                 Children.Add(SheetView.Spread.RowResizeManager.ResizeLine);
             }
@@ -61,6 +62,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             {
                 SheetView.Spread.RowResizeManager.EndResize(SheetView);
                 Children.Remove(SheetView.Spread.RowResizeManager.ResizeLine);
+                ReleaseMouseCapture();
             }
 
             if (hitTest != null && hitTest.Element != VisualElement.RowHeaderResizeBar)
