@@ -143,7 +143,7 @@ namespace SpreadsheetSampleExplorer.Samples
             worksheet.Rows[17].Height = 35; // Total
             worksheet.Rows[18].Height = 20; // Gap
             worksheet.Rows[19].Height = 25; // Bottom Card Title
-            worksheet.Rows[20].Height = 25; // Bottom Card Value
+            worksheet.Rows[20].Height = 30; // Bottom Card Value
             worksheet.Rows[21].Height = 20; // Bottom Card Sub
 
             // Col Widths
