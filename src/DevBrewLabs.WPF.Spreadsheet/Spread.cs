@@ -20,6 +20,8 @@ namespace DevBrewLabs.WPF.Spreadsheet
         private ClipboardManager _clipboardManager;
         private SelectionManager _selectionManager;
         private EditingManager _editingManager;
+        private RowResizeManager _rowResizeManager;
+        private ColumnResizeManager _columnResizeManager;
         private RenderEngine _renderEngine;
         private SheetViewPane _sheetViewPane;
         private SheetTabControl _sheetTabControl;
@@ -306,6 +308,8 @@ namespace DevBrewLabs.WPF.Spreadsheet
             _editingManager = new EditingManager(this);
             _selectionManager = new SelectionManager(this);
             _clipboardManager = new ClipboardManager(this);
+            _rowResizeManager = new RowResizeManager(this);
+            _columnResizeManager = new ColumnResizeManager(this);
             _zoomManager = new ZoomManager(this);
             SelectCell(0, 0);
             Loaded += OnLoaded;
@@ -567,6 +571,8 @@ namespace DevBrewLabs.WPF.Spreadsheet
         internal SheetViewPane SheetViewPane => _sheetViewPane;
         internal SheetTabControl SheetTabControl => _sheetTabControl;
         internal UndoRedoManager UndoRedoManager => _undoRedoManager;
+        internal RowResizeManager RowResizeManager => _rowResizeManager;
+        internal ColumnResizeManager ColumnResizeManager => _columnResizeManager;
         internal FormulaTextBox FormulaTextBox { get; set; }
         internal Pen GridLinePen { get; private set; }
         internal Pen SelectionBorderPen { get; private set; }

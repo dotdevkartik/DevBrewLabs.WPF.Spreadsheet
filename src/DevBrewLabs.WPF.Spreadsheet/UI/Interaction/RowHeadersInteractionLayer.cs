@@ -1,5 +1,3 @@
-using DevBrewLabs.WPF.Spreadsheet.Rendering;
-using DevBrewLabs.WPF.Spreadsheet.UI.Managers;
 using System;
 using System.Windows;
 using System.Windows.Input;
@@ -9,8 +7,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 {
     internal class RowHeadersInteractionLayer : InteractionLayer
     {
-        private RowResizeManager _resizeManager;
-
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
             base.OnMouseLeftButtonDown(e);
@@ -26,8 +22,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                     return;
                 }
 
-                _resizeManager.BeginResize(SheetView, hitTest.Row, (int)hitTest.Position.Y);
-                Children.Add(_resizeManager.ResizeLine);
+                SheetView.Spread.RowResizeManager.BeginResize(SheetView, hitTest.Row, (int)hitTest.Position.Y);
+                Children.Add(SheetView.Spread.RowResizeManager.ResizeLine);
             }
             else
             {
@@ -61,10 +57,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             base.OnMouseLeftButtonUp(e);
             var hitTest = HitTest();
 
-            if (_resizeManager.IsResizing)
+            if (SheetView.Spread.RowResizeManager.IsResizing)
             {
-                _resizeManager.EndResize(SheetView);
-                Children.Remove(_resizeManager.ResizeLine);
+                SheetView.Spread.RowResizeManager.EndResize(SheetView);
+                Children.Remove(SheetView.Spread.RowResizeManager.ResizeLine);
             }
 
             if (hitTest != null && hitTest.Element != VisualElement.RowHeaderResizeBar)
@@ -75,9 +71,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
         {
             base.OnMouseMove(e);
 
-            if (_resizeManager.IsResizing)
+            if (SheetView.Spread.RowResizeManager.IsResizing)
             {
-                _resizeManager.Resize(SheetView, (int)e.GetPosition(this).Y);
+                SheetView.Spread.RowResizeManager.Resize(SheetView, (int)e.GetPosition(this).Y);
                 return;
             }
 
@@ -116,30 +112,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 new Point(ActualWidth, selectionRangeRect.Top * zoom),
                 new Point(ActualWidth, selectionRangeRect.Bottom * zoom));
             dc.Pop();
-        }
-
-        public override void AttachToRegion(SheetViewSurface region)
-        {
-            base.AttachToRegion(region);
-
-            if (_resizeManager == null)
-                _resizeManager = new RowResizeManager(region.SheetView.Spread);
-        }
-
-        public override void DetachFromRegion()
-        {
-            base.DetachFromRegion();
-            if (_resizeManager != null)
-            {
-                _resizeManager.Dispose();
-                _resizeManager = null;
-            }
-        }
-
-        protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
-        {
-            base.OnRenderSizeChanged(sizeInfo);
-            //Clip = new RectangleGeometry(new Rect(0, 0, ActualWidth + 0.5, ActualHeight));
         }
     }
 }

@@ -1,5 +1,3 @@
-using DevBrewLabs.WPF.Spreadsheet.Rendering;
-using DevBrewLabs.WPF.Spreadsheet.UI.Managers;
 using System;
 using System.Windows;
 using System.Windows.Input;
@@ -9,8 +7,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 {
     internal class ColumnHeadersInteractionLayer : InteractionLayer
     {
-        private ColumnResizeManager _resizeManager;
-
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
             base.OnMouseLeftButtonDown(e);
@@ -24,8 +20,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                     return;
                 }
 
-                _resizeManager.BeginResize(SheetView, hitTest.Column, (int)hitTest.Position.X);
-                Children.Add(_resizeManager.ResizeLine);
+                SheetView.Spread.ColumnResizeManager.BeginResize(SheetView, hitTest.Column, (int)hitTest.Position.X);
+                Children.Add(SheetView.Spread.ColumnResizeManager.ResizeLine);
             }
             else
             {
@@ -59,10 +55,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
             var hitTest = HitTest();
 
-            if (_resizeManager.IsResizing)
+            if (SheetView.Spread.ColumnResizeManager.IsResizing)
             {
-                _resizeManager.EndResize(SheetView);
-                Children.Remove(_resizeManager.ResizeLine);
+                SheetView.Spread.ColumnResizeManager.EndResize(SheetView);
+                Children.Remove(SheetView.Spread.ColumnResizeManager.ResizeLine);
                 SheetView.Spread.SheetTabControl.UpdateScrollbars();
             }
 
@@ -74,9 +70,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
         {
             base.OnMouseMove(e);
 
-            if(_resizeManager.IsResizing)
+            if(SheetView.Spread.ColumnResizeManager.IsResizing)
             {
-                _resizeManager.Resize(SheetView, (int)e.GetPosition(this).X);
+                SheetView.Spread.ColumnResizeManager.Resize(SheetView, (int)e.GetPosition(this).X);
                 return;
             }
 
@@ -115,30 +111,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 new Point(selectionRangeRect.Left * zoom, ActualHeight), 
                 new Point(selectionRangeRect.Right * zoom, ActualHeight));
             dc.Pop();
-        }
-
-        public override void AttachToRegion(SheetViewSurface region)
-        {
-            base.AttachToRegion(region);
-
-            if (_resizeManager == null)
-                _resizeManager = new ColumnResizeManager(region.SheetView.Spread);
-        }
-
-        public override void DetachFromRegion()
-        {
-            base.DetachFromRegion();
-            if (_resizeManager != null)
-            {
-                _resizeManager.Dispose();
-                _resizeManager = null;
-            }
-        }
-
-        protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
-        {
-            base.OnRenderSizeChanged(sizeInfo);
-            //Clip = new RectangleGeometry(new Rect(0, 0, ActualWidth, ActualHeight + 0.5));
         }
     }
 }

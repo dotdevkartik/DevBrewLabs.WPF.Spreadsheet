@@ -45,32 +45,21 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             ResizeLine.Y2 = sheetView.Spread.SheetViewPane.ActualHeight;
             ResizeLine.Visibility = Visibility.Visible;
 
+            var view = (SheetView)sheetView;
+
             if (_initialWidths == null || _resizingColumn < 0 || _resizingColumn >= workSheet.ColumnCount)
                 return;
 
+            view.ClearTemporaryColumnWidths();
+
             if (logicalCurrentLocation >= _columnLocation)
             {
-                for (int c = 0; c < _resizingColumn; c++)
-                {
-                    workSheet.Columns[c].Width = _initialWidths[c];
-                }
-
                 var newWidth = (int)(logicalCurrentLocation - _columnLocation);
-                workSheet.Columns[_resizingColumn].Width = newWidth;
-
-                for (int c = _resizingColumn + 1; c < workSheet.ColumnCount; c++)
-                {
-                    workSheet.Columns[c].Width = _initialWidths[c];
-                }
+                view.SetTemporaryColumnWidth(_resizingColumn, newWidth);
             }
             else
             {
-                workSheet.Columns[_resizingColumn].Width = 0;
-
-                for (int c = _resizingColumn + 1; c < workSheet.ColumnCount; c++)
-                {
-                    workSheet.Columns[c].Width = _initialWidths[c];
-                }
+                view.SetTemporaryColumnWidth(_resizingColumn, 0);
 
                 double currentLeft = _columnLocation;
                 int activeCol = -1;
@@ -92,21 +81,16 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 {
                     for (int c = activeCol + 1; c < _resizingColumn; c++)
                     {
-                        workSheet.Columns[c].Width = 0;
+                        view.SetTemporaryColumnWidth(c, 0);
                     }
 
-                    workSheet.Columns[activeCol].Width = Math.Max(0, (int)(logicalCurrentLocation - activeColLeft));
-
-                    for (int c = 0; c < activeCol; c++)
-                    {
-                        workSheet.Columns[c].Width = _initialWidths[c];
-                    }
+                    view.SetTemporaryColumnWidth(activeCol, Math.Max(0, (int)(logicalCurrentLocation - activeColLeft)));
                 }
                 else
                 {
                     for (int c = 0; c <= _resizingColumn; c++)
                     {
-                        workSheet.Columns[c].Width = 0;
+                        view.SetTemporaryColumnWidth(c, 0);
                     }
                 }
             }
@@ -120,6 +104,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             if (_initialWidths != null)
             {
                 var workSheet = sheetView.WorkSheet;
+                var view = (SheetView)sheetView;
                 
                 var action = new ColumnResizedAction { SheetView = sheetView };
                 bool hasChanges = false;
@@ -127,9 +112,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 for (int i = 0; i < workSheet.ColumnCount; i++)
                 {
                     int oldWidth = _initialWidths[i];
-                    int newWidth = workSheet.Columns.GetColumnWidth(i);
+                    int newWidth = view.GetTemporaryColumnWidth(i) ?? oldWidth;
                     if (oldWidth != newWidth)
                     {
+                        workSheet.Columns[i].Width = newWidth;
                         action.OldWidths[i] = oldWidth;
                         action.NewWidths[i] = newWidth;
                         hasChanges = true;
@@ -140,6 +126,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 {
                     Spread.UndoRedoManager.AddAction(action);
                 }
+
+                view.ClearTemporaryColumnWidths();
             }
 
             _resizingColumn = -1;
@@ -147,6 +135,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             _initialWidths = null;
             ResizeLine.Visibility = Visibility.Collapsed;
             Spread.SheetTabControl.UpdateScrollbars();
+            Spread.SheetViewPane.RefreshInteractionLayers(false, true, true);
             Spread.SuspendUpdates = false;
         }
     }

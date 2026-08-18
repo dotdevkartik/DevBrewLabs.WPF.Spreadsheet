@@ -21,15 +21,22 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
             var renderContext = new RenderContext(zoom, SheetView.Spread.PixelPerDip, 5.0, true);
 
+            bool isResizing = SheetView.Spread.RowResizeManager.IsResizing;
+
             for (int row = topRow; row <= bottomRow; row++)
             {
-                var rowHeight = rows.GetRowHeight(row);
+                int rowHeight = isResizing ? 
+                    (((SheetView)SheetView).GetTemporaryRowHeight(row) ?? rows.GetRowHeight(row)) : 
+                    rows.GetRowHeight(row);
 
                 if (rowHeight == 0)
                     continue;
 
                 var sheetRow = rows.GetItem(row);
-                var rowLocation = viewport.GetRowLocation(row);
+                double rowLocation = isResizing ? 
+                    ((SheetView)SheetView).GetTemporaryRowLocation(row) : 
+                    viewport.GetRowLocation(row);
+
                 var y = (rowLocation - viewport.TopRowLocation) * zoom;
                 var scaledRowHeight = rowHeight * zoom;
 

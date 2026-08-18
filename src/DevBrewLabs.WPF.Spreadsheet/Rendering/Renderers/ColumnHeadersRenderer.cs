@@ -1,7 +1,6 @@
 using DevBrewLabs.Spreadsheet;
 using DevBrewLabs.WPF.Spreadsheet.Rendering.Text;
 using DevBrewLabs.WPF.Spreadsheet.Styling;
-using DevBrewLabs.WPF.Spreadsheet.UI;
 using System.Windows;
 using System.Windows.Media;
 
@@ -29,14 +28,22 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                 var y = rowLocation * zoom;
                 var scaledRowHeight = rowHeight * zoom;
 
+                bool isResizing = SheetView.Spread.ColumnResizeManager.IsResizing;
+
                 for (int col = leftColumn; col <= rightColumn; col++)
                 {
-                    var columnWidth = columns.GetColumnWidth(col);
+                    int columnWidth = isResizing ? 
+                        (((SheetView)SheetView).GetTemporaryColumnWidth(col) ?? columns.GetColumnWidth(col)) : 
+                        columns.GetColumnWidth(col);
+
                     if (columnWidth == 0)
                         continue;
 
                     var headerColumn = columns.GetItem(col);
-                    var colLocation = SheetView.ViewPort.GetColumnLocation(col);
+                    double colLocation = isResizing ? 
+                        ((SheetView)SheetView).GetTemporaryColumnLocation(col) : 
+                        SheetView.ViewPort.GetColumnLocation(col);
+
                     var x = (colLocation - SheetView.ViewPort.LeftColumnLocation) * zoom;
                     var scaledColumnWidth = columnWidth * zoom;
 

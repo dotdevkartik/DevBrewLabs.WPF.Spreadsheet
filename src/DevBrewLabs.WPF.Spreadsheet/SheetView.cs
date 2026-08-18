@@ -18,6 +18,8 @@ namespace DevBrewLabs.WPF.Spreadsheet
         private Columns _columns;
         private double _zoomFactor = 1.0;
         private CellRange _selection;
+        private Dictionary<int, int> _tempColumnWidths = new Dictionary<int, int>();
+        private Dictionary<int, int> _tempRowHeights = new Dictionary<int, int>();
 
         #region Properties
         public GridLineVisibility GridLineVisibility { get; set; }
@@ -238,9 +240,76 @@ namespace DevBrewLabs.WPF.Spreadsheet
             return 0;
         }
 
+
         internal void SetSelection(CellRange range)
         {
             _selection = range;
+        }
+
+        internal int? GetTemporaryColumnWidth(int column)
+        {
+            if (_tempColumnWidths.TryGetValue(column, out int width))
+                return width;
+            return null;
+        }
+
+        internal int? GetTemporaryRowHeight(int row)
+        {
+            if (_tempRowHeights.TryGetValue(row, out int height))
+                return height;
+            return null;
+        }
+
+        internal void SetTemporaryColumnWidth(int column, int width)
+        {
+            _tempColumnWidths[column] = width;
+        }
+
+        internal double GetTemporaryColumnLocation(int column)
+        {
+            if (_tempColumnWidths.Count == 0)
+                return ViewPort.GetColumnLocation(column);
+
+            double loc = ViewPort.GetColumnLocation(column);
+            foreach (var kvp in _tempColumnWidths)
+            {
+                if (kvp.Key < column)
+                {
+                    loc += kvp.Value - WorkSheet.Columns.GetColumnWidth(kvp.Key);
+                }
+            }
+            return loc;
+        }
+
+        internal void SetTemporaryRowHeight(int row, int height)
+        {
+            _tempRowHeights[row] = height;
+        }
+
+        internal double GetTemporaryRowLocation(int row)
+        {
+            if (_tempRowHeights.Count == 0)
+                return ViewPort.GetRowLocation(row);
+
+            double loc = ViewPort.GetRowLocation(row);
+            foreach (var kvp in _tempRowHeights)
+            {
+                if (kvp.Key < row)
+                {
+                    loc += kvp.Value - WorkSheet.Rows.GetRowHeight(kvp.Key);
+                }
+            }
+            return loc;
+        }
+
+        internal void ClearTemporaryRowHeights()
+        {
+            _tempRowHeights.Clear();
+        }
+
+        internal void ClearTemporaryColumnWidths()
+        {
+            _tempColumnWidths.Clear();
         }
 
         public override string ToString()

@@ -15,7 +15,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             var workBook = (Workbook)workSheet.WorkBook;
             var rows = (Rows)workSheet.Rows;
             var columns = (Columns)workSheet.Columns;
-            var viewport = (ViewPort)SheetView.ViewPort;
 
             double zoom = SheetView.ZoomFactor > 0 ? SheetView.ZoomFactor : 1.0;
             double penThickness = SheetView.Spread.GridLinePen.Thickness;
@@ -39,16 +38,16 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                         if (!renderedSkippedAnchors.Add((anchor.TopRow, anchor.LeftColumn)))
                             continue; // Already rendered
 
-                        RenderSingleCell(context, workSheet, workBook, rows, columns, viewport, anchor.TopRow, anchor.LeftColumn, zoom, penThickness, renderContext);
+                        RenderSingleCell(context, workSheet, workBook, rows, columns, anchor.TopRow, anchor.LeftColumn, zoom, penThickness, renderContext);
                         continue;
                     }
 
-                    RenderSingleCell(context, workSheet, workBook, rows, columns, viewport, row, col, zoom, penThickness, renderContext);
+                    RenderSingleCell(context, workSheet, workBook, rows, columns, row, col, zoom, penThickness, renderContext);
                 }
             }
         }
 
-        private void RenderSingleCell(DrawingContext context, Worksheet workSheet, Workbook workBook, Rows rows, Columns columns, ViewPort viewport, int row, int col, double zoom, double penThickness, RenderContext renderContext)
+        private void RenderSingleCell(DrawingContext context, Worksheet workSheet, Workbook workBook, Rows rows, Columns columns, int row, int col, double zoom, double penThickness, RenderContext renderContext)
         {
             var sheetRow = rows.GetItem(row);
             var sheetColumn = columns.GetItem(col);
@@ -69,9 +68,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                 }
             }
 
-            var unzoomedRect = viewport.GetCellRect(row, col);
-            var x = (unzoomedRect.X - viewport.LeftColumnLocation) * zoom;
-            var y = (unzoomedRect.Y - viewport.TopRowLocation) * zoom;
+            var unzoomedRect = SheetView.ViewPort.GetCellRect(row, col);
+            var x = (unzoomedRect.X - SheetView.ViewPort.LeftColumnLocation) * zoom;
+            var y = (unzoomedRect.Y - SheetView.ViewPort.TopRowLocation) * zoom;
             var width = unzoomedRect.Width * zoom;
             var height = unzoomedRect.Height * zoom;
 

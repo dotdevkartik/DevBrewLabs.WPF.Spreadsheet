@@ -35,13 +35,21 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
                 guidelines.GuidelinesY.Add(y + halfPenWidth);
                 guidelines.GuidelinesY.Add(y + scaledRowHeight + halfPenWidth);
 
+                bool isResizing = SheetView.Spread.ColumnResizeManager.IsResizing;
+
                 for (int col = leftColumn; col <= rightColumn; col++)
                 {
-                    var columnWidth = columns.GetColumnWidth(col);
+                    int columnWidth = isResizing ? 
+                        (((SheetView)SheetView).GetTemporaryColumnWidth(col) ?? columns.GetColumnWidth(col)) : 
+                        columns.GetColumnWidth(col);
+
                     if (columnWidth == 0)
                         continue;
 
-                    var colLocation = SheetView.ViewPort.GetColumnLocation(col);
+                    double colLocation = isResizing ? 
+                        ((SheetView)SheetView).GetTemporaryColumnLocation(col) : 
+                        SheetView.ViewPort.GetColumnLocation(col);
+
                     var x = (colLocation - SheetView.ViewPort.LeftColumnLocation) * zoom;
                     var scaledColumnWidth = columnWidth * zoom;
 
@@ -61,12 +69,15 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
 
                 for (int col = minCol; col <= maxCol; col++)
                 {
-                    if (columns.GetColumnWidth(col) == 0)
+                    int currentWidth = isResizing ? (((SheetView)SheetView).GetTemporaryColumnWidth(col) ?? columns.GetColumnWidth(col)) : columns.GetColumnWidth(col);
+                    if (currentWidth == 0)
                     {
                         // Draw double line indicator only for the first hidden column in a contiguous block
-                        if (col == 0 || columns.GetColumnWidth(col - 1) > 0)
+                        int prevWidth = col == 0 ? 0 : (isResizing ? (((SheetView)SheetView).GetTemporaryColumnWidth(col - 1) ?? columns.GetColumnWidth(col - 1)) : columns.GetColumnWidth(col - 1));
+                        
+                        if (col == 0 || prevWidth > 0)
                         {
-                            var colLocation = SheetView.ViewPort.GetColumnLocation(col);
+                            double colLocation = isResizing ? ((SheetView)SheetView).GetTemporaryColumnLocation(col) : SheetView.ViewPort.GetColumnLocation(col);
                             var x = (colLocation - SheetView.ViewPort.LeftColumnLocation) * zoom;
                             DrawHiddenColumnIndicator(context, x, y, scaledRowHeight, workSheet);
                         }
@@ -82,17 +93,14 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
             var pen = SheetView.Spread.GridLinePen;
             var defaultStyle = workSheet.WorkBook.GetNamedStyle(StyleKeys.DefaultColumnHeaderStyleKey);
 
-            double line1X, line2X;
             if (x <= 0)
             {
-                line1X = x + 1.5;
-                line2X = x + 4.5;
+                context.DrawLine(pen, new Point(x + 3.0, rowLocation), new Point(x + 3.0, rowLocation + rowHeight));
+                return;
             }
-            else
-            {
-                line1X = x - 1.5;
-                line2X = x + 1.5;
-            }
+
+            double line1X = x - 1.5;
+            double line2X = x + 1.5;
 
             var rectLeft = Math.Min(line1X, line2X) - 0.5;
             var rectWidth = Math.Abs(line2X - line1X) + 1.0;
