@@ -7,76 +7,71 @@ using DevBrewLabs.Spreadsheet.Drawing;
 
 namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
 {
-    internal class RowHeaderGridLinesRenderer : Renderer
+    internal class RowHeaderGridLinesRenderer : RendererBase
     {
-        protected override void OnRender(DrawingContext context, int topRow, int leftColumn, int bottomRow, int rightColumn)
+        public override void OnRender(RenderContext context, int topRow, int leftColumn, int bottomRow, int rightColumn)
         {
-            var workSheet = (Worksheet)SheetView.WorkSheet;
-            var rows = (Rows)workSheet.Rows;
-            var columns = (RowHeaderColumns)workSheet.RowHeaders.Columns;
-            var viewport = SheetView.ViewPort;
-
-            double zoom = SheetView.ZoomFactor > 0 ? SheetView.ZoomFactor : 1.0;
-            double halfPenWidth = SheetView.Spread.GridLinePen.Thickness * SheetView.Spread.PixelPerDip / 2;
-            var pen = SheetView.Spread.GridLinePen;
+            if (context.SheetView.HeadersVisibility != HeadersVisibility.Row
+               && context.SheetView.HeadersVisibility != HeadersVisibility.Both)
+            {
+                return;
+            }
 
             GuidelineSet guidelines = new GuidelineSet();
             context.PushGuidelineSet(guidelines);
 
-
-
             for (int row = topRow; row <= bottomRow; row++)
             {
-                int rowHeight = ((SheetView)SheetView).GetTemporaryRowHeight(row) ?? rows.GetRowHeight(row);
+                int rowHeight = context.ViewPort.GetTemporaryRowHeight(row) ?? context.Rows.GetRowHeight(row);
 
                 if (rowHeight == 0)
                     continue;
 
-                double rowLocation = ((SheetView)SheetView).GetTemporaryRowLocation(row) ?? viewport.GetRowLocation(row);
+                double rowLocation = context.ViewPort.GetTemporaryRowLocation(row) ?? context.ViewPort.GetRowLocation(row);
 
-                var y = (rowLocation - viewport.TopRowLocation) * zoom;
-                var scaledRowHeight = rowHeight * zoom;
+                var y = (rowLocation - context.ViewPort.TopRowLocation) * context.Zoom;
+                var scaledRowHeight = rowHeight * context.Zoom;
 
-                guidelines.GuidelinesY.Add(y + halfPenWidth);
-                guidelines.GuidelinesY.Add(y + scaledRowHeight + halfPenWidth);
+                guidelines.GuidelinesY.Add(y + context.HalfPenWidth);
+                guidelines.GuidelinesY.Add(y + scaledRowHeight + context.HalfPenWidth);
 
                 for (int col = leftColumn; col <= rightColumn; col++)
                 {
-                    var columnWidth = columns.GetColumnWidth(col);
+                    var columnWidth = context.RowHeaderColumns.GetColumnWidth(col);
                     if (columnWidth == 0)
                         continue;
 
-                    var colLocation = viewport.GetHeaderColumnLocation(col);
-                    var x = colLocation * zoom;
-                    var scaledColumnWidth = columnWidth * zoom;
+                    var colLocation = context.ViewPort.GetHeaderColumnLocation(col);
+                    var x = colLocation * context.Zoom;
+                    var scaledColumnWidth = columnWidth * context.Zoom;
 
                     if (row == topRow)
                     {
-                        guidelines.GuidelinesX.Add(x + halfPenWidth);
-                        guidelines.GuidelinesX.Add(x + scaledColumnWidth + halfPenWidth);
+                        guidelines.GuidelinesX.Add(x + context.HalfPenWidth);
+                        guidelines.GuidelinesX.Add(x + scaledColumnWidth + context.HalfPenWidth);
                     }
 
                     var cellRect = new Rect(x, y, scaledColumnWidth, scaledRowHeight);
-                    context.DrawRectangle(null, pen, cellRect);
+                    context.DrawRectangle(null, context.GridLinePen, cellRect);
                 }
             }
 
             // Render double horizontal lines for hidden rows
             int minRow = Math.Max(0, topRow);
-            int maxRow = Math.Min(workSheet.RowCount - 1, bottomRow + 1);
+            int maxRow = Math.Min(context.Worksheet.RowCount - 1, bottomRow + 1);
 
             for (int row = minRow; row <= maxRow; row++)
             {
-                int currentHeight = ((SheetView)SheetView).GetTemporaryRowHeight(row) ?? rows.GetRowHeight(row);
+                int currentHeight = context.ViewPort.GetTemporaryRowHeight(row) ?? context.Rows.GetRowHeight(row);
                 if (currentHeight == 0)
                 {
-                    int prevHeight = row == 0 ? 0 : (((SheetView)SheetView).GetTemporaryRowHeight(row - 1) ?? rows.GetRowHeight(row - 1));
+                    int prevHeight = row == 0 ? 0 : context.ViewPort.GetTemporaryRowHeight(row - 1) ?? context.Rows.GetRowHeight(row - 1);
                     
                     if (row == 0 || prevHeight > 0)
                     {
-                        double rowLocation = ((SheetView)SheetView).GetTemporaryRowLocation(row) ?? viewport.GetRowLocation(row);
-                        var y = (rowLocation - viewport.TopRowLocation) * zoom;
-                        DrawHiddenRowIndicator(context, y, leftColumn, rightColumn, columns, workSheet, zoom);
+                        double rowLocation = context.ViewPort.GetTemporaryRowLocation(row) ?? context.ViewPort.GetRowLocation(row);
+                        var y = (rowLocation - context.ViewPort.TopRowLocation) * context.Zoom;
+                        DrawHiddenRowIndicator(context, y, leftColumn, rightColumn);
                     }
                 }
             }
@@ -84,23 +79,21 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
             context.Pop();
         }
 
-        private void DrawHiddenRowIndicator(DrawingContext context, double y, int leftColumn, int rightColumn, RowHeaderColumns columns, Worksheet workSheet, double zoom)
+        private void DrawHiddenRowIndicator(RenderContext context, double y, int leftColumn, int rightColumn)
         {
-            var pen = SheetView.Spread.GridLinePen;
-            var viewPort = SheetView.ViewPort;
-            var defaultStyle = workSheet.WorkBook.GetNamedStyle(StyleKeys.DefaultRowHeaderStyleKey);
+            var defaultStyle = context.Worksheet.WorkBook.GetNamedStyle(StyleKeys.DefaultRowHeaderStyleKey);
 
             if (y <= 0)
             {
                 for (int col = leftColumn; col <= rightColumn; col++)
                 {
-                    var columnWidth = columns.GetColumnWidth(col);
+                    var columnWidth = context.RowHeaderColumns.GetColumnWidth(col);
                     if (columnWidth == 0)
                         continue;
-                    var colLocation = viewPort.GetHeaderColumnLocation(col) * zoom;
-                    var scaledColumnWidth = columnWidth * zoom;
+                    var colLocation = context.ViewPort.GetHeaderColumnLocation(col) * context.Zoom;
+                    var scaledColumnWidth = columnWidth * context.Zoom;
 
-                    context.DrawLine(pen, new Point(colLocation, y + 3.0), new Point(colLocation + scaledColumnWidth, y + 3.0));
+                    context.DrawLine(context.GridLinePen, new Point(colLocation, y + 3.0), new Point(colLocation + scaledColumnWidth, y + 3.0));
                 }
                 return;
             }
@@ -113,20 +106,20 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
 
             for (int col = leftColumn; col <= rightColumn; col++)
             {
-                var columnWidth = columns.GetColumnWidth(col);
+                var columnWidth = context.RowHeaderColumns.GetColumnWidth(col);
                 if (columnWidth == 0)
                     continue;
-                var colLocation = viewPort.GetHeaderColumnLocation(col) * zoom;
-                var scaledColumnWidth = columnWidth * zoom;
+                var colLocation = context.ViewPort.GetHeaderColumnLocation(col) * context.Zoom;
+                var scaledColumnWidth = columnWidth * context.Zoom;
                 var gapRect = new Rect(colLocation, rectTop, scaledColumnWidth, rectHeight);
 
-                if (defaultStyle != null && defaultStyle.BackColor != CellColor.Transparent)
+                if (defaultStyle != null && defaultStyle.BackColor != DrawingColor.Transparent)
                 {
-                    context.DrawRectangle(Styling.WpfResourceCache.GetBrush(defaultStyle.BackColor), null, gapRect);
+                    context.DrawRectangle(defaultStyle.BackColor, null, gapRect);
                 }
 
-                context.DrawLine(pen, new Point(colLocation, line1Y), new Point(colLocation + scaledColumnWidth, line1Y));
-                context.DrawLine(pen, new Point(colLocation, line2Y), new Point(colLocation + scaledColumnWidth, line2Y));
+                context.DrawLine(context.GridLinePen, new Point(colLocation, line1Y), new Point(colLocation + scaledColumnWidth, line1Y));
+                context.DrawLine(context.GridLinePen, new Point(colLocation, line2Y), new Point(colLocation + scaledColumnWidth, line2Y));
             }
         }
     }

@@ -1,10 +1,11 @@
 using DevBrewLabs.Spreadsheet;
+using DevBrewLabs.Spreadsheet.Drawing;
 using DevBrewLabs.Spreadsheet.Formatters;
+using DevBrewLabs.WPF.Spreadsheet.Rendering;
 using DevBrewLabs.WPF.Spreadsheet.Rendering.Text;
 using DevBrewLabs.WPF.Spreadsheet.UI.Editors;
 using System;
 using System.Windows;
-using System.Windows.Media;
 
 namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
 {
@@ -13,12 +14,12 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
         public ICellTypeCommand Command { get; set; }
         public string Text { get; set; }
 
-        internal override void DrawCell(DrawingContext context, object value, IStyle style, IFormatter formatter, Rect cellRect, RenderContext renderContext)
+        internal override void DrawCell(RenderContext renderContext, object value, IStyle style, IFormatter formatter, Rect cellRect)
         {
-            base.DrawCell(context, value, style, formatter, cellRect, renderContext);
+            base.DrawCell(renderContext, value, style, formatter, cellRect);
 
             cellRect.Inflate(-3 * renderContext.Zoom, -3 * renderContext.Zoom);
-            context.DrawRectangle(Brushes.LightGray, null, cellRect);
+            renderContext.DrawRectangle(DrawingColor.LightGray, null, cellRect);
 
             if(!string.IsNullOrEmpty(Text))
             {
@@ -26,7 +27,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
                 if (align == CellHorizontalAlignment.Auto)
                     align = CellHorizontalAlignment.Center;
 
-                TextRenderer.DrawText(context, Text, cellRect, style, renderContext, align);
+                TextRenderer.DrawText(renderContext, Text, cellRect, style, align);
             }
         }
 

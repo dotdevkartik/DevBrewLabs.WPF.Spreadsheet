@@ -20,7 +20,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
                 0,                                  // bidiLevel
                 false,                              // sideways
                 scaledFontSize,                     // renderingEmSize
-                (float)context.PixelsPerDip,
+                (float)context.PixelPerDip,
                 layout.GlyphIndices,
                 baselineOrigin,
                 layout.AdvanceWidths,

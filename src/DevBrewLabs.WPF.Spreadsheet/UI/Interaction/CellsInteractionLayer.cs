@@ -44,7 +44,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             set { SetValue(AnimatedActiveCellRectProperty, value); }
         }
 
-        public CellsInteractionLayer()
+        public CellsInteractionLayer(SheetView view) : base(view)
         {
 
         }

@@ -1,6 +1,7 @@
 using DevBrewLabs.Spreadsheet;
 using DevBrewLabs.Spreadsheet.Drawing;
 using DevBrewLabs.Spreadsheet.Formatters;
+using DevBrewLabs.WPF.Spreadsheet.Rendering;
 using DevBrewLabs.WPF.Spreadsheet.Rendering.Text;
 using DevBrewLabs.WPF.Spreadsheet.Styling;
 using DevBrewLabs.WPF.Spreadsheet.UI.Editors;
@@ -13,9 +14,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
     {
         public static BaseCellType Default { get; } = new TextCellType();
 
-        internal override void DrawCell(DrawingContext context, object value, IStyle style, IFormatter formatter, Rect cellRect, RenderContext renderContext)
+        internal override void DrawCell(RenderContext renderContext, object value, IStyle style, IFormatter formatter, Rect cellRect)
         {
-            base.DrawCell(context, value, style, formatter, cellRect, renderContext);
+            base.DrawCell(renderContext, value, style, formatter, cellRect);
 
             if (value != null && !string.IsNullOrEmpty(value.ToString()))
             {
@@ -33,7 +34,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
                     value = formatter.Format(value);
                 }
 
-                TextRenderer.DrawText(context, (string)value, cellRect, style, renderContext, align);
+                TextRenderer.DrawText(renderContext, (string)value, cellRect, style, align);
             }
         }
 

@@ -71,9 +71,9 @@ namespace SpreadsheetSampleExplorer.Samples
             {
                 var style = new CellStyle
                 {
-                    BackColor = CellColor.FromArgb(255, 16, 124, 65), // #107C41 Excel Green
-                    ForeColor = CellColor.White,
-                    FontWeight = CellFontWeight.Bold,
+                    BackColor = DrawingColor.FromArgb(255, 16, 124, 65), // #107C41 Excel Green
+                    ForeColor = DrawingColor.White,
+                    FontWeight = DrawingFontWeight.Bold,
                     HorizontalAlignment = CellHorizontalAlignment.Center
                 };
                 worksheet.WorkBook.AddNamedStyle(headerStyleName, style);

@@ -34,7 +34,7 @@ namespace DevBrewLabs.Spreadsheet
 
         private void AddDefaultStyles()
         {
-            var headerColor = Drawing.CellColor.FromArgb(255, 240, 240, 240);
+            var headerColor = Drawing.DrawingColor.FromArgb(255, 240, 240, 240);
 
             var rowHeaderStyle = new CellStyle
             {
@@ -61,7 +61,7 @@ namespace DevBrewLabs.Spreadsheet
             var topLeftStyle = new CellStyle
             {
                 BackColor = headerColor,
-                ForeColor = Drawing.CellColor.LightGray
+                ForeColor = Drawing.DrawingColor.LightGray
             };
             AddNamedStyle(StyleKeys.DefaultTopLeftStyleKey, topLeftStyle);
         }

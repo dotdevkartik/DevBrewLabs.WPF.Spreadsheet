@@ -9,10 +9,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.Styling
 {
     internal static class WpfResourceCache
     {
-        private static readonly Dictionary<CellColor, Brush> _brushCache = new Dictionary<CellColor, Brush>();
+        private static readonly Dictionary<DrawingColor, Brush> _brushCache = new Dictionary<DrawingColor, Brush>();
+        private static readonly Dictionary<DrawingPen, Pen> _penCache = new Dictionary<DrawingPen, Pen>();
         private static readonly Dictionary<FontCacheKey, WpfFontResources> _fontCache = new Dictionary<FontCacheKey, WpfFontResources>();
 
-        public static Brush GetBrush(CellColor color)
+        public static Brush GetBrush(DrawingColor color)
         {
             if (!_brushCache.TryGetValue(color, out Brush brush))
             {
@@ -21,6 +22,17 @@ namespace DevBrewLabs.WPF.Spreadsheet.Styling
                 _brushCache[color] = brush;
             }
             return brush;
+        }
+
+        public static Pen GetPen(DrawingPen drawingPen)
+        {
+            if (!_penCache.TryGetValue(drawingPen, out Pen pen))
+            {
+                pen = new Pen(GetBrush(drawingPen.Color), drawingPen.Thickness);
+                pen.Freeze();
+                _penCache[drawingPen] = pen;
+            }
+            return pen;
         }
 
         public static WpfFontResources GetFontResources(IStyle style)
@@ -45,31 +57,31 @@ namespace DevBrewLabs.WPF.Spreadsheet.Styling
             return resources;
         }
 
-        internal static FontFamily ToWpfFontFamily(CellFontFamily fontFamily)
+        internal static FontFamily ToWpfFontFamily(DrawingFontFamily fontFamily)
         {
             return new FontFamily(fontFamily.FamilyName);
         }
 
-        internal static FontWeight ToWpfFontWeight(CellFontWeight weight)
+        internal static FontWeight ToWpfFontWeight(DrawingFontWeight weight)
         {
             switch (weight)
             {
-                case CellFontWeight.Bold:
+                case DrawingFontWeight.Bold:
                     return FontWeights.Bold;
-                case CellFontWeight.Normal:
+                case DrawingFontWeight.Normal:
                     return FontWeights.Normal;
                 default:
                     return FontWeights.Regular;
             }
         }
 
-        internal static FontStyle ToWpfFontStyle(CellFontStyle style)
+        internal static FontStyle ToWpfFontStyle(DrawingFontStyle style)
         {
             switch (style)
             {
-                case CellFontStyle.Italic:
+                case DrawingFontStyle.Italic:
                     return FontStyles.Italic;
-                case CellFontStyle.Oblique:
+                case DrawingFontStyle.Oblique:
                     return FontStyles.Oblique;
                 default:
                     return FontStyles.Normal;

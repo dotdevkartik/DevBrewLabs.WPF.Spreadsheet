@@ -148,7 +148,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 Selection = sheetView.Selection
             });
 
-            Spread.SheetViewPane.RefreshInteractionLayers();
+            Spread.SheetViewHost.RefreshInteractionLayers();
         }
     }
 }

@@ -1,9 +1,9 @@
 ﻿namespace DevBrewLabs.Spreadsheet.Drawing
 {
-    public enum CellFontWeight
+    public enum DrawingFontStyle
     {
         Normal,
-        Regular,
-        Bold
+        Oblique,
+        Italic
     }
 }

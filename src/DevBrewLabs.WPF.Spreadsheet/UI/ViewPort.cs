@@ -1,5 +1,6 @@
 using DevBrewLabs.Spreadsheet;
 using System;
+using System.Collections.Generic;
 using System.Windows;
 
 namespace DevBrewLabs.WPF.Spreadsheet.UI
@@ -16,6 +17,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
         private LocationCache<IColumn> _colLocCache;
         private LocationCache<IRow> _headerRowLocCache;
         private LocationCache<IColumn> _headerColLocCache;
+        private Dictionary<int, int> _tempColumnWidths = new Dictionary<int, int>();
+        private Dictionary<int, int> _tempRowHeights = new Dictionary<int, int>();
 
         public double TopRowLocation { get; private set; }
         public double LeftColumnLocation { get; private set; }
@@ -138,14 +141,14 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
 
         public Rect GetColumnRect(int column)
         {
-            var location = _sheetView.GetTemporaryColumnLocation(column) ?? GetColumnLocation(column);
+            var location = GetTemporaryColumnLocation(column) ?? GetColumnLocation(column);
             return new Rect(location, _actualBounds.Top,
                 _columns.GetColumnWidth(column), _actualBounds.Height);
         }
 
         public Rect GetRowRect(int row)
         {
-            var location = _sheetView.GetTemporaryRowLocation(row) ?? GetRowLocation(row);
+            var location = GetTemporaryRowLocation(row) ?? GetRowLocation(row);
             return new Rect(_actualBounds.Left, location,
                 _actualBounds.Width, _rows.GetRowHeight(row));
         }
@@ -201,7 +204,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
 
         public void RefreshBounds()
         {
-            var sheetCanvas = _sheetView.Spread.SheetViewPane.CellsRegion;
+            var sheetCanvas = _sheetView.CellsSurface;
             double zoom = _sheetView != null && _sheetView.ZoomFactor > 0 ? _sheetView.ZoomFactor : 1.0;
             _actualBounds.X = _sheetView.ScrollPosition.X;
             _actualBounds.Y = _sheetView.ScrollPosition.Y;
@@ -430,6 +433,73 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
         {
             return $"TopRow:{ViewRange.TopRow}, BottomRow:{ViewRange.BottomRow}, LeftColumn:{ViewRange.LeftColumn}, RightColumn:{ViewRange.RightColumn}";
         }
+
+        internal int? GetTemporaryColumnWidth(int column)
+        {
+            if (_tempColumnWidths.TryGetValue(column, out int width))
+                return width;
+            return null;
+        }
+
+        internal int? GetTemporaryRowHeight(int row)
+        {
+            if (_tempRowHeights.TryGetValue(row, out int height))
+                return height;
+            return null;
+        }
+
+        internal void SetTemporaryColumnWidth(int column, int width)
+        {
+            _tempColumnWidths[column] = width;
+        }
+
+        internal double? GetTemporaryColumnLocation(int column)
+        {
+            if (_tempColumnWidths.Count == 0)
+                return null;
+
+            double loc = GetColumnLocation(column);
+            foreach (var kvp in _tempColumnWidths)
+            {
+                if (kvp.Key < column)
+                {
+                    loc += kvp.Value - _workSheet.Columns.GetColumnWidth(kvp.Key);
+                }
+            }
+            return loc;
+        }
+
+        internal void SetTemporaryRowHeight(int row, int height)
+        {
+            _tempRowHeights[row] = height;
+        }
+
+        internal double? GetTemporaryRowLocation(int row)
+        {
+            if (_tempRowHeights.Count == 0)
+                return null;
+
+            double loc = GetRowLocation(row);
+            foreach (var kvp in _tempRowHeights)
+            {
+                if (kvp.Key < row)
+                {
+                    loc += kvp.Value - _workSheet.Rows.GetRowHeight(kvp.Key);
+                }
+            }
+            return loc;
+        }
+
+        internal void ClearTemporaryRowHeights()
+        {
+            _tempRowHeights.Clear();
+        }
+
+        internal void ClearTemporaryColumnWidths()
+        {
+            _tempColumnWidths.Clear();
+        }
+
 
         private sealed class LocationCache<T> where T : class
         {

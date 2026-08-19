@@ -17,14 +17,14 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
                 return new TextLayout(Array.Empty<ushort>(), Array.Empty<double>(), 0, 0, 0, false);
             }
 
-            TextMeasurer.Measure(text, availableWidth, scaledFontSize, metrics, context.PixelsPerDip, out int fitCount, out double exactTotalWidth, out bool isTruncated);
+            TextMeasurer.Measure(text, availableWidth, scaledFontSize, metrics, context.PixelPerDip, out int fitCount, out double exactTotalWidth, out bool isTruncated);
 
             double finalExactWidth = exactTotalWidth;
             bool applyEllipsis = isTruncated && characterEllipses;
 
             if (applyEllipsis)
             {
-                fitCount = EllipsisEngine.Truncate(text, fitCount, exactTotalWidth, availableWidth, scaledFontSize, metrics, context.PixelsPerDip, out finalExactWidth);
+                fitCount = EllipsisEngine.Truncate(text, fitCount, exactTotalWidth, availableWidth, scaledFontSize, metrics, context.PixelPerDip, out finalExactWidth);
             }
             else if (isTruncated)
             {
@@ -47,7 +47,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
             
             if (needsEllipsisGlyph)
             {
-                fitCount = EllipsisEngine.Truncate(text, fitCount, exactTotalWidth, availableWidth, scaledFontSize, metrics, context.PixelsPerDip, out finalExactWidth);
+                fitCount = EllipsisEngine.Truncate(text, fitCount, exactTotalWidth, availableWidth, scaledFontSize, metrics, context.PixelPerDip, out finalExactWidth);
             }
 
             int finalGlyphCount = needsEllipsisGlyph ? (fitCount > 0 ? fitCount + 1 : 0) : fitCount;
@@ -86,8 +86,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
                 glyphIndices[i] = glyph;
 
                 double exactNextX = runningExactX + exactAdvance;
-                double snappedCurrentX = Math.Round(runningExactX * context.PixelsPerDip) / context.PixelsPerDip;
-                double snappedNextX = Math.Round(exactNextX * context.PixelsPerDip) / context.PixelsPerDip;
+                double snappedCurrentX = Math.Round(runningExactX * context.PixelPerDip) / context.PixelPerDip;
+                double snappedNextX = Math.Round(exactNextX * context.PixelPerDip) / context.PixelPerDip;
 
                 advanceWidths[i] = snappedNextX - snappedCurrentX;
                 runningExactX = exactNextX;
@@ -99,14 +99,14 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
                 
                 double exactAdvance = metrics.EllipsisAdvance * scaledFontSize;
                 double exactNextX = runningExactX + exactAdvance;
-                double snappedCurrentX = Math.Round(runningExactX * context.PixelsPerDip) / context.PixelsPerDip;
-                double snappedNextX = Math.Round(exactNextX * context.PixelsPerDip) / context.PixelsPerDip;
+                double snappedCurrentX = Math.Round(runningExactX * context.PixelPerDip) / context.PixelPerDip;
+                double snappedNextX = Math.Round(exactNextX * context.PixelPerDip) / context.PixelPerDip;
 
                 advanceWidths[fitCount] = snappedNextX - snappedCurrentX;
                 runningExactX = exactNextX;
             }
 
-            double totalSnappedWidth = Math.Round(runningExactX * context.PixelsPerDip) / context.PixelsPerDip;
+            double totalSnappedWidth = Math.Round(runningExactX * context.PixelPerDip) / context.PixelPerDip;
             double height = metrics.Height * scaledFontSize;
 
             return new TextLayout(glyphIndices, advanceWidths, totalSnappedWidth, height, finalGlyphCount, isTruncated);

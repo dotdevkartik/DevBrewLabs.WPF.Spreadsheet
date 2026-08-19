@@ -49,44 +49,44 @@ namespace SpreadsheetSampleExplorer.Samples
         {
             var worksheet = sheetView.WorkSheet;
 
-            CellColor headerBg, headerFg, altRowBg, altRowFg;
+            DrawingColor headerBg, headerFg, altRowBg, altRowFg;
 
             switch (themeKey)
             {
                 case "Excel":
-                    headerBg = CellColor.FromArgb(255, 16, 124, 65); // #107C41 Excel Green
-                    headerFg = CellColor.FromArgb(255, 255, 255, 255);
-                    altRowBg = CellColor.FromArgb(255, 240, 253, 244);
-                    altRowFg = CellColor.FromArgb(255, 24, 24, 27);
+                    headerBg = DrawingColor.FromArgb(255, 16, 124, 65); // #107C41 Excel Green
+                    headerFg = DrawingColor.FromArgb(255, 255, 255, 255);
+                    altRowBg = DrawingColor.FromArgb(255, 240, 253, 244);
+                    altRowFg = DrawingColor.FromArgb(255, 24, 24, 27);
                     break;
 
                 case "Emerald":
-                    headerBg = CellColor.FromArgb(255, 230, 244, 234);
-                    headerFg = CellColor.FromArgb(255, 13, 101, 45);
-                    altRowBg = CellColor.FromArgb(255, 246, 251, 247);
-                    altRowFg = CellColor.FromArgb(255, 24, 24, 27);
+                    headerBg = DrawingColor.FromArgb(255, 230, 244, 234);
+                    headerFg = DrawingColor.FromArgb(255, 13, 101, 45);
+                    altRowBg = DrawingColor.FromArgb(255, 246, 251, 247);
+                    altRowFg = DrawingColor.FromArgb(255, 24, 24, 27);
                     break;
 
                 case "Indigo":
-                    headerBg = CellColor.FromArgb(255, 238, 242, 255);
-                    headerFg = CellColor.FromArgb(255, 55, 48, 163);
-                    altRowBg = CellColor.FromArgb(255, 248, 250, 252);
-                    altRowFg = CellColor.FromArgb(255, 24, 24, 27);
+                    headerBg = DrawingColor.FromArgb(255, 238, 242, 255);
+                    headerFg = DrawingColor.FromArgb(255, 55, 48, 163);
+                    altRowBg = DrawingColor.FromArgb(255, 248, 250, 252);
+                    altRowFg = DrawingColor.FromArgb(255, 24, 24, 27);
                     break;
 
                 case "Corporate":
-                    headerBg = CellColor.FromArgb(255, 30, 58, 138);
-                    headerFg = CellColor.FromArgb(255, 255, 255, 255);
-                    altRowBg = CellColor.FromArgb(255, 240, 246, 255);
-                    altRowFg = CellColor.FromArgb(255, 24, 24, 27);
+                    headerBg = DrawingColor.FromArgb(255, 30, 58, 138);
+                    headerFg = DrawingColor.FromArgb(255, 255, 255, 255);
+                    altRowBg = DrawingColor.FromArgb(255, 240, 246, 255);
+                    altRowFg = DrawingColor.FromArgb(255, 24, 24, 27);
                     break;
 
                 case "Slate":
                 default:
-                    headerBg = CellColor.FromArgb(255, 241, 245, 249);
-                    headerFg = CellColor.FromArgb(255, 15, 23, 42);
-                    altRowBg = CellColor.FromArgb(255, 248, 250, 252);
-                    altRowFg = CellColor.FromArgb(255, 24, 24, 27);
+                    headerBg = DrawingColor.FromArgb(255, 241, 245, 249);
+                    headerFg = DrawingColor.FromArgb(255, 15, 23, 42);
+                    altRowBg = DrawingColor.FromArgb(255, 248, 250, 252);
+                    altRowFg = DrawingColor.FromArgb(255, 24, 24, 27);
                     break;
             }
 
@@ -99,7 +99,7 @@ namespace SpreadsheetSampleExplorer.Samples
                     BackColor = headerBg,
                     ForeColor = headerFg,
                     HorizontalAlignment = alignment,
-                    FontWeight = CellFontWeight.Bold
+                    FontWeight = DrawingFontWeight.Bold
                 };
                 worksheet.WorkBook.AddNamedStyle(headerStyleName, headerStyle);
             }
@@ -126,7 +126,7 @@ namespace SpreadsheetSampleExplorer.Samples
             {
                 var normalStyle = new CellStyle
                 {
-                    BackColor = CellColor.White,
+                    BackColor = DrawingColor.White,
                     ForeColor = altRowFg
                 };
                 worksheet.WorkBook.AddNamedStyle(normalRowStyleName, normalStyle);

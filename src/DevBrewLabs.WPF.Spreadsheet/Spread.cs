@@ -23,7 +23,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         private RowResizeManager _rowResizeManager;
         private ColumnResizeManager _columnResizeManager;
         private RenderEngine _renderEngine;
-        private SheetViewPane _sheetViewPane;
+        private SheetViewHost _sheetViewHost;
         private SheetTabControl _sheetTabControl;
         private UndoRedoManager _undoRedoManager;
         private Workbook _workBook;
@@ -295,7 +295,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             _undoRedoManager = new UndoRedoManager(this);
             SheetViews = new SheetViewCollection(this);
             _renderEngine = new RenderEngine();
-            _sheetViewPane = new SheetViewPane(this);
+            _sheetViewHost = new SheetViewHost(this);
             ScrollMode = SheetScrollMode.Item;
             SelectionBorderBrush = new SolidColorBrush(Color.FromRgb(16, 124, 65));
             BorderBrush = new SolidColorBrush(Color.FromRgb(209, 213, 219));
@@ -329,22 +329,22 @@ namespace DevBrewLabs.WPF.Spreadsheet
                 var columnHeaderHeight = activeSheetView.GetColumnHeaderHeight() * zoom;
                 var rowHeaderWidth = activeSheetView.GetRowHeaderWidth() * zoom;
 
-                var panePoint = TranslatePoint(point, SheetViewPane);
+                var panePoint = TranslatePoint(point, SheetViewHost);
 
                 // Row headers hit test
-                if (panePoint.X >= 0 && panePoint.X < rowHeaderWidth && panePoint.Y >= columnHeaderHeight && panePoint.Y < SheetViewPane.ActualHeight)
-                    return SheetViewPane.RowHeadersRegion.HitTest(TranslatePoint(point, SheetViewPane.RowHeadersRegion));
+                if (panePoint.X >= 0 && panePoint.X < rowHeaderWidth && panePoint.Y >= columnHeaderHeight && panePoint.Y < SheetViewHost.ActualHeight)
+                    return activeSheetView.RowHeadersSurface.HitTest(TranslatePoint(point, activeSheetView.RowHeadersSurface));
 
                 // Cells hit test
-                if (panePoint.X >= rowHeaderWidth && panePoint.Y >= columnHeaderHeight && panePoint.X < SheetViewPane.ActualWidth && panePoint.Y < SheetViewPane.ActualHeight)
-                    return SheetViewPane.CellsRegion.HitTest(TranslatePoint(point, SheetViewPane.CellsRegion));
+                if (panePoint.X >= rowHeaderWidth && panePoint.Y >= columnHeaderHeight && panePoint.X < SheetViewHost.ActualWidth && panePoint.Y < SheetViewHost.ActualHeight)
+                    return activeSheetView.CellsSurface.HitTest(TranslatePoint(point, activeSheetView.CellsSurface));
 
                 // Column headers hit test
-                if (panePoint.X >= rowHeaderWidth && panePoint.Y >= 0 && panePoint.Y < columnHeaderHeight && panePoint.X < SheetViewPane.ActualWidth)
-                    return SheetViewPane.ColumnHeadersRegion.HitTest(TranslatePoint(point, SheetViewPane.ColumnHeadersRegion));
+                if (panePoint.X >= rowHeaderWidth && panePoint.Y >= 0 && panePoint.Y < columnHeaderHeight && panePoint.X < SheetViewHost.ActualWidth)
+                    return activeSheetView.ColumnHeadersSurface.HitTest(TranslatePoint(point, activeSheetView.ColumnHeadersSurface));
 
                 if (panePoint.X < rowHeaderWidth && panePoint.Y < columnHeaderHeight)
-                    return SheetViewPane.TopLeftRegion.HitTest(TranslatePoint(point, SheetViewPane.TopLeftRegion));
+                    return activeSheetView.TopLeftSurface.HitTest(TranslatePoint(point, activeSheetView.TopLeftSurface));
 
                 return null;
             }
@@ -488,33 +488,8 @@ namespace DevBrewLabs.WPF.Spreadsheet
         /// <param name="topLeft"></param>
         public void Invalidate(bool rowHeaders = true, bool columnHeaders = true, bool cells = true, bool topLeft = true)
         {
-            var pane = SheetViewPane;
-
-            pane.Draw(rowHeaders, columnHeaders, cells, cells, topLeft);
-
-            if (cells)
-            {
-                var interactionLayer = pane.CellsRegion.GetInteractionLayer();
-                if (interactionLayer != null)
-                    interactionLayer.InvalidateVisual();
-            }
-
-            if (rowHeaders)
-            {
-                var interactionLayer = pane.RowHeadersRegion.GetInteractionLayer();
-                if (interactionLayer != null)
-                    interactionLayer.InvalidateVisual();
-            }
-
-            if (columnHeaders)
-            {
-                var interactionLayer = pane.ColumnHeadersRegion.GetInteractionLayer();
-                if (interactionLayer != null)
-                    interactionLayer.InvalidateVisual();
-            }
-
-            if (topLeft)
-                pane.TopLeftRegion.InvalidateVisual();
+            SheetViewHost.Draw(rowHeaders, columnHeaders, cells, cells, topLeft);
+            SheetViewHost.RefreshInteractionLayers(rowHeaders, columnHeaders, cells);
         }
 
         /// <summary>
@@ -553,7 +528,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             Loaded -= OnLoaded;
             WorkBook.Dispose();
             SheetTabControl.Dispose();
-            SheetViewPane.Dispose();
+            SheetViewHost.Dispose();
             RenderEngine.Dispose();
         }
     }
@@ -562,6 +537,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
     public partial class Spread
     {
         internal const double GridLineThickness = 0.25;
+        internal const double SelectionBorderThickness = 1.5;
         internal double PixelPerDip { get; set; }
 
         internal EditingManager EditingManager => _editingManager;
@@ -569,7 +545,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         internal ClipboardManager ClipboardManager => _clipboardManager;
         internal ZoomManager ZoomManager => _zoomManager;
         internal RenderEngine RenderEngine => _renderEngine;
-        internal SheetViewPane SheetViewPane => _sheetViewPane;
+        internal SheetViewHost SheetViewHost => _sheetViewHost;
         internal SheetTabControl SheetTabControl => _sheetTabControl;
         internal UndoRedoManager UndoRedoManager => _undoRedoManager;
         internal RowResizeManager RowResizeManager => _rowResizeManager;
@@ -646,14 +622,14 @@ namespace DevBrewLabs.WPF.Spreadsheet
                 case MouseWheelScrollDirection.Vertical:
                     if (_sheetTabControl.VScrollBar == null)
                         return;
-                    _sheetTabControl.VScrollBar.Value += -e.Delta / 2;
+                    _sheetTabControl.VScrollBar.Value += -e.Delta / 5;
                     Invalidate(true, false, true, false);
                     break;
 
                 case MouseWheelScrollDirection.Horizontal:
                     if (_sheetTabControl.HScrollBar == null)
                         return;
-                    _sheetTabControl.HScrollBar.Value += -e.Delta / 2;
+                    _sheetTabControl.HScrollBar.Value += -e.Delta / 5;
                     Invalidate(false, true, true, false);
                     break;
             }
@@ -691,7 +667,6 @@ namespace DevBrewLabs.WPF.Spreadsheet
     #region PropertyChanged Callbacks
     public partial class Spread
     {
-
         private static object CoerceZoomFactor(DependencyObject d, object baseValue)
         {
             if (baseValue is double val)
@@ -716,7 +691,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         {
             var spread = d as Spread;
             if (e.NewValue != null && !e.NewValue.Equals(e.OldValue))
-                spread.UpdateSelectionBorderPen(spread.SelectionBorderBrush, 1.5);
+                spread.UpdateSelectionBorderPen(spread.SelectionBorderBrush, SelectionBorderThickness);
         }
 
         private static void OnGridLineBrushChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

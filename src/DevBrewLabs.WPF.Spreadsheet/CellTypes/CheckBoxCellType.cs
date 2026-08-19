@@ -1,6 +1,7 @@
 using DevBrewLabs.Spreadsheet;
+using DevBrewLabs.Spreadsheet.Drawing;
 using DevBrewLabs.Spreadsheet.Formatters;
-using DevBrewLabs.WPF.Spreadsheet.Rendering.Text;
+using DevBrewLabs.WPF.Spreadsheet.Rendering;
 using DevBrewLabs.WPF.Spreadsheet.UI.Editors;
 using System;
 using System.Windows;
@@ -17,19 +18,19 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
             CheckBoxSize = new Size(11, 11);
         }
 
-        private Pen _pen;
-        private Pen _markPen;
+        private DrawingPen _pen;
+        private DrawingPen _markPen;
 
         public bool IsThreeState { get; set; }
 
         public CheckBoxCellType()
         {
-            _pen = new Pen(Brushes.Black, 0.75);
-            _markPen = new Pen(Brushes.Black, 1.5);
+            _pen = new DrawingPen(DrawingColor.Black, 0.75);
+            _markPen = new DrawingPen(DrawingColor.Black, 1.5);
             IsThreeState = false;
         }
 
-        internal override void DrawCell(DrawingContext context, object value, IStyle style, IFormatter formatter, Rect cellRect, RenderContext renderContext)
+        internal override void DrawCell(RenderContext renderContext, object value, IStyle style, IFormatter formatter, Rect cellRect)
         {
             var scaledCheckBoxSize = new Size(CheckBoxSize.Width * renderContext.Zoom, CheckBoxSize.Height * renderContext.Zoom);
             var checkBoxRect = cellRect.ToCellCheckBoxRect(scaledCheckBoxSize);
@@ -39,13 +40,13 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
             guidelines.GuidelinesX.Add(checkBoxRect.Right + halfPenWidth);
             guidelines.GuidelinesY.Add(checkBoxRect.Top + halfPenWidth);
             guidelines.GuidelinesY.Add(checkBoxRect.Bottom + halfPenWidth);
-            context.PushGuidelineSet(guidelines);
+            renderContext.PushGuidelineSet(guidelines);
 
-            base.DrawCell(context, value, style, formatter, cellRect, renderContext);
+            base.DrawCell(renderContext, value, style, formatter, cellRect);
 
-            context.DrawRectangle(null, _pen, checkBoxRect);
-            DrawMark(context, checkBoxRect, value);
-            context.Pop();
+            renderContext.DrawRectangle(null, _pen, checkBoxRect);
+            DrawMark(renderContext, checkBoxRect, value);
+            renderContext.Pop();
         }
 
         /// <summary>
@@ -54,19 +55,19 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
         /// <param name="ctx"></param>
         /// <param name="checkBoxRect"></param>
         /// <param name="value"></param>
-        private void DrawMark(DrawingContext ctx, Rect checkBoxRect, object value)
+        private void DrawMark(RenderContext renderContext, Rect checkBoxRect, object value)
         {
             if(IsThreeState && value == null)
             {
                 checkBoxRect.Inflate(-2, -2);
-                ctx.DrawRectangle(Brushes.Black, null, checkBoxRect);
+                renderContext.DrawRectangle(DrawingColor.Black, null, checkBoxRect);
             }
             else if(value != null && Convert.ToBoolean(value))
             {
                 var bottom = new Point(checkBoxRect.Left + checkBoxRect.Width / 2, checkBoxRect.Bottom - 1.5);
-                ctx.DrawLine(_markPen, new Point(checkBoxRect.Left + 1.5, checkBoxRect.Top + checkBoxRect.Height / 2),
+                renderContext.DrawLine(_markPen, new Point(checkBoxRect.Left + 1.5, checkBoxRect.Top + checkBoxRect.Height / 2),
                     bottom);
-                ctx.DrawLine(_markPen, bottom, new Point(checkBoxRect.Right - 1.5, checkBoxRect.Top + 1.5));
+                renderContext.DrawLine(_markPen, bottom, new Point(checkBoxRect.Right - 1.5, checkBoxRect.Top + 1.5));
             }
         }
 

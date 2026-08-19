@@ -54,7 +54,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 }
 
                 Spread.RaiseZoomChanged(oldZoom, newZoom);
-                Spread.SheetViewPane?.UpdateZoomTransform();
+                Spread.SheetViewHost?.UpdateZoomTransform();
                 (activeSheetView.ViewPort as ViewPort)?.CalculateVisibleRange();
                 Spread.SheetTabControl?.UpdateScrollbars();
                 TextLayoutCache.Clear();

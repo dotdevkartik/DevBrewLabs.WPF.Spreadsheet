@@ -1,23 +1,28 @@
-﻿using System.Windows;
+using DevBrewLabs.WPF.Spreadsheet.UI.Interaction;
+using System.Windows;
 using System.Windows.Media;
 
 namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 {
-    internal class TopLeftSurface : SheetViewSurface
+    internal class TopLeftSurface : SurfaceBase
     {
         private SpreadHitTestResult _hitTest;
 
-        public TopLeftSurface()
+        public TopLeftSurface(SheetView view) : base(view)
         {
-            
         }
 
-        protected override Drawing GetDrawing()
+        protected override InteractionLayer CreateInteractionLayer()
         {
-            return SheetView.Spread.RenderEngine.TopLeftRenderer.Drawing;
+            return new TopLeftInteractionLayer(SheetView);
         }
 
-        protected override SpreadHitTestResult HitTestCore(SheetView sheetView, Point point)
+        protected override DrawingGroup CreateDrawing()
+        {
+            return new DrawingGroup();
+        }
+
+        protected override SpreadHitTestResult HitTestCore(Point point)
         {
             if (_hitTest == null)
             {              
@@ -28,7 +33,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                     Element = VisualElement.TopLeft,
                     Row = -1,
                     Column = -1,
-                    Sheet = sheetView
+                    Sheet = SheetView
                 };
             }
 

@@ -1,13 +1,13 @@
 ﻿namespace DevBrewLabs.Spreadsheet.Drawing
 {
-    public struct CellThickness
+    public struct DrawingThickness
     {
         public double Left { get; set; }
         public double Top { get; set; }
         public double Bottom { get; set; }
         public double Right { get; set; }
 
-        public CellThickness(double left, double top, double bottom, double right)
+        public DrawingThickness(double left, double top, double bottom, double right)
         {
             Left = left;
             Top = top;
@@ -15,7 +15,7 @@
             Bottom = bottom;
         }
 
-        public CellThickness(double left, double top)
+        public DrawingThickness(double left, double top)
         {
             Left = left;
             Top = top;
@@ -23,7 +23,7 @@
             Bottom = 0;
         }
 
-        public CellThickness(double thickness)
+        public DrawingThickness(double thickness)
         {
             Left = thickness;
             Top = thickness;

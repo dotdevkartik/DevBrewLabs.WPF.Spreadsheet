@@ -1,20 +1,20 @@
 using DevBrewLabs.Spreadsheet;
 using DevBrewLabs.Spreadsheet.Formatters;
-using DevBrewLabs.WPF.Spreadsheet.Rendering.Text;
 using DevBrewLabs.WPF.Spreadsheet.UI.Editors;
 using System.Windows;
 using System.Windows.Media;
 using DevBrewLabs.Spreadsheet.Drawing;
+using DevBrewLabs.WPF.Spreadsheet.Rendering;
 
 namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
 {
     public abstract class BaseCellType : ICellType
     {
-        internal virtual void DrawCell(DrawingContext drawingContext, object value, IStyle style, IFormatter formatter, Rect cellRect, RenderContext renderContext)
+        internal virtual void DrawCell(RenderContext renderContext, object value, IStyle style, IFormatter formatter, Rect cellRect)
         {
-            if (style.BackColor != CellColor.Transparent)
+            if (style.BackColor != DrawingColor.Transparent)
             {
-                drawingContext.DrawRectangle(Styling.WpfResourceCache.GetBrush(style.BackColor), null, cellRect);
+                renderContext.DrawRectangle(style.BackColor, null, cellRect);
             }
         }
 
