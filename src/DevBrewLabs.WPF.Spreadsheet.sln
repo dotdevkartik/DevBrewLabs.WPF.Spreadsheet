@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DevBrewLabs.Spreadsheet", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevBrewLabs.WPF.Spreadsheet.Tests", "DevBrewLabs.WPF.Spreadsheet.Tests\DevBrewLabs.WPF.Spreadsheet.Tests.csproj", "{0E228362-E800-45FA-9069-616D001DE2B7}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CalcEngine", "CalcEngine", "{CC3F9327-7444-4E5C-B8BB-1216C696CAB5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -86,6 +88,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B0E26B8D-99B1-438F-8CC3-1C23D955160F} = {CC3F9327-7444-4E5C-B8BB-1216C696CAB5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8982B8E2-3752-4B47-BDAD-BA40D1183999}
