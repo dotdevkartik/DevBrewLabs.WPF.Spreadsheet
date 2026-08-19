@@ -1,4 +1,4 @@
-﻿using DevBrewLabs.WPF.Spreadsheet.UI.Interaction;
+using DevBrewLabs.WPF.Spreadsheet.UI.Interaction;
 using System.Windows;
 using System.Windows.Media;
 
@@ -14,7 +14,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
         protected override InteractionLayer CreateInteractionLayer()
         {
-            return new RowHeadersInteractionLayer(SheetView);
+            return new TopLeftInteractionLayer(SheetView);
         }
 
         protected override DrawingGroup CreateDrawing()
