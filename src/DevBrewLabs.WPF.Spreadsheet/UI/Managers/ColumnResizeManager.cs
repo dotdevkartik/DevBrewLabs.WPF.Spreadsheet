@@ -56,16 +56,16 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             if (_initialWidths == null || _resizingColumn < 0 || _resizingColumn >= workSheet.ColumnCount)
                 return;
 
-            view.ClearTemporaryColumnWidths();
+            view.ViewPort.ClearTemporaryColumnWidths();
 
             if (logicalCurrentLocation >= _columnLocation)
             {
                 var newWidth = (int)(logicalCurrentLocation - _columnLocation);
-                view.SetTemporaryColumnWidth(_resizingColumn, newWidth);
+                view.ViewPort.SetTemporaryColumnWidth(_resizingColumn, newWidth);
             }
             else
             {
-                view.SetTemporaryColumnWidth(_resizingColumn, 0);
+                view.ViewPort.SetTemporaryColumnWidth(_resizingColumn, 0);
 
                 double currentLeft = _columnLocation;
                 int activeCol = -1;
@@ -87,16 +87,16 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 {
                     for (int c = activeCol + 1; c < _resizingColumn; c++)
                     {
-                        view.SetTemporaryColumnWidth(c, 0);
+                        view.ViewPort.SetTemporaryColumnWidth(c, 0);
                     }
 
-                    view.SetTemporaryColumnWidth(activeCol, Math.Max(0, (int)(logicalCurrentLocation - activeColLeft)));
+                    view.ViewPort.SetTemporaryColumnWidth(activeCol, Math.Max(0, (int)(logicalCurrentLocation - activeColLeft)));
                 }
                 else
                 {
                     for (int c = 0; c <= _resizingColumn; c++)
                     {
-                        view.SetTemporaryColumnWidth(c, 0);
+                        view.ViewPort.SetTemporaryColumnWidth(c, 0);
                     }
                 }
             }
@@ -118,7 +118,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 for (int i = 0; i < workSheet.ColumnCount; i++)
                 {
                     int oldWidth = _initialWidths[i];
-                    int newWidth = view.GetTemporaryColumnWidth(i) ?? oldWidth;
+                    int newWidth = view.ViewPort.GetTemporaryColumnWidth(i) ?? oldWidth;
                     if (oldWidth != newWidth)
                     {
                         workSheet.Columns[i].Width = newWidth;
@@ -133,7 +133,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                     Spread.UndoRedoManager.AddAction(action);
                 }
 
-                view.ClearTemporaryColumnWidths();
+                view.ViewPort.ClearTemporaryColumnWidths();
             }
 
             _resizingColumn = -1;
@@ -153,7 +153,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             var view = (SheetView)sheetView;
 
             // Discard any temporary widths — restores visual state to original
-            view.ClearTemporaryColumnWidths();
+            view.ViewPort.ClearTemporaryColumnWidths();
 
             _resizingColumn = -1;
             _columnLocation = -1;

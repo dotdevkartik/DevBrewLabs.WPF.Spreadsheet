@@ -24,13 +24,13 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
             for (int row = topRow; row <= bottomRow; row++)
             {
-                int rowHeight = ((SheetView)SheetView).GetTemporaryRowHeight(row) ?? rows.GetRowHeight(row);
+                int rowHeight = ((SheetView)SheetView).ViewPort.GetTemporaryRowHeight(row) ?? rows.GetRowHeight(row);
 
                 if (rowHeight == 0)
                     continue;
 
                 var sheetRow = rows.GetItem(row);
-                double rowLocation = ((SheetView)SheetView).GetTemporaryRowLocation(row) ?? viewport.GetRowLocation(row);
+                double rowLocation = ((SheetView)SheetView).ViewPort.GetTemporaryRowLocation(row) ?? viewport.GetRowLocation(row);
 
                 var y = (rowLocation - viewport.TopRowLocation) * zoom;
                 var scaledRowHeight = rowHeight * zoom;

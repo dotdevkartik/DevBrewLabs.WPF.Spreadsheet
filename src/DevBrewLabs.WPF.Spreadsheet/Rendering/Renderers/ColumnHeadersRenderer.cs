@@ -31,13 +31,13 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
                 for (int col = leftColumn; col <= rightColumn; col++)
                 {
-                    int columnWidth = ((SheetView)SheetView).GetTemporaryColumnWidth(col) ?? columns.GetColumnWidth(col);
+                    int columnWidth = ((SheetView)SheetView).ViewPort.GetTemporaryColumnWidth(col) ?? columns.GetColumnWidth(col);
 
                     if (columnWidth == 0)
                         continue;
 
                     var headerColumn = columns.GetItem(col);
-                    double colLocation = ((SheetView)SheetView).GetTemporaryColumnLocation(col) ?? SheetView.ViewPort.GetColumnLocation(col);
+                    double colLocation = ((SheetView)SheetView).ViewPort.GetTemporaryColumnLocation(col) ?? SheetView.ViewPort.GetColumnLocation(col);
 
                     var x = (colLocation - SheetView.ViewPort.LeftColumnLocation) * zoom;
                     var scaledColumnWidth = columnWidth * zoom;
