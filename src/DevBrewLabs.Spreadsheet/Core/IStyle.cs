@@ -7,11 +7,11 @@ namespace DevBrewLabs.Spreadsheet
         /// <summary>
         /// Gets or sets the foreground color.
         /// </summary>
-        CellColor ForeColor { get; set; }
+        DrawingColor ForeColor { get; set; }
         /// <summary>
         /// Gets or sets the background color.
         /// </summary>
-        CellColor BackColor { get; set; }
+        DrawingColor BackColor { get; set; }
         /// <summary>
         /// Gets or sets the font size.
         /// </summary>
@@ -19,19 +19,19 @@ namespace DevBrewLabs.Spreadsheet
         /// <summary>
         /// Gets or sets the font family.
         /// </summary>
-        CellFontFamily FontFamily { get; set; }
+        DrawingFontFamily FontFamily { get; set; }
         /// <summary>
         /// Gets or sets the font weight.
         /// </summary>
-        CellFontWeight FontWeight { get; set; }
+        DrawingFontWeight FontWeight { get; set; }
         /// <summary>
         /// Gets or sets the font style.
         /// </summary>
-        CellFontStyle FontStyle { get; set; }
+        DrawingFontStyle FontStyle { get; set; }
         /// <summary>
         /// Gets or sets the padding.
         /// </summary>
-        CellThickness Padding { get; set; }
+        DrawingThickness Padding { get; set; }
         /// <summary>
         /// Gets or sets the vertical alignment.
         /// </summary>

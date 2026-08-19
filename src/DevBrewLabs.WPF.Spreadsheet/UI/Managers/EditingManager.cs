@@ -48,7 +48,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             if (locked)
                 return;
 
-            var cellsInteractionLayer = _editingView.Spread.SheetViewPane.CellsRegion.GetInteractionLayer();
+            var cellsInteractionLayer = _editingView.CellsSurface.GetInteractionLayer();
             var cellRect = _editingView.ViewPort.GetCellRect(row, column);
             cellRect.X -= _editingView.ViewPort.As<ViewPort>().LeftColumnLocation;
             cellRect.Y -= _editingView.ViewPort.As<ViewPort>().TopRowLocation;
@@ -139,7 +139,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             if (!IsEditing)
                 return false;
 
-            var cellsInteractionLayer = _editingView.Spread.SheetViewPane.CellsRegion.GetInteractionLayer();
+            var cellsInteractionLayer = _editingView.CellsSurface.GetInteractionLayer();
 
             if (!commitChanges)
             {

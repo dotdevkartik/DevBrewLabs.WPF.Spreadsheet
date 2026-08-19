@@ -17,16 +17,6 @@ namespace DevBrewLabs.WPF.Spreadsheet
             return source.Contains(rect) || source.IntersectsWith(rect);
         }
 
-        internal static void EnsureFree(this InteractionLayer layer)
-        {
-            if (!layer.IsAttached)
-                return;
-
-            layer.DetachFromRegion();
-            layer.ReleaseMouseCapture();
-            layer.InvalidateVisual();
-        }
-
         /// <summary>
         /// Gets the style applied on cell.
         /// </summary>

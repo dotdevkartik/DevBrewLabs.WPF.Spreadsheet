@@ -7,6 +7,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 {
     internal class RowHeadersInteractionLayer : InteractionLayer
     {
+        public RowHeadersInteractionLayer(SheetView view) : base(view)
+        {
+            
+        }
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
             base.OnMouseLeftButtonDown(e);

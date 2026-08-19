@@ -6,10 +6,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.Styling
     internal readonly struct FontCacheKey : IEquatable<FontCacheKey>
     {
         public string FontFamily { get; }
-        public CellFontWeight FontWeight { get; }
-        public CellFontStyle FontStyle { get; }
+        public DrawingFontWeight FontWeight { get; }
+        public DrawingFontStyle FontStyle { get; }
 
-        public FontCacheKey(string fontFamily, CellFontWeight weight, CellFontStyle style)
+        public FontCacheKey(string fontFamily, DrawingFontWeight weight, DrawingFontStyle style)
         {
             FontFamily = fontFamily;
             FontWeight = weight;

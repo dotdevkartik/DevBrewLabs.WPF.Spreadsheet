@@ -1,5 +1,4 @@
 using DevBrewLabs.Spreadsheet;
-
 using DevBrewLabs.WPF.Spreadsheet.UI.Interaction;
 using System;
 using System.Windows;
@@ -8,53 +7,41 @@ using System.Windows.Media;
 
 namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 {
-    internal class SheetViewPane : Grid, IDisposable
+    internal class SheetViewHost : Grid, IDisposable
     {
         private Spread _spread;
         private SheetView _sheetView;
-        private Worksheet _workSheet;
-        private CellsInteractionLayer _cellInteractionLayer;
-        private RowHeadersInteractionLayer _rowHeadersInteractionLayer;
-        private ColumnHeadersInteractionLayer _columnHeadersInteractionLayer;
-        private TopLeftInteractionLayer _topLeftInteractionLayer;
 
-        public CellsSurface CellsRegion { get; private set; }
-        public RowHeadersSurface RowHeadersRegion { get; private set; }
-        public ColumnHeadersSurface ColumnHeadersRegion { get; private set; }
-        public TopLeftSurface TopLeftRegion { get; private set; }
-
-        public SheetViewPane(Spread spread)
+        public SheetViewHost(Spread spread)
         {
             _spread = spread;
             InitPaneLayout();
-            InitRegions();
-            InitInteractionLayers();
         }
   
-        public void AttachSheet(SheetView sheetView)
+        public void HostSheet(SheetView sheetView)
         {
             _sheetView = sheetView;
-            _workSheet = (Worksheet)sheetView.WorkSheet;
 
-            CellsRegion.AttachSheet(sheetView);
-            RowHeadersRegion.AttachSheet(sheetView);
-            ColumnHeadersRegion.AttachSheet(sheetView);
-            TopLeftRegion.AttachSheet(sheetView);
+            Children.Clear();
 
-            _cellInteractionLayer.EnsureFree();
-            _columnHeadersInteractionLayer.EnsureFree();
-            _rowHeadersInteractionLayer.EnsureFree();
-            _topLeftInteractionLayer.EnsureFree();
+            Children.Add(sheetView.CellsSurface);
+            SetRow(sheetView.CellsSurface, 1);
+            SetColumn(sheetView.CellsSurface, 1);
 
-            _cellInteractionLayer.AttachToRegion(CellsRegion);
-            _columnHeadersInteractionLayer.AttachToRegion(ColumnHeadersRegion);
-            _rowHeadersInteractionLayer.AttachToRegion(RowHeadersRegion);
-            _topLeftInteractionLayer.AttachToRegion(TopLeftRegion);
+            Children.Add(sheetView.RowHeadersSurface);
+            SetRow(sheetView.RowHeadersSurface, 1);
+            SetColumn(sheetView.RowHeadersSurface, 0);
+
+            Children.Add(sheetView.ColumnHeadersSurface);
+            SetRow(sheetView.ColumnHeadersSurface, 0);
+            SetColumn(sheetView.ColumnHeadersSurface, 1);
+
+            Children.Add(sheetView.TopLeftSurface);
+            SetRow(sheetView.TopLeftSurface, 0);
+            SetColumn(sheetView.TopLeftSurface, 0);
 
             var style = _spread.WorkBook.GetNamedStyle(StyleKeys.DefaultSheetStyleKey);
-            CellsRegion.Background = style != null ? Styling.WpfResourceCache.GetBrush(style.BackColor) : null;
-
-            _spread.RenderEngine.SetRenderSheet(sheetView);
+            sheetView.CellsSurface.Background = style != null ? Styling.WpfResourceCache.GetBrush(style.BackColor) : null;
             UpdateZoomTransform();
         }
 
@@ -75,27 +62,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             }
         }
 
-        public void DrawRange(int topRow, int leftCol, int bottomRow, int rightCol)
-        {
-            if (_sheetView == null)
-                return;
-
-            var viewRange = _sheetView.ViewPort.ViewRange;
-
-            if (!viewRange.IsValid)
-                return;
-
-            _spread.RenderEngine.BeginRender();
-            try
-            {
-                _spread.RenderEngine.DrawCellRange(topRow, leftCol, bottomRow, rightCol);
-            }
-            finally
-            {
-                _spread.RenderEngine.EndRender();
-            }
-        }
-
         /// <summary>
         /// Draws the sheet using render engine.
         /// </summary>
@@ -109,7 +75,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
         {
             if (_sheetView == null)
                 return;
-
             var viewRange = _sheetView.ViewPort.ViewRange;
 
             if (!viewRange.IsValid)
@@ -120,63 +85,29 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             {
                 if (columnHeaders)
                 {
-                    _spread.RenderEngine.DrawColumnHeaderCells(viewRange.LeftColumn, viewRange.RightColumn);
-                    _spread.RenderEngine.DrawColumnHeaderGridLines(viewRange.LeftColumn, viewRange.RightColumn);
+                    _spread.RenderEngine.DrawColumnHeaderCells(_sheetView, viewRange.LeftColumn, viewRange.RightColumn);
+                    _spread.RenderEngine.DrawColumnHeaderGridLines(_sheetView, viewRange.LeftColumn, viewRange.RightColumn);
                 }
 
                 if (rowHeaders)
                 {
-                    _spread.RenderEngine.DrawRowHeaderCells(viewRange.TopRow, viewRange.BottomRow);
-                    _spread.RenderEngine.DrawRowHeaderGridLines(viewRange.TopRow, viewRange.BottomRow);
+                    _spread.RenderEngine.DrawRowHeaderCells(_sheetView, viewRange.TopRow, viewRange.BottomRow);
+                    _spread.RenderEngine.DrawRowHeaderGridLines(_sheetView, viewRange.TopRow, viewRange.BottomRow);
                 }
 
                 if (topLeft)
-                    _spread.RenderEngine.DrawTopLeft();
+                    _spread.RenderEngine.DrawTopLeft(_sheetView);
 
                 if (cells)
-                    _spread.RenderEngine.DrawCellRange(viewRange.TopRow, viewRange.LeftColumn, viewRange.BottomRow, viewRange.RightColumn);
+                    _spread.RenderEngine.DrawCellRange(_sheetView, viewRange.TopRow, viewRange.LeftColumn, viewRange.BottomRow, viewRange.RightColumn);
 
                 if (gridLines)
-                    _spread.RenderEngine.DrawGridLines(viewRange.TopRow, viewRange.LeftColumn, viewRange.BottomRow, viewRange.RightColumn);
+                    _spread.RenderEngine.DrawGridLines(_sheetView, viewRange.TopRow, viewRange.LeftColumn, viewRange.BottomRow, viewRange.RightColumn);
             }
             finally
             {
                 _spread.RenderEngine.EndRender();
             }
-        }
-
-        private void InitInteractionLayers()
-        {
-            _cellInteractionLayer = new CellsInteractionLayer();
-            _rowHeadersInteractionLayer = new RowHeadersInteractionLayer();
-            _columnHeadersInteractionLayer = new ColumnHeadersInteractionLayer();
-            _topLeftInteractionLayer = new TopLeftInteractionLayer();
-        }
-
-        /// <summary>
-        /// Initializes sheet render regions.
-        /// </summary>
-        private void InitRegions()
-        {
-            CellsRegion = new CellsSurface();
-            Children.Add(CellsRegion);
-            SetRow(CellsRegion, 1);
-            SetColumn(CellsRegion, 1);
-
-            RowHeadersRegion = new RowHeadersSurface();
-            Children.Add(RowHeadersRegion);
-            SetRow(RowHeadersRegion, 1);
-            SetColumn(RowHeadersRegion, 0);
-
-            ColumnHeadersRegion = new ColumnHeadersSurface();
-            Children.Add(ColumnHeadersRegion);
-            SetRow(ColumnHeadersRegion, 0);
-            SetColumn(ColumnHeadersRegion, 1);
-
-            TopLeftRegion = new TopLeftSurface();
-            Children.Add(TopLeftRegion);
-            SetRow(TopLeftRegion, 0);
-            SetColumn(TopLeftRegion, 0);
         }
 
         /// <summary>
@@ -238,9 +169,14 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
         public void RefreshInteractionLayers(bool rowHeaders = true, bool columnHeaders = true, bool cells = true)
         {
+            if(_sheetView == null)
+            {
+                return;
+            }
+
             if (rowHeaders)
             {
-                var rowHeadersInteractionLayer = RowHeadersRegion.GetInteractionLayer();
+                var rowHeadersInteractionLayer = _sheetView.RowHeadersSurface.GetInteractionLayer();
 
                 if (rowHeadersInteractionLayer != null && rowHeadersInteractionLayer.IsLoaded)
                     rowHeadersInteractionLayer.InvalidateVisual();
@@ -248,7 +184,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
             if (columnHeaders)
             {
-                var columnHeadersInteractionLayer = ColumnHeadersRegion.GetInteractionLayer();
+                var columnHeadersInteractionLayer = _sheetView.ColumnHeadersSurface.GetInteractionLayer();
 
                 if (columnHeadersInteractionLayer != null && columnHeadersInteractionLayer.IsLoaded)
                     columnHeadersInteractionLayer.InvalidateVisual();
@@ -256,7 +192,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
             if (cells)
             {
-                var cellsInteractionLayer = CellsRegion.GetInteractionLayer() as CellsInteractionLayer;
+                var cellsInteractionLayer = _sheetView.CellsSurface.GetInteractionLayer() as CellsInteractionLayer;
 
                 if (cellsInteractionLayer != null && cellsInteractionLayer.IsLoaded)
                     cellsInteractionLayer.UpdateSelectionRects();
@@ -271,7 +207,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
             if (_sheetView != null)
             {
-                _sheetView.ViewPort?.As<UI.ViewPort>()?.CalculateVisibleRange();
+                _sheetView.ViewPort.CalculateVisibleRange();
                 _spread.Invalidate();
             }
         }
@@ -280,23 +216,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
         {
             RowDefinitions.Clear();
             ColumnDefinitions.Clear();
-            _cellInteractionLayer.Children.Clear();
-            _rowHeadersInteractionLayer.Children.Clear();
-            _topLeftInteractionLayer.Children.Clear();
-            _columnHeadersInteractionLayer.Children.Clear();
-            CellsRegion.Children.Clear();
-            RowHeadersRegion.Children.Clear();
-            ColumnHeadersRegion.Children.Clear();
-            TopLeftRegion.Children.Clear();
             Children.Clear();
-            _cellInteractionLayer = null;
-            _columnHeadersInteractionLayer = null;
-            _rowHeadersInteractionLayer = null;
-            _topLeftInteractionLayer = null;
-            CellsRegion = null;
-            RowHeadersRegion = null;
-            ColumnHeadersRegion = null;
-            TopLeftRegion = null;
         }
     }
 }

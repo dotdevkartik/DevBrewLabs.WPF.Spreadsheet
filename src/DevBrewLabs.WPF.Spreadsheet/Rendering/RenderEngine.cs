@@ -1,52 +1,33 @@
-using DevBrewLabs.Spreadsheet;
-using System;
-using System.Windows.Threading;
-using System.Windows.Media;
 using DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers;
+using System;
+using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 {
-    internal class RenderEngine : IRenderEngine, IDisposable
+    internal class RenderEngine : IDisposable
     {
-        private SheetView _sheetView;
-        private Worksheet _workSheet;
-        private DispatcherProcessingDisabled _dispatcherDisabled;
+        private RendererBase _gridLinesRenderer;
+        private RendererBase _cellsRenderer;
+        private RendererBase _rowHeadersRenderer;
+        private RendererBase _rowHeaderGridLinesRenderer;
+        private RendererBase _columnHeadersRenderer;
+        private RendererBase _columnHeaderGridLinesRenderer;
+        private RendererBase _topLeftRenderer;
 
-        #region Renderers
-        internal Renderer GridLinesRenderer { get; }
-        internal Renderer CellsRenderer { get; }
-        internal Renderer RowHeadersRenderer { get; }
-        internal Renderer ColumnHeadersRenderer { get; }
-        internal Renderer RowHeaderGridLinesRenderer { get; }
-        internal Renderer ColumnHeaderGridLinesRenderer { get; }
-        internal Renderer TopLeftRenderer { get; }
-        #endregion
+        private DispatcherProcessingDisabled _dispatcherDisabled;
 
         public RenderEngine()
         {
-            CellsRenderer = new CellsRenderer();
-            GridLinesRenderer = new GridLinesRenderer();
-            RowHeadersRenderer = new RowHeadersRenderer();
-            ColumnHeadersRenderer = new ColumnHeadersRenderer();
-            RowHeaderGridLinesRenderer = new RowHeaderGridLinesRenderer();
-            ColumnHeaderGridLinesRenderer = new ColumnHeaderGridLinesRenderer();
-            TopLeftRenderer = new TopLeftRenderer();
+            _cellsRenderer = new CellsRenderer();
+            _gridLinesRenderer = new GridLinesRenderer();
+            _rowHeadersRenderer = new RowHeadersRenderer();
+            _columnHeadersRenderer = new ColumnHeadersRenderer();
+            _rowHeaderGridLinesRenderer = new RowHeaderGridLinesRenderer();
+            _columnHeaderGridLinesRenderer = new ColumnHeaderGridLinesRenderer();
+            _topLeftRenderer = new TopLeftRenderer();
         }
 
-        public void SetRenderSheet(SheetView sheetView)
-        {
-            _sheetView = sheetView;
-            _workSheet = (Worksheet)sheetView.WorkSheet;
-            CellsRenderer.SetRenderSheet(sheetView);
-            GridLinesRenderer.SetRenderSheet(sheetView);
-            RowHeadersRenderer.SetRenderSheet(sheetView);
-            ColumnHeadersRenderer.SetRenderSheet(sheetView);
-            RowHeaderGridLinesRenderer.SetRenderSheet(sheetView);
-            ColumnHeaderGridLinesRenderer.SetRenderSheet(sheetView);
-            TopLeftRenderer.SetRenderSheet(sheetView);
-        }
-
-        #region Render Begin/End
         public void BeginRender()
         {
             InitRender();
@@ -57,73 +38,95 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             _dispatcherDisabled = Dispatcher.CurrentDispatcher.DisableProcessing();
         }
 
+        public void DrawGridLines(SheetView view, int topRow, int leftCol, int bottomRow, int rightCol)
+        {
+            DrawingGroup group = view.CellsSurface.GetDrawing();
+            DrawingGroup gridLinesDrawing = group.Children[1] as DrawingGroup;
+            gridLinesDrawing.ClipGeometry = null;
+            using (RenderContext context = new RenderContext(gridLinesDrawing.Open(), view))
+            {
+                _gridLinesRenderer.OnRender(context, topRow, leftCol, bottomRow, rightCol);
+            }
+        }
+
+        public void DrawCellRange(SheetView view, int topRow, int leftColumn, int bottomRow, int rightColumn)
+        {
+            DrawingGroup group = view.CellsSurface.GetDrawing();
+            DrawingGroup cellsDrawing = group.Children[0] as DrawingGroup;
+            cellsDrawing.ClipGeometry = null;
+            using (RenderContext context = new RenderContext(cellsDrawing.Open(), view))
+            {
+                _cellsRenderer.OnRender(context, topRow, leftColumn, bottomRow, rightColumn);
+            }
+        }
+
+        public void DrawRowHeaderCells(SheetView view, int topRow, int bottomRow)
+        {
+            DrawingGroup group = view.RowHeadersSurface.GetDrawing();
+            DrawingGroup rowHeadersDrawing = group.Children[0] as DrawingGroup;
+            rowHeadersDrawing.ClipGeometry = null;
+            using (RenderContext context = new RenderContext(rowHeadersDrawing.Open(), view))
+            {
+                _rowHeadersRenderer.OnRender(context, topRow, 0, bottomRow, view.WorkSheet.RowHeaders.ColumnCount - 1);
+            }
+        }
+
+        public void DrawRowHeaderGridLines(SheetView view, int topRow, int bottomRow)
+        {
+            DrawingGroup group = view.RowHeadersSurface.GetDrawing();
+            DrawingGroup gridLinesDrawing = group.Children[1] as DrawingGroup;
+            gridLinesDrawing.ClipGeometry = null;
+            using (RenderContext context = new RenderContext(gridLinesDrawing.Open(), view))
+            {
+                _rowHeaderGridLinesRenderer.OnRender(context, topRow, 0, bottomRow, view.WorkSheet.RowHeaders.ColumnCount - 1);
+            }
+        }
+
+        public void DrawColumnHeaderCells(SheetView view, int leftCol, int rightCol)
+        {
+            DrawingGroup group = view.ColumnHeadersSurface.GetDrawing();
+            DrawingGroup columnHeaderDrawing = group.Children[0] as DrawingGroup;
+            columnHeaderDrawing.ClipGeometry = null;
+            using (RenderContext context = new RenderContext(columnHeaderDrawing.Open(), view))
+            {
+                _columnHeadersRenderer.OnRender(context, 0, leftCol, view.WorkSheet.ColumnHeaders.RowCount - 1, rightCol);
+            }
+        }
+
+        public void DrawColumnHeaderGridLines(SheetView view, int leftCol, int rightCol)
+        {
+            DrawingGroup group = view.ColumnHeadersSurface.GetDrawing();
+            DrawingGroup gridLineDrawing = group.Children[1] as DrawingGroup;
+            gridLineDrawing.ClipGeometry = null;
+            using (RenderContext context = new RenderContext(gridLineDrawing.Open(), view))
+            {
+                _columnHeaderGridLinesRenderer.OnRender(context, 0, leftCol, view.WorkSheet.ColumnHeaders.RowCount - 1, rightCol);
+            }
+        }
+
+        public void DrawTopLeft(SheetView view)
+        {
+            DrawingGroup drawing = view.TopLeftSurface.GetDrawing();
+            using (RenderContext context = new RenderContext(drawing.Open(), view))
+            {
+                _topLeftRenderer.OnRender(context, -1, -1, -1, -1);
+            }
+        }
+
         public void EndRender()
         {
-            CellsRenderer.EndRender();
-            GridLinesRenderer.EndRender();
-            RowHeadersRenderer.EndRender();
-            ColumnHeadersRenderer.EndRender();
-            RowHeaderGridLinesRenderer.EndRender();
-            ColumnHeaderGridLinesRenderer.EndRender();
-            TopLeftRenderer.EndRender();
             _dispatcherDisabled.Dispose();
-        }
-        #endregion
-
-        public void DrawGridLines(int topRow, int leftCol, int bottomRow, int rightCol)
-        {
-            GridLinesRenderer.Render(topRow, leftCol, bottomRow, rightCol);
-        }
-
-        public void DrawCellRange(int topRow, int leftColumn, int bottomRow, int rightColumn)
-        {
-            CellsRenderer.Render(topRow, leftColumn, bottomRow, rightColumn);
-        }
-
-        public void DrawRowHeaderCells(int topRow, int bottomRow)
-        {
-            if (_sheetView.HeadersVisibility == HeadersVisibility.Row || _sheetView.HeadersVisibility == HeadersVisibility.Both)
-            {
-                RowHeadersRenderer.Render(topRow, 0, bottomRow, _workSheet.RowHeaders.ColumnCount - 1);
-            }
-        }
-
-        public void DrawRowHeaderGridLines(int topRow, int bottomRow)
-        {
-            if (_sheetView.HeadersVisibility == HeadersVisibility.Row || _sheetView.HeadersVisibility == HeadersVisibility.Both)
-            {
-                RowHeaderGridLinesRenderer.Render(topRow, 0, bottomRow, _workSheet.RowHeaders.ColumnCount - 1);
-            }
-        }
-
-        public void DrawColumnHeaderCells(int leftCol, int rightCol)
-        {
-            if (_sheetView.HeadersVisibility == HeadersVisibility.Column || _sheetView.HeadersVisibility == HeadersVisibility.Both)
-            {
-                ColumnHeadersRenderer.Render(0, leftCol, _workSheet.ColumnHeaders.RowCount - 1, rightCol);
-            }
-        }
-
-        public void DrawColumnHeaderGridLines(int leftCol, int rightCol)
-        {
-            if (_sheetView.HeadersVisibility == HeadersVisibility.Column || _sheetView.HeadersVisibility == HeadersVisibility.Both)
-            {
-                ColumnHeaderGridLinesRenderer.Render(0, leftCol, _workSheet.ColumnHeaders.RowCount - 1, rightCol);
-            }
-        }
-
-        public void DrawTopLeft()
-        {
-            if (_sheetView.HeadersVisibility == HeadersVisibility.Both)
-            {
-                TopLeftRenderer.Render(-1, -1, -1, -1);
-            }
         }
 
         public void Dispose()
         {
-            _workSheet = null;
-            _sheetView = null;
+            _cellsRenderer = null;
+            _gridLinesRenderer = null;
+            _columnHeaderGridLinesRenderer = null;
+            _columnHeadersRenderer = null;
+            _rowHeaderGridLinesRenderer = null;
+            _rowHeadersRenderer = null;
+            _topLeftRenderer = null;
         }
     }
 }

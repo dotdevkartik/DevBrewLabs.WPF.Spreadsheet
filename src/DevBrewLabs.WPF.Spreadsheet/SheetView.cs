@@ -1,5 +1,6 @@
 using DevBrewLabs.Spreadsheet;
 using DevBrewLabs.Spreadsheet.Utils;
+using DevBrewLabs.WPF.Spreadsheet.Rendering;
 using DevBrewLabs.WPF.Spreadsheet.Rendering.Text;
 using DevBrewLabs.WPF.Spreadsheet.UI;
 using System;
@@ -18,6 +19,15 @@ namespace DevBrewLabs.WPF.Spreadsheet
         private Columns _columns;
         private double _zoomFactor = 1.0;
         private CellRange _selection;
+        private CellsSurface _cellsSurface;
+        private RowHeadersSurface _rowsSurface;
+        private ColumnHeadersSurface _columnsSurface;
+        private TopLeftSurface _topLeftSurface;
+
+        public CellsSurface CellsSurface => _cellsSurface;
+        public RowHeadersSurface RowHeadersSurface => _rowsSurface;
+        public ColumnHeadersSurface ColumnHeadersSurface => _columnsSurface;
+        public TopLeftSurface TopLeftSurface => _topLeftSurface;
 
         #region Properties
         public GridLineVisibility GridLineVisibility { get; set; }
@@ -64,6 +74,12 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public SheetView(Spread spread, Worksheet worksheet)
         {
             Spread = spread;
+
+            _cellsSurface = new CellsSurface(this);
+            _rowsSurface = new RowHeadersSurface(this);
+            _columnsSurface = new ColumnHeadersSurface(this);
+            _topLeftSurface = new TopLeftSurface(this);
+
             _workSheet = worksheet;
             _rows = (Rows)_workSheet.Rows;
             _columns = (Columns)_workSheet.Columns;
@@ -200,7 +216,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
 
         private void SetHeadersVisibility()
         {
-            Spread.SheetViewPane.UpdateHeadersSize();
+            Spread.SheetViewHost.UpdateHeadersSize();
         }
 
         internal void InternalSetZoomFactor(double zoomFactor)

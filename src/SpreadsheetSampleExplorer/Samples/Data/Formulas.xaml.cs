@@ -52,17 +52,17 @@ namespace SpreadsheetSampleExplorer.Samples
             // Section Header Style
             var titleStyle = new CellStyle();
             titleStyle.FontSize = 14;
-            titleStyle.FontWeight = CellFontWeight.Bold;
-            titleStyle.ForeColor = CellColor.FromArgb(255, 16, 124, 65);
+            titleStyle.FontWeight = DrawingFontWeight.Bold;
+            titleStyle.ForeColor = DrawingColor.FromArgb(255, 16, 124, 65);
 
             sheet.Cells[0, 0].Value = "REGIONAL SALES PERFORMANCE (DEPENDENT FORMULAS)";
             sheet.Cells[0, 0].Style = titleStyle;
 
             // Table Header Style
             var headerStyle = new CellStyle();
-            headerStyle.FontWeight = CellFontWeight.Bold;
-            headerStyle.BackColor = CellColor.FromArgb(255, 16, 124, 65); // Green Header
-            headerStyle.ForeColor = CellColor.White;
+            headerStyle.FontWeight = DrawingFontWeight.Bold;
+            headerStyle.BackColor = DrawingColor.FromArgb(255, 16, 124, 65); // Green Header
+            headerStyle.ForeColor = DrawingColor.White;
 
             string[] headers = { "Region", "Units Sold", "Unit Price ($)", "Subtotal ($)", "Tax (8%)", "Net Total ($)", "Avg per Unit ($)" };
             for (int col = 0; col < headers.Length; col++)
@@ -100,7 +100,7 @@ namespace SpreadsheetSampleExplorer.Samples
             // Summary Row at Row 9 (0-indexed: 8)
             int summaryRow = 8;
             var summaryStyle = new CellStyle();
-            summaryStyle.FontWeight = CellFontWeight.Bold;
+            summaryStyle.FontWeight = DrawingFontWeight.Bold;
 
             sheet.Cells[summaryRow, 0].Value = "Total / Overall";
             sheet.Cells[summaryRow, 0].Style = summaryStyle;
@@ -115,8 +115,8 @@ namespace SpreadsheetSampleExplorer.Samples
             sheet.Cells[summaryRow, 4].Style = summaryStyle;
 
             var grandTotalStyle = new CellStyle();
-            grandTotalStyle.FontWeight = CellFontWeight.Bold;
-            grandTotalStyle.BackColor = CellColor.FromArgb(255, 230, 245, 235);
+            grandTotalStyle.FontWeight = DrawingFontWeight.Bold;
+            grandTotalStyle.BackColor = DrawingColor.FromArgb(255, 230, 245, 235);
 
             sheet.Cells[summaryRow, 5].Formula = "=SUM(F5:F8)"; // Grand Net Total (Col F)
             sheet.Cells[summaryRow, 5].Style = grandTotalStyle;
@@ -136,17 +136,17 @@ namespace SpreadsheetSampleExplorer.Samples
             // Section Header Style
             var titleStyle = new CellStyle();
             titleStyle.FontSize = 14;
-            titleStyle.FontWeight = CellFontWeight.Bold;
-            titleStyle.ForeColor = CellColor.FromArgb(255, 31, 78, 121);
+            titleStyle.FontWeight = DrawingFontWeight.Bold;
+            titleStyle.ForeColor = DrawingColor.FromArgb(255, 31, 78, 121);
 
             sheet.Cells[0, 0].Value = "OPERATING EXPENSES (COST BREAKDOWN)";
             sheet.Cells[0, 0].Style = titleStyle;
 
             // Table Header Style
             var headerStyle = new CellStyle();
-            headerStyle.FontWeight = CellFontWeight.Bold;
-            headerStyle.BackColor = CellColor.FromArgb(255, 31, 78, 121); // Blue Header
-            headerStyle.ForeColor = CellColor.White;
+            headerStyle.FontWeight = DrawingFontWeight.Bold;
+            headerStyle.BackColor = DrawingColor.FromArgb(255, 31, 78, 121); // Blue Header
+            headerStyle.ForeColor = DrawingColor.White;
 
             string[] headers = { "Expense Category", "Q1 ($)", "Q2 ($)", "Q3 ($)", "Q4 ($)", "Annual Total ($)", "% of OPEX" };
             for (int col = 0; col < headers.Length; col++)
@@ -179,7 +179,7 @@ namespace SpreadsheetSampleExplorer.Samples
             // Total OPEX Row at Row 9 in Excel (0-indexed: 8)
             int totalRow = 8;
             var summaryStyle = new CellStyle();
-            summaryStyle.FontWeight = CellFontWeight.Bold;
+            summaryStyle.FontWeight = DrawingFontWeight.Bold;
 
             sheet.Cells[totalRow, 0].Value = "Total OPEX";
             sheet.Cells[totalRow, 0].Style = summaryStyle;
@@ -191,8 +191,8 @@ namespace SpreadsheetSampleExplorer.Samples
 
             // Grand Total OPEX (Col F)
             var grandTotalStyle = new CellStyle();
-            grandTotalStyle.FontWeight = CellFontWeight.Bold;
-            grandTotalStyle.BackColor = CellColor.FromArgb(255, 220, 230, 245);
+            grandTotalStyle.FontWeight = DrawingFontWeight.Bold;
+            grandTotalStyle.BackColor = DrawingColor.FromArgb(255, 220, 230, 245);
 
             sheet.Cells[totalRow, 5].Formula = "=SUM(F4:F8)";
             sheet.Cells[totalRow, 5].Style = grandTotalStyle;
@@ -213,16 +213,16 @@ namespace SpreadsheetSampleExplorer.Samples
             // Section Header Style
             var titleStyle = new CellStyle();
             titleStyle.FontSize = 14;
-            titleStyle.FontWeight = CellFontWeight.Bold;
+            titleStyle.FontWeight = DrawingFontWeight.Bold;
 
             sheet.Cells[0, 0].Value = "EXECUTIVE SUMMARY (INTERLINKED MULTI-SHEET FORMULAS)";
             sheet.Cells[0, 0].Style = titleStyle;
 
             // Table Header Style
             var headerStyle = new CellStyle();
-            headerStyle.FontWeight = CellFontWeight.Bold;
-            headerStyle.BackColor = CellColor.FromArgb(255, 70, 70, 70); // Dark Gray Header
-            headerStyle.ForeColor = CellColor.White;
+            headerStyle.FontWeight = DrawingFontWeight.Bold;
+            headerStyle.BackColor = DrawingColor.FromArgb(255, 70, 70, 70); // Dark Gray Header
+            headerStyle.ForeColor = DrawingColor.White;
 
             string[] headers = { "Key Metric", "Calculated Value", "Formula", "Source & Dependency Description" };
             for (int col = 0; col < headers.Length; col++)
@@ -247,12 +247,12 @@ namespace SpreadsheetSampleExplorer.Samples
             };
 
             var boldStyle = new CellStyle();
-            boldStyle.FontWeight = CellFontWeight.Bold;
-            boldStyle.BackColor = CellColor.FromArgb(255, 220, 245, 230);
+            boldStyle.FontWeight = DrawingFontWeight.Bold;
+            boldStyle.BackColor = DrawingColor.FromArgb(255, 220, 245, 230);
 
             var highlightStyle = new CellStyle();
-            highlightStyle.FontWeight = CellFontWeight.Bold;
-            highlightStyle.BackColor = CellColor.FromArgb(255, 220, 245, 230);
+            highlightStyle.FontWeight = DrawingFontWeight.Bold;
+            highlightStyle.BackColor = DrawingColor.FromArgb(255, 220, 245, 230);
 
             for (int i = 0; i < summaryRows.Length; i++)
             {

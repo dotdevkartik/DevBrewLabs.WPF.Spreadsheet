@@ -204,7 +204,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
 
         public void RefreshBounds()
         {
-            var sheetCanvas = _sheetView.Spread.SheetViewPane.CellsRegion;
+            var sheetCanvas = _sheetView.CellsSurface;
             double zoom = _sheetView != null && _sheetView.ZoomFactor > 0 ? _sheetView.ZoomFactor : 1.0;
             _actualBounds.X = _sheetView.ScrollPosition.X;
             _actualBounds.Y = _sheetView.ScrollPosition.Y;

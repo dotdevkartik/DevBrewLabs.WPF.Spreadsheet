@@ -27,12 +27,12 @@ namespace SpreadsheetSampleExplorer.Samples
             workSheet.AddSpan(1, 1, 2, 7); // Span 2 rows, 7 columns
             
             var titleStyle = new CellStyle { 
-                FontWeight = CellFontWeight.Bold, 
+                FontWeight = DrawingFontWeight.Bold, 
                 FontSize = 22, 
                 HorizontalAlignment = CellHorizontalAlignment.Center,
                 VerticalAlignment = CellVerticalAlignment.Center,
-                BackColor = CellColor.FromArgb(255, 30, 64, 175), // Deep blue
-                ForeColor = CellColor.FromArgb(255, 255, 255, 255) // White
+                BackColor = DrawingColor.FromArgb(255, 30, 64, 175), // Deep blue
+                ForeColor = DrawingColor.FromArgb(255, 255, 255, 255) // White
             };
             workSheet.SetStyle(1, 1, titleStyle);
 
@@ -45,17 +45,17 @@ namespace SpreadsheetSampleExplorer.Samples
             workSheet.AddSpan(4, 6, 1, 2);
 
             var regionHeaderStyle = new CellStyle {
-                FontWeight = CellFontWeight.Bold,
+                FontWeight = DrawingFontWeight.Bold,
                 HorizontalAlignment = CellHorizontalAlignment.Center,
-                BackColor = CellColor.FromArgb(255, 224, 231, 255), // Light blue
-                ForeColor = CellColor.FromArgb(255, 30, 58, 138)
+                BackColor = DrawingColor.FromArgb(255, 224, 231, 255), // Light blue
+                ForeColor = DrawingColor.FromArgb(255, 30, 58, 138)
             };
             workSheet.SetStyle(4, 2, regionHeaderStyle);
             workSheet.SetStyle(4, 4, regionHeaderStyle);
             workSheet.SetStyle(4, 6, regionHeaderStyle);
 
             // Sub headers (Target vs Actual)
-            var subHeaderStyle = new CellStyle { FontWeight = CellFontWeight.Bold, HorizontalAlignment = CellHorizontalAlignment.Right };
+            var subHeaderStyle = new CellStyle { FontWeight = DrawingFontWeight.Bold, HorizontalAlignment = CellHorizontalAlignment.Right };
             for(int i = 0; i < 3; i++)
             {
                 workSheet.SetValue(5, 2 + (i * 2), "Target");
@@ -69,7 +69,7 @@ namespace SpreadsheetSampleExplorer.Samples
             for(int i = 0; i < products.Length; i++)
             {
                 workSheet.SetValue(6 + i, 1, products[i]);
-                workSheet.SetStyle(6 + i, 1, new CellStyle { FontWeight = CellFontWeight.Bold });
+                workSheet.SetStyle(6 + i, 1, new CellStyle { FontWeight = DrawingFontWeight.Bold });
             }
 
             int[,] data = DataSource.GetSpanningSalesData();
@@ -86,9 +86,9 @@ namespace SpreadsheetSampleExplorer.Samples
             workSheet.AddSpan(11, 1, 5, 7); 
             workSheet.SetStyle(11, 1, new CellStyle { 
                 VerticalAlignment = CellVerticalAlignment.Top,
-                BackColor = CellColor.FromArgb(255, 254, 249, 195), // Light yellow
-                ForeColor = CellColor.FromArgb(255, 113, 63, 18),
-                FontWeight = CellFontWeight.Bold,
+                BackColor = DrawingColor.FromArgb(255, 254, 249, 195), // Light yellow
+                ForeColor = DrawingColor.FromArgb(255, 113, 63, 18),
+                FontWeight = DrawingFontWeight.Bold,
                 FontSize = 14,
                 AllowMultiLineText = true
             });

@@ -40,10 +40,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
             Spread = TemplatedParent.As<Spread>();
             _root = GetTemplateChild("_root").As<Grid>();
             _sheetViewPaneBorder = GetTemplateChild("_sheetViewPaneBorder").As<Border>();
-            _sheetViewPaneBorder.Child = Spread.SheetViewPane;
+            _sheetViewPaneBorder.Child = Spread.SheetViewHost;
             _sheetViewPaneBorder.BorderBrush = Spread.BorderBrush;
             _sheetViewPaneBorder.BorderThickness = new Thickness(0);
-            _sheetViewPaneBorder.SizeChanged += (s, e) => Spread?.SheetViewPane?.UpdateZoomTransform();
+            _sheetViewPaneBorder.SizeChanged += (s, e) => Spread?.SheetViewHost?.UpdateZoomTransform();
             _hScrollBar = GetTemplateChild("_hScrollBar").As<ScrollBar>();
             _vScrollBar = GetTemplateChild("_vScrollBar").As<ScrollBar>();
             _sheetsListBox = GetTemplateChild("_sheetsListBox").As<ListBox>();
@@ -57,7 +57,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
 
         private void DisplaySheet(SheetView sheetView)
         {
-            Spread.SheetViewPane.AttachSheet(sheetView);
+            Spread.SheetViewHost.HostSheet(sheetView);
 
             double oldZoom = Spread.ZoomFactor;
             if (oldZoom != sheetView.ZoomFactor)
@@ -66,7 +66,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
             }
             else
             {
-                Spread.SheetViewPane.UpdateZoomTransform();
+                Spread.SheetViewHost.UpdateZoomTransform();
                 Spread.Invalidate();
             }
 
@@ -75,7 +75,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
             _vScrollBar.Value = sheetView.ScrollPosition.Y;
             sheetView.ScrollToHorizontalOffset(sheetView.ScrollPosition.X);
             sheetView.ScrollToVerticalOffset(sheetView.ScrollPosition.Y);
-            Spread.SheetViewPane.RefreshInteractionLayers();
+            Spread.SheetViewHost.RefreshInteractionLayers();
         }
 
         private void OnAddSheetClick(object sender, RoutedEventArgs e)
@@ -254,7 +254,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
             var columns = (Columns)sheet.Columns;
             var rows = (Rows)sheet.Rows;
             
-            var actualWidth = Spread.SheetViewPane.CellsRegion.ActualWidth;
+            var actualWidth = sheetView.CellsSurface.ActualWidth;
             _hScrollBar.LargeChange = actualWidth;
             
             if (sheet.ColumnCount > 0)
@@ -275,7 +275,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
                 }
             }
 
-            var actualHeight = Spread.SheetViewPane.CellsRegion.ActualHeight;
+            var actualHeight = sheetView.CellsSurface.ActualHeight;
             _vScrollBar.LargeChange = actualHeight;
             
             if (sheet.RowCount > 0)

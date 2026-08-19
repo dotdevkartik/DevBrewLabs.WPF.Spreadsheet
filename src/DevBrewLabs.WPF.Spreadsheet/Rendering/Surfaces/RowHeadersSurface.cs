@@ -1,56 +1,52 @@
 using DevBrewLabs.Spreadsheet;
-using DevBrewLabs.WPF.Spreadsheet.UI;
+using DevBrewLabs.WPF.Spreadsheet.UI.Interaction;
 using System;
 using System.Windows;
 using System.Windows.Media;
 
 namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 {
-    internal class RowHeadersSurface : SheetViewSurface
+    internal class RowHeadersSurface : SurfaceBase
     {
-        private Worksheet _workSheet;
-        private ViewPort _viewPort;
-        private DrawingGroup _drawing;
         private readonly int _resizeDelta;
 
-        public RowHeadersSurface()
+        public RowHeadersSurface(SheetView view) : base(view)
         {
             _resizeDelta = 5;
-            _drawing = new DrawingGroup();
         }
 
-        public override void AttachSheet(SheetView sheetView)
+        protected override InteractionLayer CreateInteractionLayer()
         {
-            base.AttachSheet(sheetView);
-            _workSheet = (Worksheet)sheetView.WorkSheet;
-            _viewPort = sheetView.ViewPort.As<ViewPort>();
-
-            _drawing.Children.Clear();
-            _drawing.Children.Add(sheetView.Spread.RenderEngine.RowHeadersRenderer.Drawing);
-            _drawing.Children.Add(sheetView.Spread.RenderEngine.RowHeaderGridLinesRenderer.Drawing);
+            return new RowHeadersInteractionLayer(SheetView);
         }
 
-        protected override Drawing GetDrawing()
+        protected override DrawingGroup CreateDrawing()
         {
-            return _drawing;
+            DrawingGroup drawing = new DrawingGroup();
+            drawing.Children.Add(new DrawingGroup()); // cells drawing
+            drawing.Children.Add(new DrawingGroup()); // grid line drawing
+            return drawing;
         }
 
-        protected override SpreadHitTestResult HitTestCore(SheetView sheetView, Point hitPoint)
+        protected override SpreadHitTestResult HitTestCore(Point hitPoint)
         {
-            var hitTestInfo = new SpreadHitTestResult() { Element = VisualElement.RowHeader, Sheet = sheetView, ActualHitTestPoint = hitPoint };
-            var rows = _workSheet.Rows.As<Rows>();
-            var columns = _workSheet.RowHeaders.Columns.As<RowHeaderColumns>();
-            var viewRange = sheetView.ViewPort.ViewRange;
+            var workSheet = (Worksheet)SheetView.WorkSheet;
+            var viewPort = SheetView.ViewPort;
 
-            double zoom = sheetView != null && sheetView.ZoomFactor > 0 ? sheetView.ZoomFactor : 1.0;
-            var point = new Point(hitPoint.X / zoom + _viewPort.LeftColumnLocation,
-                hitPoint.Y / zoom + _viewPort.TopRowLocation);
+            var hitTestInfo = new SpreadHitTestResult() { Element = VisualElement.RowHeader, Sheet = SheetView, ActualHitTestPoint = hitPoint };
+            var rows = workSheet.Rows.As<Rows>();
+            var columns = workSheet.RowHeaders.Columns.As<RowHeaderColumns>();
+            var viewRange = SheetView.ViewPort.ViewRange;
+
+            double zoom = SheetView != null && SheetView.ZoomFactor > 0 ? SheetView.ZoomFactor : 1.0;
+            var point = new Point(hitPoint.X / zoom + viewPort.LeftColumnLocation,
+                hitPoint.Y / zoom + viewPort.TopRowLocation);
 
             double x = 0, y = 0;
 
             // Check for hidden row resize handle hit first (only if custom row settings exist)
-            int startRowSearch = Math.Max(0, _viewPort.ViewRange.TopRow - 1);
-            int endRowSearch = Math.Min(_workSheet.RowCount, _viewPort.ViewRange.BottomRow + 2);
+            int startRowSearch = Math.Max(0, viewPort.ViewRange.TopRow - 1);
+            int endRowSearch = Math.Min(workSheet.RowCount, viewPort.ViewRange.BottomRow + 2);
 
             for (int row = startRowSearch; row < endRowSearch; row++)
             {
@@ -58,12 +54,12 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                 {
                     int startHiddenRow = row;
                     int lastHiddenRow = row;
-                    while (lastHiddenRow + 1 < _workSheet.RowCount && rows.GetRowHeight(lastHiddenRow + 1) == 0)
+                    while (lastHiddenRow + 1 < workSheet.RowCount && rows.GetRowHeight(lastHiddenRow + 1) == 0)
                     {
                         lastHiddenRow++;
                     }
 
-                    var rowLocation = sheetView.ViewPort.GetRowLocation(startHiddenRow);
+                    var rowLocation = SheetView.ViewPort.GetRowLocation(startHiddenRow);
                     bool isHit;
                     if (rowLocation == 0)
                     {
@@ -79,8 +75,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                         hitTestInfo.Element = VisualElement.RowHeaderResizeBar;
                         hitTestInfo.Row = lastHiddenRow;
                         y = rowLocation;
-                        hitTestInfo.Position = new Point(x - _viewPort.LeftColumnLocation,
-                            y - _viewPort.TopRowLocation);
+                        hitTestInfo.Position = new Point(x - viewPort.LeftColumnLocation,
+                            y - viewPort.TopRowLocation);
                         return hitTestInfo;
                     }
 
@@ -91,8 +87,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             // Check visible row resize boundaries (centered around bottom edge)
             for (int row = viewRange.TopRow; row <= viewRange.BottomRow; row++)
             {
-                var rowLocation = sheetView.ViewPort.GetRowLocation(row);
-                double rowHeight = _workSheet.Rows.GetRowHeight(row);
+                var rowLocation = SheetView.ViewPort.GetRowLocation(row);
+                double rowHeight = workSheet.Rows.GetRowHeight(row);
 
                 if (rowHeight == 0)
                     continue;
@@ -103,8 +99,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                     hitTestInfo.Element = VisualElement.RowHeaderResizeBar;
                     hitTestInfo.Row = row;
                     y = rowLocation;
-                    hitTestInfo.Position = new Point(x - _viewPort.LeftColumnLocation,
-                        y - _viewPort.TopRowLocation);
+                    hitTestInfo.Position = new Point(x - viewPort.LeftColumnLocation,
+                        y - viewPort.TopRowLocation);
                     return hitTestInfo;
                 }
             }
@@ -112,8 +108,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             // Check visible row body hit
             for (int row = viewRange.TopRow; row <= viewRange.BottomRow; row++)
             {
-                var rowLocation = sheetView.ViewPort.GetRowLocation(row);
-                double rowHeight = _workSheet.Rows.GetRowHeight(row);
+                var rowLocation = SheetView.ViewPort.GetRowLocation(row);
+                double rowHeight = workSheet.Rows.GetRowHeight(row);
 
                 if (rowHeight == 0)
                     continue;
@@ -126,11 +122,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                 }
             }
 
-            for (int col = 0; col < _workSheet.RowHeaders.ColumnCount; col++)
+            for (int col = 0; col < workSheet.RowHeaders.ColumnCount; col++)
             {
-                var colLocation = sheetView.ViewPort.GetHeaderColumnLocation(col);
+                var colLocation = SheetView.ViewPort.GetHeaderColumnLocation(col);
                 var sheetColumn = columns.GetItem(col);
-                double columnWidth = sheetColumn == null ? _workSheet.DefaultColumnWidth : sheetColumn.Width;
+                double columnWidth = sheetColumn == null ? workSheet.DefaultColumnWidth : sheetColumn.Width;
 
                 if (point.X >= colLocation && point.X < colLocation + columnWidth)
                 {
@@ -140,8 +136,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                 }
             }
 
-            hitTestInfo.Position = new Point(x - _viewPort.LeftColumnLocation,
-                y - _viewPort.TopRowLocation);
+            hitTestInfo.Position = new Point(x - viewPort.LeftColumnLocation,
+                y - viewPort.TopRowLocation);
             return hitTestInfo;
         }
     }

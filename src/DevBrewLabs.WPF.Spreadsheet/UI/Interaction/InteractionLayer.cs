@@ -8,39 +8,16 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 {
     internal abstract class InteractionLayer : Canvas
     {
-        private SheetViewSurface _ownerRegion;
+        private SurfaceBase _ownerRegion;
 
         protected SheetView SheetView { get; private set; }
-        public bool IsAttached { get; private set; }
 
-        public InteractionLayer()
+        public InteractionLayer(SheetView view)
         {
+            SheetView = view;
             Background = Brushes.Transparent;
             Focusable = true;
             FocusVisualStyle = null;
-        }
-
-        /// <summary>
-        /// Attaches this layer with the specified region.
-        /// </summary>
-        /// <param name="region"></param>
-        public virtual void AttachToRegion(SheetViewSurface region)
-        {
-            _ownerRegion = region;
-            _ownerRegion.AddInteractionLayer(this);
-            SheetView = _ownerRegion.SheetView;
-            IsAttached = true;
-        }
-
-        /// <summary>
-        /// Detached the layer from the region if attached.
-        /// </summary>
-        public virtual void DetachFromRegion()
-        {
-            _ownerRegion.RemoveInteractionLayer();
-            _ownerRegion = null;
-            SheetView = null;
-            IsAttached = false;
         }
 
         /// <summary>

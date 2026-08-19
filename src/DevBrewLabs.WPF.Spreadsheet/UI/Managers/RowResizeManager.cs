@@ -48,7 +48,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
             ResizeLine.Y1 = ResizeLine.Y2 = currentLocation;
             ResizeLine.X1 = sheetView.GetRowHeaderWidth() * zoom;
-            ResizeLine.X2 = sheetView.Spread.SheetViewPane.ActualWidth;
+            ResizeLine.X2 = sheetView.Spread.SheetViewHost.ActualWidth;
             ResizeLine.Visibility = Visibility.Visible;
 
             var view = (SheetView)sheetView;
@@ -141,7 +141,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             _initialHeights = null;
             ResizeLine.Visibility = Visibility.Collapsed;
             Spread.SheetTabControl.UpdateScrollbars();
-            Spread.SheetViewPane.RefreshInteractionLayers(true, false, true);
+            Spread.SheetViewHost.RefreshInteractionLayers(true, false, true);
             Spread.SuspendUpdates = false;
         }
 
@@ -161,7 +161,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             ResizeLine.Visibility = Visibility.Collapsed;
             Spread.SheetTabControl.UpdateScrollbars();
             sheetView.ViewPort.CalculateVisibleRange();
-            Spread.SheetViewPane.RefreshInteractionLayers(true, false, true);
+            Spread.SheetViewHost.RefreshInteractionLayers(true, false, true);
             Spread.SuspendUpdates = false;
         }
     }

@@ -1,5 +1,6 @@
 using DevBrewLabs.Spreadsheet;
 using DevBrewLabs.Spreadsheet.Formatters;
+using DevBrewLabs.WPF.Spreadsheet.Rendering;
 using DevBrewLabs.WPF.Spreadsheet.Rendering.Text;
 using DevBrewLabs.WPF.Spreadsheet.UI.Editors;
 using System;
@@ -12,9 +13,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
     {
         public string Format { get; set; } = "d";
 
-        internal override void DrawCell(DrawingContext context, object value, IStyle style, IFormatter formatter, Rect cellRect, RenderContext renderContext)
+        internal override void DrawCell(RenderContext renderContext, object value, IStyle style, IFormatter formatter, Rect cellRect)
         {
-            base.DrawCell(context, value, style, formatter, cellRect, renderContext);
+            base.DrawCell(renderContext, value, style, formatter, cellRect);
 
             if (value == null)
                 return;
@@ -41,7 +42,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
                 textToDraw = value.ToString();
             }
             
-            TextRenderer.DrawText(context, textToDraw, cellRect, style, renderContext, align);
+            TextRenderer.DrawText(renderContext, textToDraw, cellRect, style, align);
         }
 
         public override EditorBase GetEditor(IStyle style)

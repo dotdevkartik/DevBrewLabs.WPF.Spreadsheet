@@ -1,6 +1,6 @@
 ﻿namespace DevBrewLabs.Spreadsheet.Drawing
 {
-    public enum CellKnownColor
+    public enum DrawingKnownColor
     {
         Transparent,
         AliceBlue,

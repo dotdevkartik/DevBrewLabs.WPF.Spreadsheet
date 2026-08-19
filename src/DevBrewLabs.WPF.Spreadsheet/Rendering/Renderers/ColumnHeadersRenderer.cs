@@ -1,68 +1,64 @@
 using DevBrewLabs.Spreadsheet;
 using DevBrewLabs.WPF.Spreadsheet.Rendering.Text;
-using DevBrewLabs.WPF.Spreadsheet.Styling;
 using System.Windows;
-using System.Windows.Media;
 
 namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 {
-    internal class ColumnHeadersRenderer : Renderer
+    internal class ColumnHeadersRenderer : RendererBase
     {
-        protected override void OnRender(DrawingContext context, int topRow, int leftColumn, int bottomRow, int rightColumn)
+        public override void OnRender(RenderContext context, int topRow, int leftColumn, int bottomRow, int rightColumn)
         {
-            var workSheet = SheetView.WorkSheet;
-            var rows = (ColumnHeaderRows)workSheet.ColumnHeaders.Rows;
-            var columns = (Columns)workSheet.Columns;
-            var cells = workSheet.ColumnHeaders.Cells;
-
-            double zoom = SheetView.ZoomFactor > 0 ? SheetView.ZoomFactor : 1.0;
-            var renderContext = new RenderContext(zoom, SheetView.Spread.PixelPerDip, 5.0, true);
+            if (context.SheetView.HeadersVisibility != HeadersVisibility.Column
+                && context.SheetView.HeadersVisibility != HeadersVisibility.Both)
+            {
+                return;
+            }
 
             for (int row = topRow; row <= bottomRow; row++)
             {
-                var rowHeight = rows.GetRowHeight(row);
+                var rowHeight = context.ColumnHeaderRows.GetRowHeight(row);
                 if (rowHeight == 0)
                     continue;
-                var headerRow = rows.GetItem(row);
-                var rowLocation = SheetView.ViewPort.GetHeaderRowLocation(row);
-                var y = rowLocation * zoom;
-                var scaledRowHeight = rowHeight * zoom;
+                var headerRow = context.ColumnHeaderRows.GetItem(row);
+                var rowLocation = context.ViewPort.GetHeaderRowLocation(row);
+                var y = rowLocation * context.Zoom;
+                var scaledRowHeight = rowHeight * context.Zoom;
 
 
                 for (int col = leftColumn; col <= rightColumn; col++)
                 {
-                    int columnWidth = ((SheetView)SheetView).ViewPort.GetTemporaryColumnWidth(col) ?? columns.GetColumnWidth(col);
+                    int columnWidth = context.ViewPort.GetTemporaryColumnWidth(col) ?? context.Columns.GetColumnWidth(col);
 
                     if (columnWidth == 0)
                         continue;
 
-                    var headerColumn = columns.GetItem(col);
-                    double colLocation = ((SheetView)SheetView).ViewPort.GetTemporaryColumnLocation(col) ?? SheetView.ViewPort.GetColumnLocation(col);
+                    var headerColumn = context.Columns.GetItem(col);
+                    double colLocation = context.ViewPort.GetTemporaryColumnLocation(col) ?? context.ViewPort.GetColumnLocation(col);
 
-                    var x = (colLocation - SheetView.ViewPort.LeftColumnLocation) * zoom;
-                    var scaledColumnWidth = columnWidth * zoom;
+                    var x = (colLocation - context.ViewPort.LeftColumnLocation) * context.Zoom;
+                    var scaledColumnWidth = columnWidth * context.Zoom;
 
                     var cellRect = new Rect(x, y, scaledColumnWidth, scaledRowHeight);
 
-                    var style = workSheet.GetColumnHeaderCellStyle(row, col, headerRow, headerColumn);
-                    var cellValue = workSheet.ColumnHeaders.GetValue(row, col);
+                    var style = context.Worksheet.GetColumnHeaderCellStyle(row, col, headerRow, headerColumn);
+                    var cellValue = context.Worksheet.ColumnHeaders.GetValue(row, col);
 
-                    DrawColumnHeaderCell(context, row, col, cellValue, style, cellRect, renderContext);
+                    DrawColumnHeaderCell(context, row, col, cellValue, style, cellRect);
                 }
             }
         }
 
-        private void DrawColumnHeaderCell(DrawingContext context, int row, int column, object cellValue, IStyle style, Rect cellRect, RenderContext renderContext)
+        private void DrawColumnHeaderCell(RenderContext context, int row, int column, object cellValue, IStyle style, Rect cellRect)
         {
-            context.DrawRectangle(WpfResourceCache.GetBrush(style.BackColor), null, cellRect);
+            context.DrawRectangle(style.BackColor, null, cellRect);
 
             if (cellValue != null)
             {
-                TextRenderer.DrawText(context, cellValue.ToString(), cellRect, style, renderContext);
+                TextRenderer.DrawText(context, cellValue.ToString(), cellRect, style);
             }
             else
             {
-                TextRenderer.DrawText(context, RenderingExtensions.GetColumnHeader(column), cellRect, style, renderContext);
+                TextRenderer.DrawText(context, RenderingExtensions.GetColumnHeader(column), cellRect, style);
             }
         }      
     }

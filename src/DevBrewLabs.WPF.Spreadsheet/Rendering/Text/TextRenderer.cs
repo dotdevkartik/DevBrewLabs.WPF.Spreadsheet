@@ -8,11 +8,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
     internal static class TextRenderer
     {
         public static void DrawText(
-            DrawingContext drawingContext,
+            RenderContext renderContext,
             string text,
             Rect bounds,
             IStyle style,
-            RenderContext renderContext,
             CellHorizontalAlignment? alignment = null)
         {
             if (string.IsNullOrEmpty(text))
@@ -77,7 +76,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
                     break;
             }
 
-            startY = PixelSnapper.Snap(startY, renderContext.PixelsPerDip);
+            startY = PixelSnapper.Snap(startY, renderContext.PixelPerDip);
             double currentY = startY;
             double ascent = Styling.WpfResourceCache.GetFontResources(style).GlyphMetrics.Baseline * scaledFontSize;
 
@@ -104,15 +103,15 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
                     if (x < bounds.Left + renderContext.TextPadding)
                         x = bounds.Left + renderContext.TextPadding;
 
-                    x = PixelSnapper.Snap(x, renderContext.PixelsPerDip);
+                    x = PixelSnapper.Snap(x, renderContext.PixelPerDip);
 
-                    Point baselineOrigin = new Point(x, PixelSnapper.Snap(currentY + ascent, renderContext.PixelsPerDip));
+                    Point baselineOrigin = new Point(x, PixelSnapper.Snap(currentY + ascent, renderContext.PixelPerDip));
                     
                     var glyphRun = GlyphRunFactory.Create(layout, Styling.WpfResourceCache.GetFontResources(style).GlyphMetrics, scaledFontSize, renderContext, baselineOrigin);
                     
                     if (glyphRun != null)
                     {
-                        drawingContext.DrawGlyphRun(Styling.WpfResourceCache.GetBrush(style.ForeColor), glyphRun);
+                        renderContext.DrawGlyphRun(style.ForeColor, glyphRun);
                     }
                 }
 

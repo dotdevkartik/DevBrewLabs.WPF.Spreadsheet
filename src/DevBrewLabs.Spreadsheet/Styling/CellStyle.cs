@@ -6,13 +6,13 @@ namespace DevBrewLabs.Spreadsheet.Styling
     {
         public CellStyle()
         {
-            ForeColor = CellColor.Black;
-            BackColor = CellColor.White;
+            ForeColor = DrawingColor.Black;
+            BackColor = DrawingColor.White;
             FontSize = 14;
-            FontFamily = new CellFontFamily("Calibri");
-            FontWeight = CellFontWeight.Regular;
-            FontStyle = CellFontStyle.Normal;
-            Padding = new CellThickness(5, 5);
+            FontFamily = new DrawingFontFamily("Calibri");
+            FontWeight = DrawingFontWeight.Regular;
+            FontStyle = DrawingFontStyle.Normal;
+            Padding = new DrawingThickness(5, 5);
             HorizontalAlignment = CellHorizontalAlignment.Auto;
             VerticalAlignment = CellVerticalAlignment.Auto;
             AllowMultiLineText = false;
@@ -20,13 +20,13 @@ namespace DevBrewLabs.Spreadsheet.Styling
             TextWrapping = CellTextWrapping.NoWrap;
         }
 
-        public CellColor ForeColor { get; set; }
-        public CellColor BackColor { get; set; }
+        public DrawingColor ForeColor { get; set; }
+        public DrawingColor BackColor { get; set; }
         public double FontSize { get; set; }
-        public CellFontFamily FontFamily { get; set; }
-        public CellFontWeight FontWeight { get; set; }
-        public CellFontStyle FontStyle { get; set; }
-        public CellThickness Padding { get; set; }
+        public DrawingFontFamily FontFamily { get; set; }
+        public DrawingFontWeight FontWeight { get; set; }
+        public DrawingFontStyle FontStyle { get; set; }
+        public DrawingThickness Padding { get; set; }
         public CellVerticalAlignment VerticalAlignment { get; set; }
         public CellHorizontalAlignment HorizontalAlignment { get; set; }
         public bool AllowMultiLineText { get; set; }
