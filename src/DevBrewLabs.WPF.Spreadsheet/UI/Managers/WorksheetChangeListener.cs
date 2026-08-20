@@ -1,6 +1,7 @@
-using DevBrewLabs.Spreadsheet;
+﻿using DevBrewLabs.Spreadsheet;
 using System;
 using System.Windows.Threading;
+using DevBrewLabs.Spreadsheet.Filtering;
 
 namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 {
@@ -169,5 +170,20 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
         {
             return _spread.IsLoaded && !_suspendUpdates;
         }
+
+        public void OnFilterChanged(FilterChangedEventArgs args)
+        {
+            var sheetView = (SheetView)_spread.SheetViews.GetSheetView(args.Worksheet);
+            if (sheetView == null) return;
+            
+            sheetView.ViewPort.ResetRowLocations();
+            sheetView.ViewPort.CalculateVisibleRange();
+            
+            if (!CanInvalidate()) return;
+            
+            _spread.SheetTabControl.UpdateScrollbars();
+            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => _spread.Invalidate()));
+        }
     }
 }
+

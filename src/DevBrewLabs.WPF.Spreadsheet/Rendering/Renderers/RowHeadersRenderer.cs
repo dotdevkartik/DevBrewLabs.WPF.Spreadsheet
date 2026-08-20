@@ -18,6 +18,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
             for (int row = topRow; row <= bottomRow; row++)
             {
+                var sheetRowObj = context.Rows.GetItem(row) as Row;
+                if (sheetRowObj != null && !sheetRowObj.Visible) continue;
+                
                 int rowHeight = context.ViewPort.GetTemporaryRowHeight(row) ?? context.Rows.GetRowHeight(row);
 
                 if (rowHeight == 0)

@@ -1,4 +1,4 @@
-﻿using DevBrewLabs.Spreadsheet.Formatters;
+using DevBrewLabs.Spreadsheet.Formatters;
 
 namespace DevBrewLabs.Spreadsheet
 {
@@ -12,5 +12,13 @@ namespace DevBrewLabs.Spreadsheet
         /// Gets or sets the height of this row.
         /// </summary>
         int Height { get; set; }
+        /// <summary>
+        /// Gets or sets whether this row is manually hidden.
+        /// </summary>
+        bool IsHidden { get; set; }
+        /// <summary>
+        /// Gets or sets whether this row is filtered out by AutoFilter.
+        /// </summary>
+        bool IsFilteredOut { get; set; }
     }
 }

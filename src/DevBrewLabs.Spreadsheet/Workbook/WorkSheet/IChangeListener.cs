@@ -1,3 +1,5 @@
+using DevBrewLabs.Spreadsheet.Filtering;
+
 namespace DevBrewLabs.Spreadsheet
 {
     internal interface IChangeListener
@@ -7,5 +9,6 @@ namespace DevBrewLabs.Spreadsheet
         void RangeChanged(RangeChangedEventArgs args);
         void RowChanged(RowChangedEventArgs args);
         void ColumnChanged(ColumnChangedEventArgs args);
+        void OnFilterChanged(FilterChangedEventArgs args);
     }
 }

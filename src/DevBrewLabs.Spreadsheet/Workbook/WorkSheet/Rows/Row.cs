@@ -1,4 +1,4 @@
-﻿using DevBrewLabs.Spreadsheet.Formatters;
+using DevBrewLabs.Spreadsheet.Formatters;
 using System;
 
 namespace DevBrewLabs.Spreadsheet
@@ -100,7 +100,9 @@ namespace DevBrewLabs.Spreadsheet
             }
         }
 
-        public bool Visible => Height > 0;
+        public bool IsHidden { get; set; }
+        public bool IsFilteredOut { get; set; }
+        public bool Visible => !IsHidden && !IsFilteredOut && Height > 0;
         public int Index { get; internal set; }
         public bool Locked { get; set; }
 

@@ -38,25 +38,29 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
                 () => _workSheet.RowCount,
                 () => _workSheet.DefaultRowHeight,
                 _rows,
-                row => row.Height);
+                row => row.Height,
+                row => ((Row)row).Visible);
 
             _colLocCache = new LocationCache<IColumn>(
                 () => _workSheet.ColumnCount,
                 () => _workSheet.DefaultColumnWidth,
                 _columns,
-                column => column.Width);
+                column => column.Width,
+                column => ((Column)column).Visible);
 
             _headerRowLocCache = new LocationCache<IRow>(
                 () => _workSheet.ColumnHeaders.RowCount,
                 () => _workSheet.ColumnHeaders.DefaultRowHeight,
                 _workSheet.ColumnHeaders.Rows as ColumnHeaderRows,
-                row => row.Height);
+                row => row.Height,
+                row => ((Row)row).Visible);
 
             _headerColLocCache = new LocationCache<IColumn>(
                 () => _workSheet.RowHeaders.ColumnCount,
                 () => _workSheet.RowHeaders.DefaultColumnWidth,
                 _workSheet.RowHeaders.Columns as RowHeaderColumns,
-                column => column.Width);
+                column => column.Width,
+                column => ((Column)column).Visible);
         }
 
         /// <summary>
@@ -77,6 +81,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
         internal void UpdateRowLocation(int fromIndex, double offset)
         {
             _rowLocCache.UpdateLocation(fromIndex, offset);
+        }
+
+        internal void ResetRowLocations()
+        {
+            _rowLocCache.Reset();
         }
 
         /// <summary>
@@ -507,6 +516,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
             private readonly Func<double> _defaultSize;
             private readonly SheetDimensionCollection<T> _items;
             private readonly Func<T, double> _getSize;
+            private readonly Func<T, bool> _isVisible;
 
             private double[] _locations;
             private int _lastCalculated;
@@ -515,12 +525,14 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
                 Func<int> count,
                 Func<double> defaultSize,
                 SheetDimensionCollection<T> items,
-                Func<T, double> getSize)
+                Func<T, double> getSize,
+                Func<T, bool> isVisible)
             {
                 _count = count;
                 _defaultSize = defaultSize;
                 _items = items;
                 _getSize = getSize;
+                _isVisible = isVisible;
             }
 
             public double GetLocation(int index)
@@ -537,7 +549,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
                     var item = _items.GetItem(_lastCalculated);
 
                     if (item != null)
+                    {
                         size = _getSize(item);
+                        if (!_isVisible(item))
+                            size = 0;
+                    }
                       
                     _locations[_lastCalculated + 1] =
                         _locations[_lastCalculated] + size;

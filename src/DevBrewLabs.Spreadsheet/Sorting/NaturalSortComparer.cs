@@ -5,7 +5,7 @@ namespace DevBrewLabs.Spreadsheet.Sorting
     /// <summary>
     /// Natural sort comparer adhering to Excel sort rules:
     /// 1. Blank/null cells always sort to the bottom.
-    /// 2. Data type hierarchy: Numbers < Text < Booleans.
+    /// 2. Data type hierarchy: Numbers &lt; Text &lt; Booleans.
     /// 3. Natural alphanumeric string comparison in pure C#.
     /// </summary>
     internal class NaturalSortComparer : ISortComparer

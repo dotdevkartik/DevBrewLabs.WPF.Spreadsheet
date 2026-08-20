@@ -2,6 +2,7 @@ using DevBrewLabs.Evalis;
 using DevBrewLabs.Spreadsheet.CalcEngine;
 using DevBrewLabs.Spreadsheet.Core;
 using DevBrewLabs.Spreadsheet.Data;
+using DevBrewLabs.Spreadsheet.Filtering;
 using DevBrewLabs.Spreadsheet.Formatters;
 using DevBrewLabs.Spreadsheet.Sorting;
 using System;
@@ -27,6 +28,24 @@ namespace DevBrewLabs.Spreadsheet
         private TopLeft _topLeft;
         private WorkSheetDataStore _dataStore;
         private SpanManager _spanManager;
+        private AutoFilter _autoFilter;
+
+        /// <summary>
+        /// Gets the auto filter for this worksheet.
+        /// </summary>
+        public AutoFilter AutoFilter 
+        {
+            get
+            {
+                if (_autoFilter == null)
+                {
+                    _autoFilter = new AutoFilter(this);
+                    _autoFilter.FilterChanged += (s, e) => _workBook?.ChangeListener?.OnFilterChanged(e);
+                }
+                return _autoFilter;
+            }
+        }
+
         private bool _suspendEvents;
         private int _rowCount;
         private int _columnCount;
@@ -791,6 +810,14 @@ namespace DevBrewLabs.Spreadsheet
         internal void OnCellChanged(CellChangedEventArgs args)
         {
             _workBook?.ChangeListener.CellChanged(args);
+
+            if (_autoFilter != null && _autoFilter.IsEnabled && _autoFilter.Range.ContainsCell(args.Row, args.Column))
+            {
+                if (_autoFilter.IsColumnFiltered(args.Column))
+                {
+                    _autoFilter.ReEvaluateRow(args.Row);
+                }
+            }
 
             if (_suspendEvents) return;
 

@@ -50,13 +50,23 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
             for (int row = startRowSearch; row < endRowSearch; row++)
             {
-                if (rows.GetRowHeight(row) == 0)
+                var rowObj = rows[row] as Row;
+                bool isHidden = rowObj != null && !rowObj.Visible;
+                if (isHidden)
                 {
                     int startHiddenRow = row;
                     int lastHiddenRow = row;
-                    while (lastHiddenRow + 1 < workSheet.RowCount && rows.GetRowHeight(lastHiddenRow + 1) == 0)
+                    while (lastHiddenRow + 1 < workSheet.RowCount)
                     {
-                        lastHiddenRow++;
+                        var nextRowObj = rows[lastHiddenRow + 1] as Row;
+                        if (nextRowObj != null && !nextRowObj.Visible)
+                        {
+                            lastHiddenRow++;
+                        }
+                        else
+                        {
+                            break;
+                        }
                     }
 
                     var rowLocation = SheetView.ViewPort.GetRowLocation(startHiddenRow);
@@ -87,6 +97,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             // Check visible row resize boundaries (centered around bottom edge)
             for (int row = viewRange.TopRow; row <= viewRange.BottomRow; row++)
             {
+                var sheetRowObj = rows.GetItem(row);
+                if (sheetRowObj != null && !sheetRowObj.Visible) continue;
+
                 var rowLocation = SheetView.ViewPort.GetRowLocation(row);
                 double rowHeight = workSheet.Rows.GetRowHeight(row);
 
@@ -108,6 +121,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             // Check visible row body hit
             for (int row = viewRange.TopRow; row <= viewRange.BottomRow; row++)
             {
+                var sheetRowObj = rows.GetItem(row);
+                if (sheetRowObj != null && !sheetRowObj.Visible) continue;
+
                 var rowLocation = SheetView.ViewPort.GetRowLocation(row);
                 double rowHeight = workSheet.Rows.GetRowHeight(row);
 

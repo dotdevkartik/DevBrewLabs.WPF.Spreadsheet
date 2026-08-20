@@ -23,6 +23,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         private RowResizeManager _rowResizeManager;
         private ColumnResizeManager _columnResizeManager;
         private RenderEngine _renderEngine;
+        private FilterManager _filterManager;
         private SheetViewHost _sheetViewHost;
         private SheetTabControl _sheetTabControl;
         private UndoRedoManager _undoRedoManager;
@@ -43,10 +44,24 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public static readonly DependencyProperty ShowFormulaSuggestionsProperty;
         public static readonly DependencyProperty ZoomFactorProperty;
         public static readonly DependencyProperty AllowZoomingProperty;
+        public static readonly DependencyProperty BackgroundProperty;
+        public static readonly DependencyProperty AllowFilteringProperty;
 
         static Spread()
         {
             DefaultStyleKeyProperty.OverrideMetadata(typeof(Spread), new FrameworkPropertyMetadata(typeof(Spread)));
+
+            BackgroundProperty = DependencyProperty.Register(
+                nameof(Background),
+                typeof(Brush),
+                typeof(Spread),
+                new PropertyMetadata(Brushes.White));
+
+            AllowFilteringProperty = DependencyProperty.Register(
+                nameof(AllowFiltering),
+                typeof(bool),
+                typeof(Spread),
+                new PropertyMetadata(false));
 
             ZoomFactorProperty = DependencyProperty.Register(
                 nameof(ZoomFactor),
@@ -247,6 +262,12 @@ namespace DevBrewLabs.WPF.Spreadsheet
             get { return (bool)GetValue(AllowZoomingProperty); }
             set { SetValue(AllowZoomingProperty, value); }
         }
+
+        public bool AllowFiltering
+        {
+            get { return (bool)GetValue(AllowFilteringProperty); }
+            set { SetValue(AllowFilteringProperty, value); }
+        }
         #endregion
 
         /// <summary>
@@ -307,6 +328,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             WorkBook.WorkSheets.ActiveSheet = workSheet;
             _editingManager = new EditingManager(this);
             _selectionManager = new SelectionManager(this);
+            _filterManager = new FilterManager(this);
             _clipboardManager = new ClipboardManager(this);
             _rowResizeManager = new RowResizeManager(this);
             _columnResizeManager = new ColumnResizeManager(this);
@@ -314,6 +336,8 @@ namespace DevBrewLabs.WPF.Spreadsheet
             SelectCell(0, 0);
             Loaded += OnLoaded;
         }
+
+        internal FilterManager FilterManager => _filterManager;
 
         /// <summary>
         /// Hittest the spread at specific point.

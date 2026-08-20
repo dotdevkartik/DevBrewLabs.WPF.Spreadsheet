@@ -1,6 +1,5 @@
-
+﻿
 using DevBrewLabs.Spreadsheet;
-using DevBrewLabs.WPF.Spreadsheet.UI;
 using System.Windows;
 using System.Windows.Media;
 
@@ -34,6 +33,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
             for (int row = topRow; row <= bottomRow; row++)
             {
+                var sheetRowObj = context.Rows.GetItem(row) as Row;
+                if (sheetRowObj != null && !sheetRowObj.Visible) continue;
+
                 var rowHeight = context.Rows.GetRowHeight(row);
                 if (rowHeight == 0)
                     continue;

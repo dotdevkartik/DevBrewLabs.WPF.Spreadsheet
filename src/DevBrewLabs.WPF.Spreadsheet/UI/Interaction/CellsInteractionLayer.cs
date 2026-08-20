@@ -59,6 +59,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
             switch(hitTest.Element)
             {
+                case VisualElement.CellFilterButton:
+                    SheetView.Spread.FilterManager.ShowFilterDropdown(SheetView, hitTest.Column);
+                    break;
+
                 case VisualElement.Cell:
                     // Starts editing
                     if (e.ClickCount == 2)
@@ -391,6 +395,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             {
                 if (hitTest.Element == VisualElement.DragFill || _isDragging)
                     Cursor = SheetUtils.DragFillCursor;
+                else if (hitTest.Element == VisualElement.CellFilterButton)
+                    Cursor = Cursors.Hand;
                 else if (hitTest.Element == VisualElement.Cell)
                 {
                     Cursor = null;
