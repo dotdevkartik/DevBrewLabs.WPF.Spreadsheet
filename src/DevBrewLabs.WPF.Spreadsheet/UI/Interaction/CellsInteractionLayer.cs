@@ -78,6 +78,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                                 return;
                         }
 
+                        if (SheetView.Spread.FilterManager.IsFilterDropdownOpen)
+                        {
+                            SheetView.Spread.FilterManager.HideFilterDropdown();
+                        }
+
                         SheetView.SelectCell(hitTest.Row, hitTest.Column);
                     }
                     break;
@@ -250,7 +255,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                     return;
             }
 
-            if(e.Key == Key.Tab && editingManager.IsEditing && !TextEditor.IsShowingFormulaSuggestion)
+            if(e.Key == Key.Tab && editingManager.IsEditing && !editingManager.IsShowingFormulaSuggestion)
             {
                 if (!editingManager.EndEdit(true) && editingManager.ActiveEditor != null)
                 {
@@ -282,7 +287,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                     break;
 
                 case Key.Tab:
-                    if (!TextEditor.IsShowingFormulaSuggestion)
+                    if (!editingManager.IsShowingFormulaSuggestion)
                     {
                         e.Handled = true;
                         MoveRightCellSelection();

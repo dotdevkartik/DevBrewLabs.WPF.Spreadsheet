@@ -7,149 +7,75 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
     {
         private int _columnLocation;
         private int _resizingColumn;
-        private int[] _initialWidths;
+        private int _initialWidth;
+        private int _resizedWidth;
 
         public bool IsResizing => _columnLocation != -1 && _resizingColumn != -1;
 
         public ColumnResizeManager(Spread spread) : base(spread)
         {
             _columnLocation = -1;
-            _resizingColumn = -1;           
+            _resizingColumn = -1;
+            _initialWidth = -1;
+            _resizedWidth = -1;
         }
 
         public override void BeginResize(SheetView sheetView, int column, int columnLocation)
         {
             _columnLocation = columnLocation;
             _resizingColumn = column;
-
-            var workSheet = sheetView.WorkSheet;
-
-            _initialWidths = new int[workSheet.ColumnCount];
-            for (int i = 0; i < workSheet.ColumnCount; i++)
-            {
-                _initialWidths[i] = workSheet.Columns.IsColumnVisible(i) ? workSheet.Columns.GetColumnWidth(i) : 0;
-            }
-            
+            _initialWidth = sheetView.WorkSheet.Columns.GetColumnWidth(column);
+            _resizedWidth = _initialWidth;
             Spread.SuspendUpdates = true;
         }
 
         public override void Resize(SheetView sheetView, int currentLocation)
         {
             var workSheet = sheetView.WorkSheet;
+   
+            if (_resizingColumn < 0 || _resizingColumn >= workSheet.ColumnCount)
+                return;
 
             double zoom = sheetView.ZoomFactor > 0 ? sheetView.ZoomFactor : 1.0;
-            double logicalCurrentLocation = currentLocation / zoom;
-
-            if (logicalCurrentLocation < 0)
-            {
-                logicalCurrentLocation = 0;
-                currentLocation = 0;
-            }
+            double minVisualLocation = _columnLocation * zoom;
+            double maxVisualLocation = (sheetView.ViewPort.ActualBounds.Right - 3) * zoom;
+            double visualLocation = Math.Min(Math.Max(minVisualLocation, currentLocation), maxVisualLocation);
 
             if (ResizeLine != null)
             {
-                ResizeLine.X1 = ResizeLine.X2 = currentLocation;
-                ResizeLine.Y1 = sheetView.GetColumnHeaderHeight() * zoom;
-                ResizeLine.Y2 = sheetView.Spread.SheetViewHost != null ? sheetView.Spread.SheetViewHost.ActualHeight : 0;
+                ResizeLine.X1 = ResizeLine.X2 = visualLocation;
+                ResizeLine.Y1 = 0;
+                ResizeLine.Y2 = sheetView.Spread.ActualHeight;
                 ResizeLine.Visibility = Visibility.Visible;
             }
 
-            var view = (SheetView)sheetView;
-
-            if (_initialWidths == null || _resizingColumn < 0 || _resizingColumn >= workSheet.ColumnCount)
-                return;
-
-            view.ViewPort.ClearTemporaryColumnWidths();
-
-            if (logicalCurrentLocation >= _columnLocation)
-            {
-                var newWidth = (int)(logicalCurrentLocation - _columnLocation);
-                view.ViewPort.SetTemporaryColumnWidth(_resizingColumn, newWidth);
-            }
-            else
-            {
-                view.ViewPort.SetTemporaryColumnWidth(_resizingColumn, 0);
-
-                double currentLeft = _columnLocation;
-                int activeCol = -1;
-                double activeColLeft = 0;
-
-                for (int c = _resizingColumn - 1; c >= 0; c--)
-                {
-                    if (_initialWidths[c] == 0) continue;
-
-                    double colLeft = currentLeft - _initialWidths[c];
-                    if (logicalCurrentLocation >= colLeft)
-                    {
-                        activeCol = c;
-                        activeColLeft = colLeft;
-                        break;
-                    }
-                    currentLeft = colLeft;
-                }
-
-                if (activeCol != -1)
-                {
-                    for (int c = activeCol + 1; c < _resizingColumn; c++)
-                    {
-                        if (_initialWidths[c] > 0)
-                            view.ViewPort.SetTemporaryColumnWidth(c, 0);
-                    }
-
-                    view.ViewPort.SetTemporaryColumnWidth(activeCol, Math.Max(0, (int)(logicalCurrentLocation - activeColLeft)));
-                }
-                else
-                {
-                    for (int c = 0; c <= _resizingColumn; c++)
-                    {
-                        if (_initialWidths[c] > 0)
-                            view.ViewPort.SetTemporaryColumnWidth(c, 0);
-                    }
-                }
-            }
-
-            sheetView.ViewPort.CalculateVisibleRange();
-            Spread.Invalidate(false, true, false, false);
+            double logicalCurrentLocation = visualLocation / zoom;
+            _resizedWidth = Math.Max(0, (int)Math.Round(logicalCurrentLocation - _columnLocation));
         }
 
         public override void EndResize(SheetView sheetView)
         {
-            if (_initialWidths != null)
+            if (_resizingColumn != -1 && _resizedWidth >= 0)
             {
                 var workSheet = sheetView.WorkSheet;
-                var view = (SheetView)sheetView;
-                
-                var action = new ColumnResizedAction { SheetView = sheetView };
-                bool hasChanges = false;
-                
-                for (int i = 0; i < workSheet.ColumnCount; i++)
+                int oldWidth = _initialWidth;
+                int newWidth = _resizedWidth;
+
+                if (oldWidth != newWidth)
                 {
-                    int? tempWidth = view.ViewPort.GetTemporaryColumnWidth(i);
-                    if (tempWidth.HasValue)
-                    {
-                        int oldWidth = workSheet.Columns.GetColumnWidth(i);
-                        int newWidth = tempWidth.Value;
-                        if (oldWidth != newWidth)
-                        {
-                            workSheet.Columns[i].Width = newWidth;
-                            action.OldWidths[i] = oldWidth;
-                            action.NewWidths[i] = newWidth;
-                            hasChanges = true;
-                        }
-                    }
-                }
-                
-                if (hasChanges)
-                {
+                    workSheet.Columns[_resizingColumn].Width = newWidth;
+
+                    var action = new ColumnResizedAction { SheetView = sheetView };
+                    action.OldWidths[_resizingColumn] = oldWidth;
+                    action.NewWidths[_resizingColumn] = newWidth;
                     Spread.UndoRedoManager.AddAction(action);
                 }
-
-                view.ViewPort.ClearTemporaryColumnWidths();
             }
 
             _resizingColumn = -1;
             _columnLocation = -1;
-            _initialWidths = null;
+            _initialWidth = -1;
+            _resizedWidth = -1;
             if (ResizeLine != null)
             {
                 ResizeLine.Visibility = Visibility.Collapsed;
@@ -164,14 +90,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             if (!IsResizing)
                 return;
 
-            var view = (SheetView)sheetView;
-
-            // Discard any temporary widths — restores visual state to original
-            view.ViewPort.ClearTemporaryColumnWidths();
-
             _resizingColumn = -1;
             _columnLocation = -1;
-            _initialWidths = null;
+            _initialWidth = -1;
+            _resizedWidth = -1;
             if (ResizeLine != null)
             {
                 ResizeLine.Visibility = Visibility.Collapsed;

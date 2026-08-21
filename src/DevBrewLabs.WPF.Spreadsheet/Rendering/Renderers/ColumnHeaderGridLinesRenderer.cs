@@ -10,12 +10,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
     {
         public override void OnRender(RenderContext context, int topRow, int leftColumn, int bottomRow, int rightColumn)
         {
-            if (context.SheetView.HeadersVisibility != HeadersVisibility.Column 
-                && context.SheetView.HeadersVisibility != HeadersVisibility.Both)
-            {
-                return;
-            }
-
             GuidelineSet guidelines = new GuidelineSet();
             context.PushGuidelineSet(guidelines);
 
@@ -34,16 +28,14 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
 
                 for (int col = leftColumn; col <= rightColumn; col++)
                 {
-                    int? tempWidth = context.ViewPort.GetTemporaryColumnWidth(col);
-                    if (tempWidth == 0) continue;
-                    if (tempWidth == null && !context.Columns.IsColumnVisible(col)) continue;
+                    if (!context.Columns.IsColumnVisible(col)) continue;
 
-                    int columnWidth = tempWidth ?? context.Columns.GetColumnWidth(col);
+                    int columnWidth = context.Columns.GetColumnWidth(col);
 
                     if (columnWidth == 0)
                         continue;
 
-                    double colLocation = context.ViewPort.GetTemporaryColumnLocation(col) ?? context.ViewPort.GetColumnLocation(col);
+                    double colLocation = context.ViewPort.GetColumnLocation(col);
 
                     var x = (colLocation - context.ViewPort.LeftColumnLocation) * context.Zoom;
                     var scaledColumnWidth = columnWidth * context.Zoom;
@@ -64,21 +56,19 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
 
                 for (int col = minCol; col <= maxCol; col++)
                 {
-                    int? tempWidth = context.ViewPort.GetTemporaryColumnWidth(col);
-                    bool isHidden = (tempWidth == 0) || (tempWidth == null && !context.Columns.IsColumnVisible(col));
+                    bool isHidden = !context.Columns.IsColumnVisible(col);
 
                     if (isHidden)
                     {
                         bool isPrevHidden = false;
                         if (col > 0)
                         {
-                            int? prevTempWidth = context.ViewPort.GetTemporaryColumnWidth(col - 1);
-                            isPrevHidden = (prevTempWidth == 0) || (prevTempWidth == null && !context.Columns.IsColumnVisible(col - 1));
+                            isPrevHidden = !context.Columns.IsColumnVisible(col - 1);
                         }
                         
                         if (col == 0 || !isPrevHidden)
                         {
-                            double colLocation = context.ViewPort.GetTemporaryColumnLocation(col) ?? context.ViewPort.GetColumnLocation(col);
+                            double colLocation = context.ViewPort.GetColumnLocation(col);
                             var x = (colLocation - context.ViewPort.LeftColumnLocation) * context.Zoom;
                             DrawHiddenColumnIndicator(context, x, y, scaledRowHeight);
                         }

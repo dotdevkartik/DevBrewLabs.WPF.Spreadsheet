@@ -8,7 +8,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
     {
         private int _rowLocation;
         private int _resizingRow;
-        private int[] _initialHeights;
+        private int _initialHeight;
+        private int _resizedHeight;
 
         public bool IsResizing => _rowLocation != -1 && _resizingRow != -1;
 
@@ -16,21 +17,16 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
         {
             _rowLocation = -1;
             _resizingRow = -1;
+            _initialHeight = -1;
+            _resizedHeight = -1;
         }
 
         public override void BeginResize(SheetView sheetView, int row, int rowLocation)
         {
             _rowLocation = rowLocation;
             _resizingRow = row;
-
-            var workSheet = sheetView.WorkSheet;
-
-            _initialHeights = new int[workSheet.RowCount];
-            for (int i = 0; i < workSheet.RowCount; i++)
-            {
-                _initialHeights[i] = workSheet.Rows.IsRowVisible(i) ? workSheet.Rows.GetRowHeight(i) : 0;
-            }
-
+            _initialHeight = sheetView.WorkSheet.Rows.GetRowHeight(row);
+            _resizedHeight = _initialHeight;
             Spread.SuspendUpdates = true;
         }
 
@@ -38,127 +34,61 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
         {
             var workSheet = sheetView.WorkSheet;
 
-            double zoom = sheetView.ZoomFactor > 0 ? sheetView.ZoomFactor : 1.0;
-            double logicalCurrentLocation = currentLocation / zoom;
+            if (_resizingRow < 0 || _resizingRow >= workSheet.RowCount)
+                return;
 
-            if (logicalCurrentLocation < 0)
-            {
-                logicalCurrentLocation = 0;
-                currentLocation = 0;
-            }
+            double zoom = sheetView.ZoomFactor > 0 ? sheetView.ZoomFactor : 1.0;
+            double minVisualLocation = _rowLocation * zoom;
+            double maxVisualLocation = (sheetView.ViewPort.ActualBounds.Bottom - 3) * zoom;
+            double visualLocation = Math.Min(Math.Max(minVisualLocation, currentLocation), maxVisualLocation);
 
             if (ResizeLine != null)
             {
-                ResizeLine.Y1 = ResizeLine.Y2 = currentLocation;
-                ResizeLine.X1 = sheetView.GetRowHeaderWidth() * zoom;
-                ResizeLine.X2 = sheetView.Spread.SheetViewHost != null ? sheetView.Spread.SheetViewHost.ActualWidth : 0;
+                ResizeLine.Y1 = ResizeLine.Y2 = visualLocation;
+                ResizeLine.X1 = 0;
+                ResizeLine.X2 = sheetView.Spread.ActualWidth;
                 ResizeLine.Visibility = Visibility.Visible;
             }
 
-            var view = (SheetView)sheetView;
-
-            if (_initialHeights == null || _resizingRow < 0 || _resizingRow >= workSheet.RowCount)
-                return;
-
-            view.ViewPort.ClearTemporaryRowHeights();
-
-            if (logicalCurrentLocation >= _rowLocation)
-            {
-                var newHeight = (int)(logicalCurrentLocation - _rowLocation);
-                view.ViewPort.SetTemporaryRowHeight(_resizingRow, newHeight);
-            }
-            else
-            {
-                view.ViewPort.SetTemporaryRowHeight(_resizingRow, 0);
-
-                double currentTop = _rowLocation;
-                int activeRow = -1;
-                double activeRowTop = 0;
-
-                for (int r = _resizingRow - 1; r >= 0; r--)
-                {
-                    if (_initialHeights[r] == 0) continue;
-
-                    double rowTop = currentTop - _initialHeights[r];
-                    if (logicalCurrentLocation >= rowTop)
-                    {
-                        activeRow = r;
-                        activeRowTop = rowTop;
-                        break;
-                    }
-                    currentTop = rowTop;
-                }
-
-                if (activeRow != -1)
-                {
-                    for (int r = activeRow + 1; r < _resizingRow; r++)
-                    {
-                        if (_initialHeights[r] > 0)
-                            view.ViewPort.SetTemporaryRowHeight(r, 0);
-                    }
-
-                    view.ViewPort.SetTemporaryRowHeight(activeRow, Math.Max(0, (int)(logicalCurrentLocation - activeRowTop)));
-                }
-                else
-                {
-                    for (int r = 0; r <= _resizingRow; r++)
-                    {
-                        if (_initialHeights[r] > 0)
-                            view.ViewPort.SetTemporaryRowHeight(r, 0);
-                    }
-                }
-            }
-
-            sheetView.ViewPort.CalculateVisibleRange();
-            Spread.Invalidate(true, false, false, false);
+            double logicalCurrentLocation = visualLocation / zoom;
+            _resizedHeight = Math.Max(0, (int)Math.Round(logicalCurrentLocation - _rowLocation));
         }
 
         public override void EndResize(SheetView sheetView)
         {
-            if (_initialHeights != null)
+            if (_resizingRow != -1 && _resizedHeight >= 0)
             {
                 var workSheet = sheetView.WorkSheet;
-                var view = (SheetView)sheetView;
-                
-                var action = new RowResizedAction { SheetView = sheetView };
-                bool hasChanges = false;
-                
-                for (int i = 0; i < workSheet.RowCount; i++)
+                int oldHeight = _initialHeight;
+                int newHeight = _resizedHeight;
+
+                if (oldHeight != newHeight || (!workSheet.Rows.IsRowVisible(_resizingRow) && newHeight > 0))
                 {
-                    int? tempHeight = view.ViewPort.GetTemporaryRowHeight(i);
-                    if (tempHeight.HasValue)
+                    var rowObj = workSheet.Rows[_resizingRow];
+                    if (rowObj != null && newHeight > 0)
                     {
-                        int oldHeight = workSheet.Rows.GetRowHeight(i);
-                        int newHeight = tempHeight.Value;
-                        if (oldHeight != newHeight || (!workSheet.Rows.IsRowVisible(i) && newHeight > 0))
+                        if (rowObj.IsHidden)
                         {
-                            var rowObj = workSheet.Rows[i];
-                            if (rowObj != null)
-                            {
-                                if (newHeight > 0 && rowObj.IsHidden)
-                                {
-                                    rowObj.IsHidden = false;
-                                }
-                            }
-                            workSheet.Rows[i].Height = newHeight;
-                            action.OldHeights[i] = oldHeight;
-                            action.NewHeights[i] = newHeight;
-                            hasChanges = true;
+                            rowObj.IsHidden = false;
+                        }
+                        if (rowObj.IsFilteredOut)
+                        {
+                            rowObj.IsFilteredOut = false;
                         }
                     }
-                }
-                
-                if (hasChanges)
-                {
+                    workSheet.Rows[_resizingRow].Height = newHeight;
+
+                    var action = new RowResizedAction { SheetView = sheetView };
+                    action.OldHeights[_resizingRow] = oldHeight;
+                    action.NewHeights[_resizingRow] = newHeight;
                     Spread.UndoRedoManager.AddAction(action);
                 }
-
-                view.ViewPort.ClearTemporaryRowHeights();
             }
 
             _resizingRow = -1;
             _rowLocation = -1;
-            _initialHeights = null;
+            _initialHeight = -1;
+            _resizedHeight = -1;
             if (ResizeLine != null)
             {
                 ResizeLine.Visibility = Visibility.Collapsed;
@@ -173,14 +103,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             if (!IsResizing)
                 return;
 
-            var view = (SheetView)sheetView;
-
-            // Discard any temporary heights — restores visual state to original
-            view.ViewPort.ClearTemporaryRowHeights();
-
             _resizingRow = -1;
             _rowLocation = -1;
-            _initialHeights = null;
+            _initialHeight = -1;
+            _resizedHeight = -1;
             if (ResizeLine != null)
             {
                 ResizeLine.Visibility = Visibility.Collapsed;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 {
@@ -11,7 +11,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             Spread = spread;
         }
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             Spread = null;
         }

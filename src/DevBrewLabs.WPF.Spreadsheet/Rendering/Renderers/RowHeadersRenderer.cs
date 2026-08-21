@@ -8,26 +8,18 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
     {
         public override void OnRender(RenderContext context, int topRow, int leftColumn, int bottomRow, int rightColumn)
         {
-            if (context.SheetView.HeadersVisibility != HeadersVisibility.Row
-                 && context.SheetView.HeadersVisibility != HeadersVisibility.Both)
-            {
-                return;
-            }
-
             AdjustHeaderWidth(context, topRow, leftColumn, bottomRow, rightColumn);
 
             for (int row = topRow; row <= bottomRow; row++)
             {
-                int? tempHeight = context.ViewPort.GetTemporaryRowHeight(row);
-                if (tempHeight == 0) continue;
-                if (tempHeight == null && !context.Rows.IsRowVisible(row)) continue;
+                if (!context.Rows.IsRowVisible(row)) continue;
                 
-                int rowHeight = tempHeight ?? context.Rows.GetRowHeight(row);
+                int rowHeight = context.Rows.GetRowHeight(row);
                 if (rowHeight == 0)
                     continue;
 
                 var sheetRow = context.Rows.GetItem(row);
-                double rowLocation = context.ViewPort.GetTemporaryRowLocation(row) ?? context.ViewPort.GetRowLocation(row);
+                double rowLocation = context.ViewPort.GetRowLocation(row);
 
                 var y = (rowLocation - context.ViewPort.TopRowLocation) * context.Zoom;
                 var scaledRowHeight = rowHeight * context.Zoom;
@@ -62,9 +54,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
                 for (int row = topRow; row <= bottomRow; row++)
                 {
-                    int? tempHeight = context.ViewPort.GetTemporaryRowHeight(row);
-                    if (tempHeight == 0) continue;
-                    if (tempHeight == null && !context.Rows.IsRowVisible(row)) continue;
+                    if (!context.Rows.IsRowVisible(row)) continue;
 
                     var sheetColumn = context.RowHeaderColumns.GetItem(col);
                     var sheetRow = context.Rows.GetItem(row);

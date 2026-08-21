@@ -5,10 +5,11 @@
     xmlns:components="clr-namespace:DevBrewLabs.WPF.Spreadsheet.Components">
 
     <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="DevBrewLabs.WPF.Spreadsheet;component/Themes/SheetTabControlStyle.xaml"></ResourceDictionary>
-        <ResourceDictionary Source="DevBrewLabs.WPF.Spreadsheet;component/Themes/SuggestionListBoxStyle.xaml"></ResourceDictionary>
         <ResourceDictionary Source="/DevBrewLabs.WPF.Spreadsheet;component/Themes/ScrollBarStyle.xaml"/>
-        <ResourceDictionary Source="DevBrewLabs.WPF.Spreadsheet;component/Themes/FilterDropdownStyle.xaml"/>
+        <ResourceDictionary Source="/DevBrewLabs.WPF.Spreadsheet;component/Themes/SheetTabControlStyle.xaml"/>
+        <ResourceDictionary Source="/DevBrewLabs.WPF.Spreadsheet;component/Themes/SuggestionListBoxStyle.xaml"/>
+        <ResourceDictionary Source="/DevBrewLabs.WPF.Spreadsheet;component/Themes/FilterDropdownStyle.xaml"/>
+        <ResourceDictionary Source="/DevBrewLabs.WPF.Spreadsheet;component/Themes/FormulaTextBoxStyle.xaml"/>
     </ResourceDictionary.MergedDictionaries>
 
     <Style TargetType="{x:Type local:Spread}">

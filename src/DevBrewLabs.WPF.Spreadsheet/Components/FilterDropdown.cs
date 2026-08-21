@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -6,7 +6,7 @@ using System.Windows.Controls;
 using DevBrewLabs.Spreadsheet.Filtering;
 using DevBrewLabs.Spreadsheet.Filtering.Conditions;
 
-namespace DevBrewLabs.WPF.Spreadsheet.Filtering
+namespace DevBrewLabs.WPF.Spreadsheet.Components
 {
     public class FilterApplyEventArgs : EventArgs
     {
@@ -28,7 +28,14 @@ namespace DevBrewLabs.WPF.Spreadsheet.Filtering
         }
     }
 
-    internal class FilterDropdown : Control
+    [TemplatePart(Name = "PART_SearchBox", Type = typeof(TextBox))]
+    [TemplatePart(Name = "PART_ValuesList", Type = typeof(ListBox))]
+    [TemplatePart(Name = "PART_SelectAll", Type = typeof(CheckBox))]
+    [TemplatePart(Name = "PART_SortAscending", Type = typeof(Button))]
+    [TemplatePart(Name = "PART_SortDescending", Type = typeof(Button))]
+    [TemplatePart(Name = "PART_ApplyButton", Type = typeof(Button))]
+    [TemplatePart(Name = "PART_CancelButton", Type = typeof(Button))]
+    public class FilterDropdown : Control
     {
         public event EventHandler<FilterApplyEventArgs> Applied;
         public event EventHandler Cancelled;
@@ -46,14 +53,41 @@ namespace DevBrewLabs.WPF.Spreadsheet.Filtering
         private HashSet<object> _currentSelected;
         private bool _isUpdatingList;
 
+        static FilterDropdown()
+        {
+            DefaultStyleKeyProperty.OverrideMetadata(
+                typeof(FilterDropdown),
+                new FrameworkPropertyMetadata(typeof(FilterDropdown)));
+        }
+
         public FilterDropdown()
         {
-            DefaultStyleKey = typeof(FilterDropdown);
         }
 
         public override void OnApplyTemplate()
         {
             base.OnApplyTemplate();
+
+            if (_searchBox != null)
+                _searchBox.TextChanged -= SearchBox_TextChanged;
+
+            if (_selectAllCheckBox != null)
+            {
+                _selectAllCheckBox.Checked -= SelectAll_Changed;
+                _selectAllCheckBox.Unchecked -= SelectAll_Changed;
+            }
+
+            if (_sortAscendingBtn != null)
+                _sortAscendingBtn.Click -= OnSortAscendingClick;
+
+            if (_sortDescendingBtn != null)
+                _sortDescendingBtn.Click -= OnSortDescendingClick;
+
+            if (_applyBtn != null)
+                _applyBtn.Click -= OnApplyClick;
+
+            if (_cancelBtn != null)
+                _cancelBtn.Click -= OnCancelClick;
 
             _searchBox = GetTemplateChild("PART_SearchBox") as TextBox;
             if (_searchBox != null)
@@ -70,21 +104,41 @@ namespace DevBrewLabs.WPF.Spreadsheet.Filtering
 
             _sortAscendingBtn = GetTemplateChild("PART_SortAscending") as Button;
             if (_sortAscendingBtn != null)
-                _sortAscendingBtn.Click += (s, e) => SortRequested?.Invoke(this, new SortRequestedEventArgs(true));
+                _sortAscendingBtn.Click += OnSortAscendingClick;
 
             _sortDescendingBtn = GetTemplateChild("PART_SortDescending") as Button;
             if (_sortDescendingBtn != null)
-                _sortDescendingBtn.Click += (s, e) => SortRequested?.Invoke(this, new SortRequestedEventArgs(false));
+                _sortDescendingBtn.Click += OnSortDescendingClick;
 
             _applyBtn = GetTemplateChild("PART_ApplyButton") as Button;
             if (_applyBtn != null)
-                _applyBtn.Click += (s, e) => Applied?.Invoke(this, new FilterApplyEventArgs(new HashSet<object>(_currentSelected)));
+                _applyBtn.Click += OnApplyClick;
 
             _cancelBtn = GetTemplateChild("PART_CancelButton") as Button;
             if (_cancelBtn != null)
-                _cancelBtn.Click += (s, e) => Cancelled?.Invoke(this, EventArgs.Empty);
-                
+                _cancelBtn.Click += OnCancelClick;
+
             UpdateList();
+        }
+
+        private void OnSortAscendingClick(object sender, RoutedEventArgs e)
+        {
+            SortRequested?.Invoke(this, new SortRequestedEventArgs(true));
+        }
+
+        private void OnSortDescendingClick(object sender, RoutedEventArgs e)
+        {
+            SortRequested?.Invoke(this, new SortRequestedEventArgs(false));
+        }
+
+        private void OnApplyClick(object sender, RoutedEventArgs e)
+        {
+            Applied?.Invoke(this, new FilterApplyEventArgs(new HashSet<object>(_currentSelected ?? new HashSet<object>())));
+        }
+
+        private void OnCancelClick(object sender, RoutedEventArgs e)
+        {
+            Cancelled?.Invoke(this, EventArgs.Empty);
         }
 
         public void Initialize(IReadOnlyList<object> availableValues, ColumnFilter currentFilter)
@@ -104,8 +158,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.Filtering
                 else
                 {
                     // For now, if there's a custom filter, just select all
-                    foreach (var val in _availableValues)
-                        _currentSelected.Add(val);
+                    if (_availableValues != null)
+                    {
+                        foreach (var val in _availableValues)
+                            _currentSelected.Add(val);
+                    }
                 }
             }
             else
@@ -133,9 +190,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.Filtering
             if (_isUpdatingList) return;
 
             bool isChecked = _selectAllCheckBox.IsChecked == true;
-            
+
             var items = GetFilteredValues();
-            foreach(var item in items)
+            foreach (var item in items)
             {
                 if (isChecked)
                     _currentSelected.Add(item.Value);
@@ -216,10 +273,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.Filtering
         private FilterDropdown _parent;
         public object Value { get; }
         public string DisplayText => Value?.ToString() ?? "(Blanks)";
-        
+
         private bool _isSelected;
-        public bool IsSelected 
-        { 
+        public bool IsSelected
+        {
             get => _isSelected;
             set
             {
@@ -239,4 +296,3 @@ namespace DevBrewLabs.WPF.Spreadsheet.Filtering
         }
     }
 }
-

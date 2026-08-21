@@ -62,6 +62,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
         public void DrawRowHeaderCells(SheetView view, int topRow, int bottomRow)
         {
+            if (view.HeadersVisibility != HeadersVisibility.Row && view.HeadersVisibility != HeadersVisibility.Both)
+            {
+                return;
+            }
+
             DrawingGroup group = view.RowHeadersSurface.GetDrawing();
             DrawingGroup rowHeadersDrawing = group.Children[0] as DrawingGroup;
             rowHeadersDrawing.ClipGeometry = null;
@@ -73,6 +78,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
         public void DrawRowHeaderGridLines(SheetView view, int topRow, int bottomRow)
         {
+            if (view.HeadersVisibility != HeadersVisibility.Row && view.HeadersVisibility != HeadersVisibility.Both)
+            {
+                return;
+            }
+
             DrawingGroup group = view.RowHeadersSurface.GetDrawing();
             DrawingGroup gridLinesDrawing = group.Children[1] as DrawingGroup;
             gridLinesDrawing.ClipGeometry = null;
@@ -84,6 +94,12 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
         public void DrawColumnHeaderCells(SheetView view, int leftCol, int rightCol)
         {
+            if (view.HeadersVisibility != HeadersVisibility.Column
+                && view.HeadersVisibility != HeadersVisibility.Both)
+            {
+                return;
+            }
+
             DrawingGroup group = view.ColumnHeadersSurface.GetDrawing();
             DrawingGroup columnHeaderDrawing = group.Children[0] as DrawingGroup;
             columnHeaderDrawing.ClipGeometry = null;
@@ -95,6 +111,12 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
         public void DrawColumnHeaderGridLines(SheetView view, int leftCol, int rightCol)
         {
+            if (view.HeadersVisibility != HeadersVisibility.Column
+                && view.HeadersVisibility != HeadersVisibility.Both)
+            {
+                return;
+            }
+
             DrawingGroup group = view.ColumnHeadersSurface.GetDrawing();
             DrawingGroup gridLineDrawing = group.Children[1] as DrawingGroup;
             gridLineDrawing.ClipGeometry = null;

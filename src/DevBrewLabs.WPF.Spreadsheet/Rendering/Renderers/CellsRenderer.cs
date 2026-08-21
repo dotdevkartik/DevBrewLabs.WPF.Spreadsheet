@@ -1,6 +1,7 @@
 using DevBrewLabs.Spreadsheet;
 using DevBrewLabs.Spreadsheet.Drawing;
 using DevBrewLabs.WPF.Spreadsheet.CellTypes;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Media;
 
@@ -11,23 +12,20 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
         public override void OnRender(RenderContext context, int topRow, int leftColumn, int bottomRow, int rightColumn)
         {
             var renderedSkippedAnchors = new System.Collections.Generic.HashSet<(int Row, int Col)>();
-            
+
             for (int row = topRow; row <= bottomRow; row++)
             {
-                int? tempHeight = context.ViewPort.GetTemporaryRowHeight(row);
-                if (tempHeight == 0) continue;
-                if (tempHeight == null && !context.Rows.IsRowVisible(row)) continue;
+                if (!context.Rows.IsRowVisible(row)) continue;
 
-                var rowHeight = tempHeight ?? context.Rows.GetRowHeight(row);
+                var rowHeight = context.Rows.GetRowHeight(row);
                 if (rowHeight == 0) continue;
+                Debug.WriteLine(rowHeight);
 
                 for (int col = leftColumn; col <= rightColumn; col++)
                 {
-                    int? tempWidth = context.ViewPort.GetTemporaryColumnWidth(col);
-                    if (tempWidth == 0) continue;
-                    if (tempWidth == null && !context.Columns.IsColumnVisible(col)) continue;
+                    if (!context.Columns.IsColumnVisible(col)) continue;
 
-                    var columnWidth = tempWidth ?? context.Columns.GetColumnWidth(col);
+                    var columnWidth = context.Columns.GetColumnWidth(col);
                     if (columnWidth == 0) continue;
 
                     var anchor = context.Worksheet.GetSpanCellRange(row, col);
@@ -80,10 +78,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
             bool isFilterHeader = allowFiltering && context.AutoFilter != null && context.AutoFilter.IsFilterHeaderCell(row, col);
 
+            double filterButtonWidth = 16 * context.Zoom;
             var textRect = cellRect;
             if (isFilterHeader)
             {
-                textRect = new Rect(cellRect.X, cellRect.Y, System.Math.Max(0, cellRect.Width - 16), cellRect.Height);
+                textRect = new Rect(cellRect.X, cellRect.Y, System.Math.Max(0, cellRect.Width - filterButtonWidth), cellRect.Height);
             }
 
             var formatter = context.Worksheet.GetCellFormatter(row, col, sheetRow, sheetColumn);
@@ -91,7 +90,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
             if (isFilterHeader)
             {
-                var iconRect = new Rect(cellRect.Right - 16, cellRect.Y, 16, cellRect.Height);
+                var iconRect = new Rect(cellRect.Right - filterButtonWidth, cellRect.Y, filterButtonWidth, cellRect.Height);
                 bool isActive = context.AutoFilter.IsColumnFiltered(col);
                 DrawFilterIcon(context, iconRect, isActive);
             }
