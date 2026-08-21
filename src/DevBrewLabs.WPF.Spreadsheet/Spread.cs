@@ -25,6 +25,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         private RenderEngine _renderEngine;
         private FilterManager _filterManager;
         private FormulaSuggestionManager _formulaSuggestionManager;
+        private HeaderHoverManager _headerHoverManager;
         private SheetViewHost _sheetViewHost;
         private SheetTabControl _sheetTabControl;
         private UndoRedoManager _undoRedoManager;
@@ -48,6 +49,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public static readonly DependencyProperty AllowZoomingProperty;
         public static readonly DependencyProperty BackgroundProperty;
         public static readonly DependencyProperty AllowFilteringProperty;
+        public static readonly DependencyProperty HeaderHoverBrushProperty;
 
         static Spread()
         {
@@ -58,6 +60,12 @@ namespace DevBrewLabs.WPF.Spreadsheet
                 typeof(Brush),
                 typeof(Spread),
                 new PropertyMetadata(Brushes.White));
+
+            HeaderHoverBrushProperty = DependencyProperty.Register(
+                nameof(HeaderHoverBrush),
+                typeof(Brush),
+                typeof(Spread),
+                new PropertyMetadata(new SolidColorBrush(Color.FromRgb(160, 213, 184))));
 
             AllowFilteringProperty = DependencyProperty.Register(
                 nameof(AllowFiltering),
@@ -271,6 +279,15 @@ namespace DevBrewLabs.WPF.Spreadsheet
         }
 
         /// <summary>
+        /// Gets or sets the header hover brush.
+        /// </summary>
+        public Brush HeaderHoverBrush
+        {
+            get { return (Brush)GetValue(HeaderHoverBrushProperty); }
+            set { SetValue(HeaderHoverBrushProperty, value); }
+        }
+
+        /// <summary>
         /// Gets or sets the zoom factor for the active worksheet view. (1.0 = 100%).
         /// </summary>
         public double ZoomFactor
@@ -358,6 +375,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             _clipboardManager = new ClipboardManager(this);
             _rowResizeManager = new RowResizeManager(this);
             _columnResizeManager = new ColumnResizeManager(this);
+            _headerHoverManager = new HeaderHoverManager(this);
             _zoomManager = new ZoomManager(this);
             SelectCell(0, 0);
             Loaded += OnLoaded;
@@ -580,6 +598,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             RenderEngine.Dispose();
             _filterManager?.Dispose();
             _formulaSuggestionManager?.Dispose();
+            _headerHoverManager?.Dispose();
         }
     }
 
@@ -602,6 +621,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         internal ColumnResizeManager ColumnResizeManager => _columnResizeManager;
         internal FilterManager FilterManager => _filterManager;
         internal FormulaSuggestionManager FormulaSuggestionManager => _formulaSuggestionManager;
+        internal HeaderHoverManager HeaderHoverManager => _headerHoverManager;
         internal FormulaTextBox FormulaTextBox { get; set; }
         internal Pen GridLinePen { get; private set; }
         internal Pen SelectionBorderPen { get; private set; }

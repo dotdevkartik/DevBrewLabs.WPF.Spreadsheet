@@ -1,6 +1,8 @@
 using DevBrewLabs.Spreadsheet;
 using DevBrewLabs.WPF.Spreadsheet.Rendering.Text;
+using DevBrewLabs.WPF.Spreadsheet.Styling;
 using System.Windows;
+using System.Windows.Media;
 
 namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 {
@@ -45,7 +47,18 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
         private void DrawColumnHeaderCell(RenderContext context, int row, int column, object cellValue, IStyle style, Rect cellRect)
         {
-            context.DrawRectangle(style.BackColor, null, cellRect);
+            Brush backGroundBrush = WpfResourceCache.GetBrush(style.BackColor);
+
+            if (context.SheetView?.Spread?.HeaderHoverManager?.HoveredColumn == column)
+            {
+                var hoverBrush = context.SheetView.Spread?.HeaderHoverBrush;
+                if (hoverBrush != null)
+                {
+                    backGroundBrush = hoverBrush;
+                }
+            }
+
+            context.DrawRectangle(backGroundBrush, null, cellRect);
 
             if (cellValue != null)
             {

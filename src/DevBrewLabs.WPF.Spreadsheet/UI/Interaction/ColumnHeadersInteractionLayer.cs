@@ -9,8 +9,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
     {
         public ColumnHeadersInteractionLayer(SheetView view) : base(view)
         {
-            
         }
+
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
             base.OnMouseLeftButtonDown(e);
@@ -62,7 +62,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 ReleaseMouseCapture();
             }
 
-            if(hitTest != null && hitTest.Element != VisualElement.ColumnHeaderResizeBar)
+            if (hitTest != null && hitTest.Element != VisualElement.ColumnHeaderResizeBar)
                 Cursor = SheetUtils.ColumnHeaderCursor;
         }
 
@@ -70,8 +70,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
         {
             base.OnMouseMove(e);
 
-            if(SheetView.Spread.ColumnResizeManager.IsResizing)
+            if (SheetView.Spread.ColumnResizeManager.IsResizing)
             {
+                ClearHover();
                 SheetView.Spread.ColumnResizeManager.Resize(SheetView, (int)e.GetPosition(this).X);
                 return;
             }
@@ -79,9 +80,12 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             var hitTest = HitTest();
 
             if (hitTest == null)
+            {
+                ClearHover();
                 return;
+            }
 
-            if(hitTest.Element == VisualElement.ColumnHeaderResizeBar && SheetView.Spread.AllowColumnResize)
+            if (hitTest.Element == VisualElement.ColumnHeaderResizeBar && SheetView.Spread.AllowColumnResize)
             {
                 Cursor = SheetUtils.ColumnResizeCursor;
             }
@@ -90,12 +94,26 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 Cursor = SheetUtils.ColumnHeaderCursor;
             }
 
+            int newHover = (hitTest.Element == VisualElement.ColumnHeader) ? hitTest.Column : -1;
+            SheetView?.Spread?.HeaderHoverManager?.SetHoveredColumn(SheetView, newHover);
+
             if (e.LeftButton != MouseButtonState.Pressed)
                 return;
 
             int leftColumn = Math.Min(hitTest.Column, SheetView.ActiveColumn);
             int rightColumn = Math.Max(hitTest.Column, SheetView.ActiveColumn);
             SheetView.SelectColumns(leftColumn, rightColumn - leftColumn + 1);
+        }
+
+        protected override void OnMouseLeave(MouseEventArgs e)
+        {
+            base.OnMouseLeave(e);
+            ClearHover();
+        }
+
+        private void ClearHover()
+        {
+            SheetView?.Spread?.HeaderHoverManager?.ClearHoveredColumn(SheetView);
         }
 
         protected override void OnRender(DrawingContext dc)
