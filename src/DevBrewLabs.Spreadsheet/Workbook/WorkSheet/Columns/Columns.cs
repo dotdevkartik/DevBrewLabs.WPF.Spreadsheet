@@ -37,6 +37,16 @@ namespace DevBrewLabs.Spreadsheet
             return col.Width;
         }
 
+        public bool IsColumnVisible(int column)
+        {
+            var col = GetItem(column, false);
+
+            if (col == null)
+                return WorkSheet.DefaultColumnWidth > 0;
+
+            return col.Visible;
+        }
+
         public int GetColumnIndex(IColumn column)
         {
             return GetIndex(column);

@@ -1,5 +1,6 @@
 using DevBrewLabs.Spreadsheet;
 using DevBrewLabs.Spreadsheet.Drawing;
+using DevBrewLabs.Spreadsheet.Filtering;
 using DevBrewLabs.WPF.Spreadsheet.Styling;
 using DevBrewLabs.WPF.Spreadsheet.UI;
 using System;
@@ -23,6 +24,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
         private Worksheet _worksheet;
         private ViewPort _viewPort;
         private Pen _gridLinePen;
+        private AutoFilter _filter;
 
         public double Zoom { get; }
         public double PixelPerDip { get; }
@@ -43,6 +45,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
         public Worksheet Worksheet => _worksheet;
         public SheetView SheetView => _sheetView;
         public ViewPort ViewPort => _viewPort;
+        public AutoFilter AutoFilter => _filter;
 
         public RenderContext(DrawingContext context, SheetView view, double textPadding = 5, bool snapsToDevicePixels = true)
         {
@@ -56,6 +59,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             _gridLinePen = _sheetView.Spread.GridLinePen;
             _worksheet = (Worksheet)_sheetView.WorkSheet;
             _rows = (Rows)_worksheet.Rows;
+            _filter = _worksheet.AutoFilter;
             _columns = (Columns)_worksheet.Columns;
             _columnHeaders = (ColumnHeaders)_worksheet.ColumnHeaders;
             _columnHeaderRows = (ColumnHeaderRows)_columnHeaders.Rows;
@@ -106,7 +110,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             _drawingContext.DrawLine(gridLinePen, point1, point2);
         }
 
-        public void DrawGeometry(DrawingColor? color, DrawingPen? pen, PathGeometry geometry)
+        public void DrawGeometry(DrawingColor? color, DrawingPen? pen, Geometry geometry)
         {
             if (_disposed) return;
 
@@ -145,6 +149,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             _worksheet = null;
             _disposed = true;
             _viewPort = null;
+            _filter = null;
         }
     }
 }

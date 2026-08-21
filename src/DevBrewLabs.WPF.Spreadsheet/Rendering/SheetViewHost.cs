@@ -54,7 +54,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             if (_sheetView != null)
             {
                 UpdateHeadersSize();
-                _sheetView.ViewPort?.As<UI.ViewPort>()?.RefreshBounds();
+                _sheetView.ViewPort.RefreshBounds();
                 if (_spread?.EditingManager?.IsEditing == true)
                 {
                     _spread.EditingManager.UpdateEditorLayout();

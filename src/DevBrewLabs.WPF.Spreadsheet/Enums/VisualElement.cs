@@ -1,4 +1,4 @@
-﻿namespace DevBrewLabs.WPF.Spreadsheet
+namespace DevBrewLabs.WPF.Spreadsheet
 {
     public enum VisualElement
     {
@@ -7,6 +7,7 @@
         ColumnHeaderResizeBar,
         RowHeaderResizeBar,
         Cell,
+        CellFilterButton,
         TopLeft,
         ScrollBar,
         DragFill

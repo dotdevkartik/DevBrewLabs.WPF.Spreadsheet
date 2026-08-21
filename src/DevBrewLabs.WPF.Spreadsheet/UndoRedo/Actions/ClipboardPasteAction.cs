@@ -33,7 +33,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
                 for (int column = 0; column < data.GetLength(1); column++)
                 {
                     var value = data[row, column];
-                    SheetView.WorkSheet.Cells[state.Row + row, state.Column + column].Value = value;
+                    SheetView.WorkSheet.SetValue(state.Row + row, state.Column + column, value);
                 }
             }
 

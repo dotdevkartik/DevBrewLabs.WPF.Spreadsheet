@@ -1,4 +1,4 @@
-﻿namespace DevBrewLabs.Spreadsheet
+namespace DevBrewLabs.Spreadsheet
 {
     public interface IRows
     {
@@ -16,5 +16,11 @@
         /// <param name="row"></param>
         /// <returns></returns>
         int GetRowHeight(int row);
+        /// <summary>
+        /// Gets whether the row is visible.
+        /// </summary>
+        /// <param name="row"></param>
+        /// <returns></returns>
+        bool IsRowVisible(int row);
     }
 }

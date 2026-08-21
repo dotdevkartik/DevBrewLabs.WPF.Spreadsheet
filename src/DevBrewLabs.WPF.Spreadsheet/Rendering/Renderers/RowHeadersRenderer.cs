@@ -8,23 +8,18 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
     {
         public override void OnRender(RenderContext context, int topRow, int leftColumn, int bottomRow, int rightColumn)
         {
-            if (context.SheetView.HeadersVisibility != HeadersVisibility.Row
-                 && context.SheetView.HeadersVisibility != HeadersVisibility.Both)
-            {
-                return;
-            }
-
             AdjustHeaderWidth(context, topRow, leftColumn, bottomRow, rightColumn);
 
             for (int row = topRow; row <= bottomRow; row++)
             {
-                int rowHeight = context.ViewPort.GetTemporaryRowHeight(row) ?? context.Rows.GetRowHeight(row);
-
+                if (!context.Rows.IsRowVisible(row)) continue;
+                
+                int rowHeight = context.Rows.GetRowHeight(row);
                 if (rowHeight == 0)
                     continue;
 
                 var sheetRow = context.Rows.GetItem(row);
-                double rowLocation = context.ViewPort.GetTemporaryRowLocation(row) ?? context.ViewPort.GetRowLocation(row);
+                double rowLocation = context.ViewPort.GetRowLocation(row);
 
                 var y = (rowLocation - context.ViewPort.TopRowLocation) * context.Zoom;
                 var scaledRowHeight = rowHeight * context.Zoom;
@@ -59,6 +54,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
                 for (int row = topRow; row <= bottomRow; row++)
                 {
+                    if (!context.Rows.IsRowVisible(row)) continue;
+
                     var sheetColumn = context.RowHeaderColumns.GetItem(col);
                     var sheetRow = context.Rows.GetItem(row);
                     var style = context.Worksheet.GetRowHeaderCellStyle(row, col, sheetRow, sheetColumn);
@@ -94,6 +91,3 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
         }
     }
 }
-
-
-

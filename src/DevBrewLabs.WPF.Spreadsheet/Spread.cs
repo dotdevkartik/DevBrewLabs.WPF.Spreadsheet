@@ -23,6 +23,8 @@ namespace DevBrewLabs.WPF.Spreadsheet
         private RowResizeManager _rowResizeManager;
         private ColumnResizeManager _columnResizeManager;
         private RenderEngine _renderEngine;
+        private FilterManager _filterManager;
+        private FormulaSuggestionManager _formulaSuggestionManager;
         private SheetViewHost _sheetViewHost;
         private SheetTabControl _sheetTabControl;
         private UndoRedoManager _undoRedoManager;
@@ -43,10 +45,24 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public static readonly DependencyProperty ShowFormulaSuggestionsProperty;
         public static readonly DependencyProperty ZoomFactorProperty;
         public static readonly DependencyProperty AllowZoomingProperty;
+        public static readonly DependencyProperty BackgroundProperty;
+        public static readonly DependencyProperty AllowFilteringProperty;
 
         static Spread()
         {
             DefaultStyleKeyProperty.OverrideMetadata(typeof(Spread), new FrameworkPropertyMetadata(typeof(Spread)));
+
+            BackgroundProperty = DependencyProperty.Register(
+                nameof(Background),
+                typeof(Brush),
+                typeof(Spread),
+                new PropertyMetadata(Brushes.White));
+
+            AllowFilteringProperty = DependencyProperty.Register(
+                nameof(AllowFiltering),
+                typeof(bool),
+                typeof(Spread),
+                new PropertyMetadata(false));
 
             ZoomFactorProperty = DependencyProperty.Register(
                 nameof(ZoomFactor),
@@ -247,6 +263,12 @@ namespace DevBrewLabs.WPF.Spreadsheet
             get { return (bool)GetValue(AllowZoomingProperty); }
             set { SetValue(AllowZoomingProperty, value); }
         }
+
+        public bool AllowFiltering
+        {
+            get { return (bool)GetValue(AllowFilteringProperty); }
+            set { SetValue(AllowFilteringProperty, value); }
+        }
         #endregion
 
         /// <summary>
@@ -307,6 +329,8 @@ namespace DevBrewLabs.WPF.Spreadsheet
             WorkBook.WorkSheets.ActiveSheet = workSheet;
             _editingManager = new EditingManager(this);
             _selectionManager = new SelectionManager(this);
+            _filterManager = new FilterManager(this);
+            _formulaSuggestionManager = new FormulaSuggestionManager(this);
             _clipboardManager = new ClipboardManager(this);
             _rowResizeManager = new RowResizeManager(this);
             _columnResizeManager = new ColumnResizeManager(this);
@@ -530,6 +554,8 @@ namespace DevBrewLabs.WPF.Spreadsheet
             SheetTabControl.Dispose();
             SheetViewHost.Dispose();
             RenderEngine.Dispose();
+            _filterManager?.Dispose();
+            _formulaSuggestionManager?.Dispose();
         }
     }
 
@@ -550,6 +576,8 @@ namespace DevBrewLabs.WPF.Spreadsheet
         internal UndoRedoManager UndoRedoManager => _undoRedoManager;
         internal RowResizeManager RowResizeManager => _rowResizeManager;
         internal ColumnResizeManager ColumnResizeManager => _columnResizeManager;
+        internal FilterManager FilterManager => _filterManager;
+        internal FormulaSuggestionManager FormulaSuggestionManager => _formulaSuggestionManager;
         internal FormulaTextBox FormulaTextBox { get; set; }
         internal Pen GridLinePen { get; private set; }
         internal Pen SelectionBorderPen { get; private set; }
@@ -608,6 +636,9 @@ namespace DevBrewLabs.WPF.Spreadsheet
         {
             base.OnPreviewMouseWheel(e);
 
+            _filterManager?.HideFilterDropdown();
+            _formulaSuggestionManager?.Hide();
+
             var activeSheetView = SheetViews.ActiveSheetView.As<SheetView>();
 
             if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
@@ -641,6 +672,9 @@ namespace DevBrewLabs.WPF.Spreadsheet
 
             if (sizeInfo.PreviousSize == sizeInfo.NewSize)
                 return;
+
+            _filterManager?.HideFilterDropdown();
+            _formulaSuggestionManager?.Hide();
 
             SheetTabControl.UpdateScrollbars();
             var activeSheetView = SheetViews.ActiveSheetView;

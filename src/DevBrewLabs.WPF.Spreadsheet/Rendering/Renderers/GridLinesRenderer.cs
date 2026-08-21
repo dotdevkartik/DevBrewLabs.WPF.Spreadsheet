@@ -1,6 +1,4 @@
-
 using DevBrewLabs.Spreadsheet;
-using DevBrewLabs.WPF.Spreadsheet.UI;
 using System.Windows;
 using System.Windows.Media;
 
@@ -34,6 +32,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
             for (int row = topRow; row <= bottomRow; row++)
             {
+                if (!context.Rows.IsRowVisible(row)) continue;
+
                 var rowHeight = context.Rows.GetRowHeight(row);
                 if (rowHeight == 0)
                     continue;
@@ -48,6 +48,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
                 for (int col = leftColumn; col <= rightColumn; col++)
                 {
+                    if (!context.Columns.IsColumnVisible(col)) continue;
+
                     var colWidth = context.Columns.GetColumnWidth(col);
                     if (colWidth == 0) continue;
 
@@ -60,7 +62,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                     if (anchor1 != default && row < anchor1.BottomRow)
                     {
                         int nextRow = row + 1;
-                        while (nextRow <= anchor1.BottomRow && context.Rows.GetRowHeight(nextRow) == 0)
+                        while (nextRow <= anchor1.BottomRow && !context.Rows.IsRowVisible(nextRow))
                             nextRow++;
                             
                         if (nextRow <= anchor1.BottomRow)
@@ -102,6 +104,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
             for (int col = leftColumn; col <= rightColumn; col++)
             {
+                if (!context.Columns.IsColumnVisible(col)) continue;
+
                 var columnWidth = context.Columns.GetColumnWidth(col);
                 if (columnWidth == 0)
                     continue;
@@ -116,6 +120,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
                 for (int row = topRow; row <= bottomRow; row++)
                 {
+                    if (!context.Rows.IsRowVisible(row)) continue;
+
                     var rowHeight = context.Rows.GetRowHeight(row);
                     if (rowHeight == 0) continue;
 
@@ -128,7 +134,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                     if (anchor1 != default && col < anchor1.RightColumn)
                     {
                         int nextCol = col + 1;
-                        while (nextCol <= anchor1.RightColumn && context.Columns.GetColumnWidth(nextCol) == 0)
+                        while (nextCol <= anchor1.RightColumn && !context.Columns.IsColumnVisible(nextCol))
                             nextCol++;
                             
                         if (nextCol <= anchor1.RightColumn)

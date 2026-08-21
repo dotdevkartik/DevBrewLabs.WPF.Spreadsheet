@@ -8,12 +8,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
     {
         public override void OnRender(RenderContext context, int topRow, int leftColumn, int bottomRow, int rightColumn)
         {
-            if (context.SheetView.HeadersVisibility != HeadersVisibility.Column
-                && context.SheetView.HeadersVisibility != HeadersVisibility.Both)
-            {
-                return;
-            }
-
             for (int row = topRow; row <= bottomRow; row++)
             {
                 var rowHeight = context.ColumnHeaderRows.GetRowHeight(row);
@@ -24,16 +18,17 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                 var y = rowLocation * context.Zoom;
                 var scaledRowHeight = rowHeight * context.Zoom;
 
-
                 for (int col = leftColumn; col <= rightColumn; col++)
                 {
-                    int columnWidth = context.ViewPort.GetTemporaryColumnWidth(col) ?? context.Columns.GetColumnWidth(col);
+                    if (!context.Columns.IsColumnVisible(col)) continue;
+
+                    int columnWidth = context.Columns.GetColumnWidth(col);
 
                     if (columnWidth == 0)
                         continue;
 
                     var headerColumn = context.Columns.GetItem(col);
-                    double colLocation = context.ViewPort.GetTemporaryColumnLocation(col) ?? context.ViewPort.GetColumnLocation(col);
+                    double colLocation = context.ViewPort.GetColumnLocation(col);
 
                     var x = (colLocation - context.ViewPort.LeftColumnLocation) * context.Zoom;
                     var scaledColumnWidth = columnWidth * context.Zoom;
@@ -63,5 +58,3 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
         }      
     }
 }
-
-

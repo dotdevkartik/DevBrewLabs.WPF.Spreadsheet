@@ -59,49 +59,31 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                 }
             }
 
-            // Check for hidden column resize handle hit first (only if custom column settings exist)
-            int startColSearch = Math.Max(0, viewPort.ViewRange.LeftColumn - 1);
-            int endColSearch = Math.Min(workSheet.ColumnCount, viewPort.ViewRange.RightColumn + 2);
-
-            for (int col = startColSearch; col < endColSearch; col++)
+            // 1. Check if the sheet begins with hidden columns at the very left (X = 0)
+            if (workSheet.ColumnCount > 0 && !columns.IsColumnVisible(0))
             {
-                if (columns.GetColumnWidth(col) == 0)
+                if (point.X >= 0 && point.X <= _resizeDelta + 2)
                 {
-                    int startHiddenCol = col;
-                    int lastHiddenCol = col;
-                    while (lastHiddenCol + 1 < workSheet.ColumnCount && columns.GetColumnWidth(lastHiddenCol + 1) == 0)
+                    int lastHiddenCol = 0;
+                    while (lastHiddenCol + 1 < workSheet.ColumnCount && !columns.IsColumnVisible(lastHiddenCol + 1))
                     {
                         lastHiddenCol++;
                     }
 
-                    var colLocation = SheetView.ViewPort.GetColumnLocation(startHiddenCol);
-                    bool isHit;
-                    if (colLocation == 0)
-                    {
-                        isHit = point.X >= 0 && point.X <= _resizeDelta + 2;
-                    }
-                    else
-                    {
-                        isHit = point.X >= colLocation - 2 && point.X <= colLocation + _resizeDelta;
-                    }
-
-                    if (isHit)
-                    {
-                        hitTestInfo.Element = VisualElement.ColumnHeaderResizeBar;
-                        hitTestInfo.Column = lastHiddenCol;
-                        x = colLocation;
-                        hitTestInfo.Position = new Point(x - viewPort.LeftColumnLocation,
-                            y - viewPort.TopRowLocation);
-                        return hitTestInfo;
-                    }
-
-                    col = lastHiddenCol;
+                    hitTestInfo.Element = VisualElement.ColumnHeaderResizeBar;
+                    hitTestInfo.Column = lastHiddenCol;
+                    x = 0;
+                    hitTestInfo.Position = new Point(x - viewPort.LeftColumnLocation,
+                        y - viewPort.TopRowLocation);
+                    return hitTestInfo;
                 }
             }
 
-            // Check visible column resize boundaries (centered around right edge)
+            // 2. Check visible column resize boundaries and unhide handles for following hidden columns
             for (int col = viewRange.LeftColumn; col <= viewRange.RightColumn; col++)
             {
+                if (!columns.IsColumnVisible(col)) continue;
+
                 var colLocation = SheetView.ViewPort.GetColumnLocation(col);
                 double columnWidth = workSheet.Columns.GetColumnWidth(col);
 
@@ -109,20 +91,58 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                     continue;
 
                 double rightEdge = colLocation + columnWidth;
-                if (point.X >= rightEdge - _resizeDelta && point.X <= rightEdge + _resizeDelta)
+                int nextCol = col + 1;
+                bool hasHiddenAfter = nextCol < workSheet.ColumnCount && !columns.IsColumnVisible(nextCol);
+
+                if (hasHiddenAfter)
                 {
-                    hitTestInfo.Element = VisualElement.ColumnHeaderResizeBar;
-                    hitTestInfo.Column = col;
-                    x = colLocation;
-                    hitTestInfo.Position = new Point(x - viewPort.LeftColumnLocation,
-                        y - viewPort.TopRowLocation);
-                    return hitTestInfo;
+                    int lastHiddenCol = nextCol;
+                    while (lastHiddenCol + 1 < workSheet.ColumnCount && !columns.IsColumnVisible(lastHiddenCol + 1))
+                    {
+                        lastHiddenCol++;
+                    }
+
+                    // Left half of double-line indicator -> resizes the visible column to the left
+                    if (point.X >= rightEdge - _resizeDelta && point.X <= rightEdge - 0.5)
+                    {
+                        hitTestInfo.Element = VisualElement.ColumnHeaderResizeBar;
+                        hitTestInfo.Column = col;
+                        x = colLocation;
+                        hitTestInfo.Position = new Point(x - viewPort.LeftColumnLocation,
+                            y - viewPort.TopRowLocation);
+                        return hitTestInfo;
+                    }
+                    // Right half of double-line indicator -> unhides/expands the last hidden column in the contiguous block
+                    if (point.X > rightEdge - 0.5 && point.X <= rightEdge + _resizeDelta)
+                    {
+                        hitTestInfo.Element = VisualElement.ColumnHeaderResizeBar;
+                        hitTestInfo.Column = lastHiddenCol;
+                        x = rightEdge;
+                        hitTestInfo.Position = new Point(x - viewPort.LeftColumnLocation,
+                            y - viewPort.TopRowLocation);
+                        return hitTestInfo;
+                    }
+                }
+                else
+                {
+                    // Standard single border between visible columns
+                    if (point.X >= rightEdge - _resizeDelta && point.X <= rightEdge + _resizeDelta)
+                    {
+                        hitTestInfo.Element = VisualElement.ColumnHeaderResizeBar;
+                        hitTestInfo.Column = col;
+                        x = colLocation;
+                        hitTestInfo.Position = new Point(x - viewPort.LeftColumnLocation,
+                            y - viewPort.TopRowLocation);
+                        return hitTestInfo;
+                    }
                 }
             }
 
-            // Check visible column body hit
+            // 3. Check visible column body hit
             for (int col = viewRange.LeftColumn; col <= viewRange.RightColumn; col++)
             {
+                if (!columns.IsColumnVisible(col)) continue;
+
                 var colLocation = SheetView.ViewPort.GetColumnLocation(col);
                 double columnWidth = workSheet.Columns.GetColumnWidth(col);
 

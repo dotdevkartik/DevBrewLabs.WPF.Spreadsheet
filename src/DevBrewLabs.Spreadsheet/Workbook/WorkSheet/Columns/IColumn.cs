@@ -1,4 +1,4 @@
-﻿using DevBrewLabs.Spreadsheet.Data;
+using DevBrewLabs.Spreadsheet.Data;
 using DevBrewLabs.Spreadsheet.Formatters;
 
 namespace DevBrewLabs.Spreadsheet
@@ -21,5 +21,12 @@ namespace DevBrewLabs.Spreadsheet
         /// Gets or sets the cell type for this column.
         /// </summary>
         ICellType CellType { get; set; }
+        /// <summary>
+        /// Gets or sets whether filtering is allowed on this column.
+        /// Effective filter button visibility requires:
+        ///   Spread.AllowFiltering AND AutoFilter range contains column AND Column.AllowFiltering
+        /// Default: true.
+        /// </summary>
+        bool AllowFiltering { get; set; }
     }
 }

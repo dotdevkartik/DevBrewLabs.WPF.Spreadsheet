@@ -85,6 +85,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             editor.Row = row;
             editor.Column = column;
             editor.KeyDown += OnEditorKeyDown;
+            Spread.FormulaSuggestionManager.Attach(editor);
             cellsInteractionLayer.Children.Add(ActiveEditor);
             UpdateEditorLayout();
             editor.Focus();
@@ -134,6 +135,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             }
         }
 
+        public bool IsShowingFormulaSuggestion => Spread?.FormulaSuggestionManager?.IsOpen == true;
+
         public bool EndEdit(bool commitChanges)
         {
             if (!IsEditing)
@@ -143,6 +146,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
             if (!commitChanges)
             {
+                Spread.FormulaSuggestionManager.Detach();
                 if (ActiveEditor != null)
                 {
                     ActiveEditor.KeyDown -= OnEditorKeyDown;
@@ -166,6 +170,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
         private bool EndNumericCellEdit(NumericEditor numTextBox, ISheetView sheetView, InteractionLayer layer)
         {
+            Spread.FormulaSuggestionManager.Detach();
             var workSheet = sheetView.WorkSheet;
             var cellChangedAction = new CellChangedAction() { SheetView = sheetView.As<SheetView>() };
             cellChangedAction.OldState.Value = workSheet.GetValue(numTextBox.Row, numTextBox.Column);
@@ -221,6 +226,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 return false;
             }
 
+            Spread.FormulaSuggestionManager.Detach();
             if (sheetView.AutoSizeRows)
                 sheetView.AutoSizeRow(gcTextBox.Row);
             if (sheetView.AutoSizeColumns)

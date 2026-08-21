@@ -1,6 +1,7 @@
 using DevBrewLabs.Spreadsheet;
 using System;
 using System.Windows.Threading;
+using DevBrewLabs.Spreadsheet.Filtering;
 
 namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 {
@@ -103,6 +104,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                         case ColumnChangeType.Width:
                             sheetView.ViewPort.UpdateColumnLocation(args.Index + 1, (int)args.NewValue - (int)args.OldValue);
                             break;
+                        case ColumnChangeType.Visibility:
+                            sheetView.ViewPort.ResetColumnLocations();
+                            break;
                     }
                     break;
 
@@ -110,7 +114,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
             sheetView.ViewPort.CalculateVisibleRange();
 
-            if (!sheetView.ViewPort.ViewRange.ContainsColumn(args.Index))
+            if (args.ChangeType != ColumnChangeType.Visibility && !sheetView.ViewPort.ViewRange.ContainsColumn(args.Index))
             {
                 return;
             }
@@ -145,13 +149,16 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                         case RowChangeType.Height:
                             sheetView.ViewPort.UpdateRowLocation(args.Index + 1, (int)args.NewValue - (int)args.OldValue);
                             break;
+                        case RowChangeType.Visibility:
+                            sheetView.ViewPort.ResetRowLocations();
+                            break;
                     }
                     break;
 
             }
 
             sheetView.ViewPort.CalculateVisibleRange();
-            if (!sheetView.ViewPort.ViewRange.ContainsRow(args.Index))
+            if (args.ChangeType != RowChangeType.Visibility && !sheetView.ViewPort.ViewRange.ContainsRow(args.Index))
             {
                 return;
             }
@@ -169,5 +176,20 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
         {
             return _spread.IsLoaded && !_suspendUpdates;
         }
+
+        public void OnFilterChanged(FilterChangedEventArgs args)
+        {
+            var sheetView = (SheetView)_spread.SheetViews.GetSheetView(args.Worksheet);
+            if (sheetView == null) return;
+            
+            sheetView.ViewPort.ResetRowLocations();
+            sheetView.ViewPort.CalculateVisibleRange();
+            
+            if (!CanInvalidate()) return;
+            
+            _spread.SheetTabControl.UpdateScrollbars();
+            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => _spread.Invalidate()));
+        }
     }
 }
+

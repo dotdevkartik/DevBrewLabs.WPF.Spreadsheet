@@ -44,49 +44,31 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
             double x = 0, y = 0;
 
-            // Check for hidden row resize handle hit first (only if custom row settings exist)
-            int startRowSearch = Math.Max(0, viewPort.ViewRange.TopRow - 1);
-            int endRowSearch = Math.Min(workSheet.RowCount, viewPort.ViewRange.BottomRow + 2);
-
-            for (int row = startRowSearch; row < endRowSearch; row++)
+            // 1. Check if the sheet begins with hidden/filtered rows at the very top (Y = 0)
+            if (workSheet.RowCount > 0 && !rows.IsRowVisible(0))
             {
-                if (rows.GetRowHeight(row) == 0)
+                if (point.Y >= 0 && point.Y <= _resizeDelta + 2)
                 {
-                    int startHiddenRow = row;
-                    int lastHiddenRow = row;
-                    while (lastHiddenRow + 1 < workSheet.RowCount && rows.GetRowHeight(lastHiddenRow + 1) == 0)
+                    int lastHiddenRow = 0;
+                    while (lastHiddenRow + 1 < workSheet.RowCount && !rows.IsRowVisible(lastHiddenRow + 1))
                     {
                         lastHiddenRow++;
                     }
 
-                    var rowLocation = SheetView.ViewPort.GetRowLocation(startHiddenRow);
-                    bool isHit;
-                    if (rowLocation == 0)
-                    {
-                        isHit = point.Y >= 0 && point.Y <= _resizeDelta + 2;
-                    }
-                    else
-                    {
-                        isHit = point.Y >= rowLocation - 2 && point.Y <= rowLocation + _resizeDelta;
-                    }
-
-                    if (isHit)
-                    {
-                        hitTestInfo.Element = VisualElement.RowHeaderResizeBar;
-                        hitTestInfo.Row = lastHiddenRow;
-                        y = rowLocation;
-                        hitTestInfo.Position = new Point(x - viewPort.LeftColumnLocation,
-                            y - viewPort.TopRowLocation);
-                        return hitTestInfo;
-                    }
-
-                    row = lastHiddenRow;
+                    hitTestInfo.Element = VisualElement.RowHeaderResizeBar;
+                    hitTestInfo.Row = lastHiddenRow;
+                    y = 0;
+                    hitTestInfo.Position = new Point(x - viewPort.LeftColumnLocation,
+                        y - viewPort.TopRowLocation);
+                    return hitTestInfo;
                 }
             }
 
-            // Check visible row resize boundaries (centered around bottom edge)
+            // 2. Check visible row resize boundaries and unhide handles for following hidden rows
             for (int row = viewRange.TopRow; row <= viewRange.BottomRow; row++)
             {
+                if (!rows.IsRowVisible(row)) continue;
+
                 var rowLocation = SheetView.ViewPort.GetRowLocation(row);
                 double rowHeight = workSheet.Rows.GetRowHeight(row);
 
@@ -94,20 +76,58 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                     continue;
 
                 double bottomEdge = rowLocation + rowHeight;
-                if (point.Y >= bottomEdge - _resizeDelta && point.Y <= bottomEdge + _resizeDelta)
+                int nextRow = row + 1;
+                bool hasHiddenAfter = nextRow < workSheet.RowCount && !rows.IsRowVisible(nextRow);
+
+                if (hasHiddenAfter)
                 {
-                    hitTestInfo.Element = VisualElement.RowHeaderResizeBar;
-                    hitTestInfo.Row = row;
-                    y = rowLocation;
-                    hitTestInfo.Position = new Point(x - viewPort.LeftColumnLocation,
-                        y - viewPort.TopRowLocation);
-                    return hitTestInfo;
+                    int lastHiddenRow = nextRow;
+                    while (lastHiddenRow + 1 < workSheet.RowCount && !rows.IsRowVisible(lastHiddenRow + 1))
+                    {
+                        lastHiddenRow++;
+                    }
+
+                    // Upper half of double-line indicator -> resizes the visible row above
+                    if (point.Y >= bottomEdge - _resizeDelta && point.Y <= bottomEdge - 0.5)
+                    {
+                        hitTestInfo.Element = VisualElement.RowHeaderResizeBar;
+                        hitTestInfo.Row = row;
+                        y = rowLocation;
+                        hitTestInfo.Position = new Point(x - viewPort.LeftColumnLocation,
+                            y - viewPort.TopRowLocation);
+                        return hitTestInfo;
+                    }
+                    // Lower half of double-line indicator -> unhides/expands the last hidden/filtered row
+                    if (point.Y > bottomEdge - 0.5 && point.Y <= bottomEdge + _resizeDelta)
+                    {
+                        hitTestInfo.Element = VisualElement.RowHeaderResizeBar;
+                        hitTestInfo.Row = lastHiddenRow;
+                        y = bottomEdge;
+                        hitTestInfo.Position = new Point(x - viewPort.LeftColumnLocation,
+                            y - viewPort.TopRowLocation);
+                        return hitTestInfo;
+                    }
+                }
+                else
+                {
+                    // Standard single border between visible rows
+                    if (point.Y >= bottomEdge - _resizeDelta && point.Y <= bottomEdge + _resizeDelta)
+                    {
+                        hitTestInfo.Element = VisualElement.RowHeaderResizeBar;
+                        hitTestInfo.Row = row;
+                        y = rowLocation;
+                        hitTestInfo.Position = new Point(x - viewPort.LeftColumnLocation,
+                            y - viewPort.TopRowLocation);
+                        return hitTestInfo;
+                    }
                 }
             }
 
-            // Check visible row body hit
+            // 3. Check visible row body hit
             for (int row = viewRange.TopRow; row <= viewRange.BottomRow; row++)
             {
+                if (!rows.IsRowVisible(row)) continue;
+
                 var rowLocation = SheetView.ViewPort.GetRowLocation(row);
                 double rowHeight = workSheet.Rows.GetRowHeight(row);
 

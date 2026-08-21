@@ -1,0 +1,317 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:components="clr-namespace:DevBrewLabs.WPF.Spreadsheet.Components">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/DevBrewLabs.WPF.Spreadsheet;component/Themes/ScrollBarStyle.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+    <!-- Filter Menu Item Style (Sort buttons) -->
+    <Style x:Key="FilterMenuItemButton" TargetType="Button">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="Padding" Value="10,6" />
+        <Setter Property="Margin" Value="4,1" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="menuBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="Transparent"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                          VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="menuBorder" Property="Background" Value="#F3F4F6" />
+                            <Setter TargetName="menuBorder" Property="BorderBrush" Value="#E5E7EB" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="menuBorder" Property="Background" Value="#E5E7EB" />
+                            <Setter TargetName="menuBorder" Property="BorderBrush" Value="#D1D5DB" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Filter Primary Button (OK) -->
+    <Style x:Key="FilterPrimaryButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="#107C41" />
+        <Setter Property="Foreground" Value="#FFFFFF" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Height" Value="26" />
+        <Setter Property="Width" Value="72" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="btnBorder"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="4"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="btnBorder" Property="Background" Value="#0E6A37" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="btnBorder" Property="Background" Value="#0B552C" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Filter Secondary Button (Cancel) -->
+    <Style x:Key="FilterSecondaryButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="#FFFFFF" />
+        <Setter Property="Foreground" Value="#374151" />
+        <Setter Property="BorderBrush" Value="#D1D5DB" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Height" Value="26" />
+        <Setter Property="Width" Value="72" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="btnBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="4"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="btnBorder" Property="Background" Value="#F3F4F6" />
+                            <Setter TargetName="btnBorder" Property="BorderBrush" Value="#9CA3AF" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="btnBorder" Property="Background" Value="#E5E7EB" />
+                            <Setter TargetName="btnBorder" Property="BorderBrush" Value="#6B7280" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Main FilterDropdown Control Style -->
+    <Style TargetType="{x:Type components:FilterDropdown}">
+        <Setter Property="Background" Value="#FFFFFF" />
+        <Setter Property="BorderBrush" Value="#D1D5DB" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Foreground" Value="#1F2937" />
+        <Setter Property="FontFamily" Value="Segoe UI, -apple-system, BlinkMacSystemFont, Roboto, sans-serif" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Width" Value="248" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type components:FilterDropdown}">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="6"
+                            SnapsToDevicePixels="True">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="16" Opacity="0.12" ShadowDepth="5" Direction="270" Color="#000000" />
+                        </Border.Effect>
+                        <Grid Margin="2,4,2,6">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <!-- Sort Ascending -->
+                            <Button x:Name="PART_SortAscending" Grid.Row="0" Style="{StaticResource FilterMenuItemButton}">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock FontFamily="Segoe MDL2 Assets" 
+                                               Text="&#xE174;" 
+                                               VerticalAlignment="Center" 
+                                               FontSize="13" 
+                                               Width="20" 
+                                               TextAlignment="Center" 
+                                               Foreground="#4B5563" 
+                                               Margin="0,0,8,0" />
+                                    <TextBlock Text="Sort A to Z" 
+                                               FontSize="12" 
+                                               VerticalAlignment="Center" 
+                                               Foreground="#1F2937" />
+                                </StackPanel>
+                            </Button>
+                            
+                            <!-- Sort Descending -->
+                            <Button x:Name="PART_SortDescending" Grid.Row="1" Style="{StaticResource FilterMenuItemButton}">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock FontFamily="Segoe MDL2 Assets" 
+                                               Text="&#xE174;" 
+                                               VerticalAlignment="Center" 
+                                               FontSize="13" 
+                                               Width="20" 
+                                               TextAlignment="Center" 
+                                               Foreground="#4B5563" 
+                                               Margin="0,0,8,0"
+                                               RenderTransformOrigin="0.5,0.5">
+                                        <TextBlock.RenderTransform>
+                                            <ScaleTransform ScaleY="-1"/>
+                                        </TextBlock.RenderTransform>
+                                    </TextBlock>
+                                    <TextBlock Text="Sort Z to A" 
+                                               FontSize="12" 
+                                               VerticalAlignment="Center" 
+                                               Foreground="#1F2937" />
+                                </StackPanel>
+                            </Button>
+                            
+                            <!-- Divider -->
+                            <Rectangle Grid.Row="2" Height="1" Fill="#E5E7EB" Margin="6,4" />
+
+                            <!-- Search Box -->
+                            <Grid Grid.Row="3" Margin="6,3,6,6">
+                                <Border x:Name="searchBorder" 
+                                        Background="#F9FAFB" 
+                                        BorderBrush="#D1D5DB" 
+                                        BorderThickness="1" 
+                                        CornerRadius="4" 
+                                        Height="28">
+                                    <Grid>
+                                        <TextBlock Text="&#xE11A;" 
+                                                   FontFamily="Segoe MDL2 Assets" 
+                                                   Foreground="#9CA3AF" 
+                                                   Margin="8,0,0,0" 
+                                                   VerticalAlignment="Center" 
+                                                   HorizontalAlignment="Left" 
+                                                   IsHitTestVisible="False" 
+                                                   FontSize="12" />
+                                        <TextBox x:Name="PART_SearchBox" 
+                                                 Padding="26,4,6,4" 
+                                                 Background="Transparent" 
+                                                 BorderThickness="0" 
+                                                 FontSize="12" 
+                                                 VerticalContentAlignment="Center" 
+                                                 Foreground="#1F2937" />
+                                    </Grid>
+                                </Border>
+                            </Grid>
+
+                            <!-- Select All Checkbox -->
+                            <CheckBox x:Name="PART_SelectAll" 
+                                      Grid.Row="4" 
+                                      Margin="10,2,10,6" 
+                                      Content="(Select All)" 
+                                      FontSize="12" 
+                                      FontWeight="Medium" 
+                                      Foreground="#111827" 
+                                      Cursor="Hand" />
+
+                            <!-- Values List Box -->
+                            <Border Grid.Row="5" 
+                                    Margin="6,0,6,6" 
+                                    BorderBrush="#E5E7EB" 
+                                    BorderThickness="1" 
+                                    CornerRadius="4" 
+                                    Background="#FFFFFF">
+                                <ListBox x:Name="PART_ValuesList" 
+                                         BorderThickness="0" 
+                                         Background="Transparent" 
+                                         Padding="2" 
+                                         MaxHeight="190" 
+                                         MinHeight="60" 
+                                         ScrollViewer.HorizontalScrollBarVisibility="Disabled" 
+                                         ScrollViewer.VerticalScrollBarVisibility="Auto" 
+                                         ScrollViewer.CanContentScroll="True">
+                                    <ListBox.Resources>
+                                        <Style TargetType="{x:Type ScrollBar}" BasedOn="{StaticResource ScrollBarStyle}"/>
+                                    </ListBox.Resources>
+                                    <ListBox.ItemContainerStyle>
+                                        <Style TargetType="ListBoxItem">
+                                            <Setter Property="Padding" Value="6,4" />
+                                            <Setter Property="Margin" Value="1,1" />
+                                            <Setter Property="Background" Value="Transparent" />
+                                            <Setter Property="BorderThickness" Value="0" />
+                                            <Setter Property="Cursor" Value="Hand" />
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="ListBoxItem">
+                                                        <Border x:Name="itemBorder" 
+                                                                Background="{TemplateBinding Background}" 
+                                                                Padding="{TemplateBinding Padding}" 
+                                                                CornerRadius="3">
+                                                            <ContentPresenter />
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter TargetName="itemBorder" Property="Background" Value="#F3F4F6" />
+                                                            </Trigger>
+                                                            <Trigger Property="IsSelected" Value="True">
+                                                                <Setter TargetName="itemBorder" Property="Background" Value="#EBF5EE" />
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </ListBox.ItemContainerStyle>
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <CheckBox Content="{Binding DisplayText}" 
+                                                      IsChecked="{Binding IsSelected, Mode=TwoWay}" 
+                                                      FontSize="12" 
+                                                      Foreground="#1F2937" 
+                                                      VerticalAlignment="Center" 
+                                                      Cursor="Hand" />
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Border>
+
+                            <!-- Divider -->
+                            <Rectangle Grid.Row="6" Height="1" Fill="#E5E7EB" Margin="6,2,6,6" />
+
+                            <!-- Bottom Action Buttons -->
+                            <Grid Grid.Row="7" Margin="6,2,6,2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Button x:Name="PART_ApplyButton" 
+                                        Grid.Column="1" 
+                                        Content="OK" 
+                                        Style="{StaticResource FilterPrimaryButtonStyle}" 
+                                        Margin="0,0,6,0" />
+                                <Button x:Name="PART_CancelButton" 
+                                        Grid.Column="2" 
+                                        Content="Cancel" 
+                                        Style="{StaticResource FilterSecondaryButtonStyle}" />
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

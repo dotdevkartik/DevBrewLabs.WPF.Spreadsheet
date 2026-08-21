@@ -4,43 +4,148 @@ using DevBrewLabs.WPF.Spreadsheet.UI.Editors;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Shapes;
 
-namespace DevBrewLabs.WPF.Spreadsheet
+namespace DevBrewLabs.WPF.Spreadsheet.Components
 {
     /// <summary>
-    /// Interaction logic for FormulaTextBox.xaml
+    /// Represents the formula bar control for a spreadsheet.
     /// </summary>
-    public partial class FormulaTextBox : UserControl
+    [TemplatePart(Name = "PART_Editor", Type = typeof(TextBox))]
+    [TemplatePart(Name = "PART_CancelButton", Type = typeof(Button))]
+    [TemplatePart(Name = "PART_CommitButton", Type = typeof(Button))]
+    [TemplatePart(Name = "PART_FunctionButton", Type = typeof(Button))]
+    [TemplatePart(Name = "PART_ExpandButton", Type = typeof(Button))]
+    [TemplatePart(Name = "PART_ExpandIcon", Type = typeof(Path))]
+    public class FormulaTextBox : Control
     {
-        public Spread Spread
+        public static readonly DependencyProperty SpreadProperty =
+            DependencyProperty.Register(
+                nameof(Spread),
+                typeof(Spread),
+                typeof(FormulaTextBox),
+                new PropertyMetadata(OnSpreadAttached));
+
+        public static readonly DependencyProperty IsExpandedProperty =
+            DependencyProperty.Register(
+                nameof(IsExpanded),
+                typeof(bool),
+                typeof(FormulaTextBox),
+                new PropertyMetadata(true, OnIsExpandedChanged));
+
+        public static readonly DependencyProperty CommitCommandProperty =
+            DependencyProperty.Register(
+                nameof(CommitCommand),
+                typeof(ICommand),
+                typeof(FormulaTextBox),
+                new PropertyMetadata(null));
+
+        public static readonly DependencyProperty CancelCommandProperty =
+            DependencyProperty.Register(
+                nameof(CancelCommand),
+                typeof(ICommand),
+                typeof(FormulaTextBox),
+                new PropertyMetadata(null));
+
+        static FormulaTextBox()
         {
-            get { return (Spread)GetValue(SpreadProperty); }
-            set { SetValue(SpreadProperty, value); }
+            DefaultStyleKeyProperty.OverrideMetadata(
+                typeof(FormulaTextBox),
+                new FrameworkPropertyMetadata(typeof(FormulaTextBox)));
         }
 
-        public static readonly DependencyProperty SpreadProperty =
-            DependencyProperty.Register("Spread", typeof(Spread), typeof(FormulaTextBox), new PropertyMetadata(OnSpreadAttached));
+        internal TextBox _txtEditor;
+        private Button _btnExpand;
+        private Path _expandIcon;
+        private Button _btnCancel;
+        private Button _btnCommit;
+        private Button _btnFunction;
 
-        public ICommand CommitCommand { get; private set; }
-        public ICommand CancelCommand { get; private set; }
-
-        private bool _isExpanded = true;
+        public Spread Spread
+        {
+            get => (Spread)GetValue(SpreadProperty);
+            set => SetValue(SpreadProperty, value);
+        }
 
         public bool IsExpanded
         {
-            get => _isExpanded;
+            get => (bool)GetValue(IsExpandedProperty);
+            set => SetValue(IsExpandedProperty, value);
+        }
+
+        public ICommand CommitCommand
+        {
+            get => (ICommand)GetValue(CommitCommandProperty);
+            set => SetValue(CommitCommandProperty, value);
+        }
+
+        public ICommand CancelCommand
+        {
+            get => (ICommand)GetValue(CancelCommandProperty);
+            set => SetValue(CancelCommandProperty, value);
+        }
+
+        public TextBox Editor => _txtEditor;
+
+        public string Text
+        {
+            get => _txtEditor?.Text;
             set
             {
-                _isExpanded = value;
-                UpdateExpandState();
+                if (_txtEditor != null)
+                {
+                    _txtEditor.Text = value;
+                    _txtEditor.ScrollToEnd();
+                }
             }
         }
 
         public FormulaTextBox()
         {
-            InitializeComponent();
-            HorizontalAlignment = HorizontalAlignment.Stretch;
+        }
+
+        public override void OnApplyTemplate()
+        {
+            base.OnApplyTemplate();
+
+            if (_txtEditor != null)
+            {
+                _txtEditor.TextChanged -= OnTextChanged;
+                _txtEditor.KeyDown -= OnTextBoxKeyDown;
+            }
+
+            if (_btnExpand != null)
+            {
+                _btnExpand.Click -= OnExpandToggleClick;
+            }
+
+            _txtEditor = GetTemplateChild("PART_Editor") as TextBox;
+            _btnExpand = GetTemplateChild("PART_ExpandButton") as Button;
+            _expandIcon = GetTemplateChild("PART_ExpandIcon") as Path;
+            _btnCancel = GetTemplateChild("PART_CancelButton") as Button;
+            _btnCommit = GetTemplateChild("PART_CommitButton") as Button;
+            _btnFunction = GetTemplateChild("PART_FunctionButton") as Button;
+
+            if (_txtEditor != null)
+            {
+                _txtEditor.TextChanged += OnTextChanged;
+                _txtEditor.KeyDown += OnTextBoxKeyDown;
+            }
+
+            if (_btnExpand != null)
+            {
+                _btnExpand.Click += OnExpandToggleClick;
+            }
+
             UpdateExpandState();
+        }
+
+        private static void OnIsExpandedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is FormulaTextBox formulaTextBox)
+            {
+                formulaTextBox.UpdateExpandState();
+            }
         }
 
         private void OnExpandToggleClick(object sender, RoutedEventArgs e)
@@ -53,7 +158,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             if (_txtEditor == null)
                 return;
 
-            if (_isExpanded)
+            if (IsExpanded)
             {
                 _txtEditor.MinHeight = 64;
                 _txtEditor.MaxHeight = 64;
@@ -77,28 +182,33 @@ namespace DevBrewLabs.WPF.Spreadsheet
 
         private void OnTextChanged(object sender, TextChangedEventArgs e)
         {
+            if (_txtEditor == null)
+                return;
+
             _txtEditor.ScrollToEnd();
 
             if (Spread == null || !_txtEditor.IsFocused)
                 return;
 
-            var activeSheetView = Spread.SheetViews.ActiveSheetView;
+            var activeSheetView = Spread.SheetViews?.ActiveSheetView;
+            if (activeSheetView == null)
+                return;
 
             if (Spread.EditingManager.IsEditing)
             {
                 var editor = Spread.EditingManager.ActiveEditor as IEditorInfo;
-                editor.SetValue(_txtEditor.Text);
+                editor?.SetValue(_txtEditor.Text);
                 return;
             }
 
             Spread.BeginEdit(activeSheetView.ActiveRow, activeSheetView.ActiveColumn);
-            (Spread.EditingManager.ActiveEditor as IEditorInfo).SetValue(_txtEditor.Text);
+            (Spread.EditingManager.ActiveEditor as IEditorInfo)?.SetValue(_txtEditor.Text);
             _txtEditor.Focus();
         }
 
         private void OnTextBoxKeyDown(object sender, KeyEventArgs e)
         {
-            if (Spread == null)
+            if (Spread == null || _txtEditor == null)
                 return;
 
             Key key = e.Key == Key.System ? e.SystemKey : e.Key;
@@ -126,17 +236,23 @@ namespace DevBrewLabs.WPF.Spreadsheet
                 return;
             }
 
-            if(key == Key.Enter)
+            if (key == Key.Enter)
             {
                 e.Handled = true;
-                CommitCommand.Execute(null);
-                var activeSheetView = Spread.SheetViews.ActiveSheetView;
-                Spread.SelectCell(activeSheetView.ActiveRow + 1, activeSheetView.ActiveColumn);
+                CommitCommand?.Execute(null);
+                var activeSheetView = Spread.SheetViews?.ActiveSheetView;
+                if (activeSheetView != null)
+                {
+                    Spread.SelectCell(activeSheetView.ActiveRow + 1, activeSheetView.ActiveColumn);
+                }
             }
         }
 
         private void OnCellsSelectionChanged(object sender, CellsSelectionEventArgs e)
         {
+            if (_txtEditor == null || e.SheetView?.WorkSheet == null)
+                return;
+
             var workSheet = e.SheetView.WorkSheet;
 
             var formula = workSheet.GetFormula(e.SheetView.ActiveRow, e.SheetView.ActiveColumn);
@@ -172,13 +288,11 @@ namespace DevBrewLabs.WPF.Spreadsheet
                 newSpread.CellsSelectionChanged += fTextBox.OnCellsSelectionChanged;
                 fTextBox.CommitCommand = new CommitEditCommand(newSpread);
                 fTextBox.CancelCommand = new CancelEditCommand(newSpread);
-                fTextBox.DataContext = fTextBox;
             }
             else
             {
                 fTextBox.CommitCommand = null;
                 fTextBox.CancelCommand = null;
-                fTextBox.DataContext = null;
             }
         }
     }
