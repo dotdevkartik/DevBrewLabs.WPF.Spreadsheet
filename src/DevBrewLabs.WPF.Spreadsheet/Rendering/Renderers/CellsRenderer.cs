@@ -19,7 +19,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
                 var rowHeight = context.Rows.GetRowHeight(row);
                 if (rowHeight == 0) continue;
-                Debug.WriteLine(rowHeight);
 
                 for (int col = leftColumn; col <= rightColumn; col++)
                 {
