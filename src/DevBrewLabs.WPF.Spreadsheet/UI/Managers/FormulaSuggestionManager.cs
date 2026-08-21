@@ -7,19 +7,22 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
-using System.Windows.Media;
 
 namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 {
     internal class FormulaSuggestionManager : UIManager
     {
         private Popup _suggestionPopup;
-        private Popup _descriptionPopup;
-        private TextBlock _descriptionTextBlock;
         private SuggestionListBox _suggestionListBox;
-        private TextBox _attachedEditor;
 
-        public bool IsOpen => _suggestionPopup != null && _suggestionPopup.IsOpen;
+        private Popup _parameterPopup;
+        private FormulaParameterTooltip _parameterTooltip;
+
+        private TextBox _attachedEditor;
+        private Window _parentWindow;
+
+        public bool IsOpen => (_suggestionPopup != null && _suggestionPopup.IsOpen) || 
+                              (_parameterPopup != null && _parameterPopup.IsOpen);
 
         public FormulaSuggestionManager(Spread spread) : base(spread)
         {
@@ -27,55 +30,46 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
         private void EnsureComponents()
         {
-            if (_suggestionPopup != null)
-                return;
-
-            _suggestionPopup = new Popup
+            if (_suggestionPopup == null)
             {
-                Placement = PlacementMode.Bottom,
-                HorizontalOffset = 7,
-                VerticalOffset = 5,
-                StaysOpen = true,
-                PopupAnimation = PopupAnimation.Fade,
-                AllowsTransparency = true,
-                IsOpen = false
-            };
+                _suggestionPopup = new Popup
+                {
+                    Placement = PlacementMode.Bottom,
+                    HorizontalOffset = 0,
+                    VerticalOffset = 2,
+                    StaysOpen = true,
+                    PopupAnimation = PopupAnimation.Fade,
+                    AllowsTransparency = true,
+                    IsOpen = false
+                };
 
-            _descriptionPopup = new Popup
+                _suggestionListBox = new SuggestionListBox
+                {
+                    MinWidth = 260,
+                    MaxWidth = 340
+                };
+
+                _suggestionListBox.PreviewMouseLeftButtonDown += OnSuggestionListBoxMouseLeftButtonDown;
+
+                _suggestionPopup.Child = _suggestionListBox;
+            }
+
+            if (_parameterPopup == null)
             {
-                Placement = PlacementMode.Right,
-                IsOpen = false,
-                HorizontalOffset = 10,
-                StaysOpen = true,
-                AllowsTransparency = true,
-                PopupAnimation = PopupAnimation.Fade
-            };
+                _parameterPopup = new Popup
+                {
+                    Placement = PlacementMode.Bottom,
+                    HorizontalOffset = 0,
+                    VerticalOffset = 2,
+                    StaysOpen = true,
+                    PopupAnimation = PopupAnimation.Fade,
+                    AllowsTransparency = true,
+                    IsOpen = false
+                };
 
-            _descriptionTextBlock = new TextBlock
-            {
-                Foreground = Brushes.Black,
-                Padding = new Thickness(2, 0, 2, 0)
-            };
-
-            _descriptionPopup.Child = new Border
-            {
-                Child = _descriptionTextBlock,
-                BorderThickness = new Thickness(0.5),
-                BorderBrush = Brushes.Black,
-                Background = new SolidColorBrush(Color.FromArgb(255, 240, 240, 240))
-            };
-
-            _suggestionListBox = new SuggestionListBox
-            {
-                Width = 100,
-                DisplayMemberPath = "Name",
-                SelectedValuePath = "Name"
-            };
-
-            _suggestionListBox.PreviewMouseLeftButtonDown += OnSuggestionListBoxMouseLeftButtonDown;
-            _suggestionListBox.SelectionChanged += OnFormulaSelected;
-
-            _suggestionPopup.Child = _suggestionListBox;
+                _parameterTooltip = new FormulaParameterTooltip();
+                _parameterPopup.Child = _parameterTooltip;
+            }
         }
 
         public void Attach(TextBox editor)
@@ -91,6 +85,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
             _attachedEditor.TextChanged += OnEditorTextChanged;
             _attachedEditor.PreviewKeyDown += OnEditorPreviewKeyDown;
+            _attachedEditor.SelectionChanged += OnEditorSelectionChanged;
             _attachedEditor.LostKeyboardFocus += OnEditorLostKeyboardFocus;
         }
 
@@ -102,6 +97,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             {
                 _attachedEditor.TextChanged -= OnEditorTextChanged;
                 _attachedEditor.PreviewKeyDown -= OnEditorPreviewKeyDown;
+                _attachedEditor.SelectionChanged -= OnEditorSelectionChanged;
                 _attachedEditor.LostKeyboardFocus -= OnEditorLostKeyboardFocus;
                 _attachedEditor = null;
             }
@@ -115,14 +111,22 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             Hide();
         }
 
-        private Window _parentWindow;
-
         public void Show(IEnumerable<FormulaInfo> formulas)
+        {
+            ShowSuggestions(formulas);
+        }
+
+        private void ShowSuggestions(IEnumerable<FormulaInfo> formulas)
         {
             if (_attachedEditor == null || Spread == null || !Spread.ShowFormulaSuggestions)
                 return;
 
             EnsureComponents();
+
+            if (_parameterPopup != null && _parameterPopup.IsOpen)
+            {
+                _parameterPopup.IsOpen = false;
+            }
 
             _suggestionPopup.PlacementTarget = _attachedEditor;
             _suggestionListBox.ItemsSource = formulas;
@@ -136,13 +140,31 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             }
         }
 
+        private void ShowParameterTooltip(FormulaInfo formulaInfo, int activeArgumentIndex)
+        {
+            if (_attachedEditor == null || Spread == null || !Spread.ShowFormulaSuggestions)
+                return;
+
+            EnsureComponents();
+
+            if (_suggestionPopup != null && _suggestionPopup.IsOpen)
+            {
+                _suggestionPopup.IsOpen = false;
+            }
+
+            _parameterPopup.PlacementTarget = _attachedEditor;
+            _parameterTooltip.Update(formulaInfo, activeArgumentIndex);
+            AttachWindowEvents(_attachedEditor);
+            _parameterPopup.IsOpen = true;
+        }
+
         public void Hide()
         {
             if (_suggestionPopup != null)
                 _suggestionPopup.IsOpen = false;
 
-            if (_descriptionPopup != null)
-                _descriptionPopup.IsOpen = false;
+            if (_parameterPopup != null)
+                _parameterPopup.IsOpen = false;
 
             DetachWindowEvents();
         }
@@ -183,6 +205,101 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             Hide();
         }
 
+        internal class FormulaEditContext
+        {
+            public bool IsFormula { get; set; }
+            public bool IsInsideFunction { get; set; }
+            public string FunctionName { get; set; }
+            public int ArgumentIndex { get; set; }
+            public string IncompletePrefix { get; set; }
+            public int IncompletePrefixStartIndex { get; set; }
+        }
+
+        internal static FormulaEditContext ParseFormulaAtCaret(string text, int caretIndex)
+        {
+            if (string.IsNullOrEmpty(text) || !text.StartsWith("="))
+            {
+                return new FormulaEditContext { IsFormula = false };
+            }
+
+            if (caretIndex < 0) caretIndex = 0;
+            if (caretIndex > text.Length) caretIndex = text.Length;
+
+            var functionStack = new Stack<(string FunctionName, int ArgIndex)>();
+            bool inQuotes = false;
+            int lastIdentifierStart = -1;
+            string lastIdentifier = string.Empty;
+
+            for (int i = 1; i < caretIndex; i++)
+            {
+                char c = text[i];
+
+                if (c == '"')
+                {
+                    inQuotes = !inQuotes;
+                    lastIdentifierStart = -1;
+                    lastIdentifier = string.Empty;
+                    continue;
+                }
+
+                if (inQuotes)
+                    continue;
+
+                if (char.IsLetterOrDigit(c) || c == '_' || c == '.')
+                {
+                    if (lastIdentifierStart < 0)
+                        lastIdentifierStart = i;
+                    lastIdentifier = text.Substring(lastIdentifierStart, i - lastIdentifierStart + 1);
+                }
+                else if (c == '(')
+                {
+                    string fnName = !string.IsNullOrEmpty(lastIdentifier) ? lastIdentifier : string.Empty;
+                    functionStack.Push((fnName, 0));
+                    lastIdentifierStart = -1;
+                    lastIdentifier = string.Empty;
+                }
+                else if (c == ',')
+                {
+                    if (functionStack.Count > 0)
+                    {
+                        var top = functionStack.Pop();
+                        functionStack.Push((top.FunctionName, top.ArgIndex + 1));
+                    }
+                    lastIdentifierStart = -1;
+                    lastIdentifier = string.Empty;
+                }
+                else if (c == ')')
+                {
+                    if (functionStack.Count > 0)
+                    {
+                        functionStack.Pop();
+                    }
+                    lastIdentifierStart = -1;
+                    lastIdentifier = string.Empty;
+                }
+                else
+                {
+                    lastIdentifierStart = -1;
+                    lastIdentifier = string.Empty;
+                }
+            }
+
+            if (inQuotes)
+            {
+                return new FormulaEditContext { IsFormula = true, IsInsideFunction = false };
+            }
+
+            return new FormulaEditContext
+            {
+                IsFormula = true,
+                IsInsideFunction = functionStack.Count > 0,
+                FunctionName = functionStack.Count > 0 ? functionStack.Peek().FunctionName : null,
+                ArgumentIndex = functionStack.Count > 0 ? functionStack.Peek().ArgIndex : 0,
+                IncompletePrefix = lastIdentifier,
+                IncompletePrefixStartIndex = lastIdentifierStart
+            };
+        }
+
         public void TryShowSuggestions()
         {
             if (Spread == null || !Spread.ShowFormulaSuggestions || _attachedEditor == null)
@@ -192,18 +309,46 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             }
 
             string text = _attachedEditor.Text ?? "";
-            if (text.Length > 1 && text.StartsWith("="))
+            int caretIndex = _attachedEditor.CaretIndex;
+
+            var editContext = ParseFormulaAtCaret(text, caretIndex);
+            if (!editContext.IsFormula)
             {
-                var searchString = text.Substring(1);
-                var formulas = Spread.WorkBook?.CalcEngine?.GetRegisteredFormulas();
-                if (formulas != null)
+                Hide();
+                return;
+            }
+
+            var registeredFormulas = Spread.WorkBook?.CalcEngine?.GetRegisteredFormulas()?.ToList();
+            if (registeredFormulas == null || registeredFormulas.Count == 0)
+            {
+                Hide();
+                return;
+            }
+
+            // 1. If typing an incomplete function name matching formula names (Suggestion List Mode - Image 2)
+            if (!string.IsNullOrEmpty(editContext.IncompletePrefix) && char.IsLetter(editContext.IncompletePrefix[0]))
+            {
+                var matchingFormulas = registeredFormulas
+                    .Where(fx => fx.Name.StartsWith(editContext.IncompletePrefix, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                if (matchingFormulas.Count > 0)
                 {
-                    var searchedFormulas = formulas.Where(fx => fx.Name.StartsWith(searchString, StringComparison.OrdinalIgnoreCase)).ToList();
-                    if (searchedFormulas.Count > 0)
-                    {
-                        Show(searchedFormulas);
-                        return;
-                    }
+                    ShowSuggestions(matchingFormulas);
+                    return;
+                }
+            }
+
+            // 2. If inside function arguments (Parameter Tooltip Mode - Image 1)
+            if (editContext.IsInsideFunction && !string.IsNullOrEmpty(editContext.FunctionName))
+            {
+                var activeFormula = registeredFormulas
+                    .FirstOrDefault(fx => string.Equals(fx.Name, editContext.FunctionName, StringComparison.OrdinalIgnoreCase));
+
+                if (activeFormula != null)
+                {
+                    ShowParameterTooltip(activeFormula, editContext.ArgumentIndex);
+                    return;
                 }
             }
 
@@ -221,31 +366,39 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             TryShowSuggestions();
         }
 
+        private void OnEditorSelectionChanged(object sender, RoutedEventArgs e)
+        {
+            TryShowSuggestions();
+        }
+
         private void OnEditorPreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if (!IsOpen || _suggestionListBox == null)
+            if (!IsOpen)
                 return;
 
-            int count = _suggestionListBox.ItemsCount;
-            if (count == 0)
-                return;
+            if (_suggestionPopup != null && _suggestionPopup.IsOpen && _suggestionListBox != null)
+            {
+                int count = _suggestionListBox.ItemsCount;
+                if (count > 0)
+                {
+                    Key key = e.Key == Key.System ? e.SystemKey : e.Key;
 
-            Key key = e.Key == Key.System ? e.SystemKey : e.Key;
-
-            if (key == Key.Down && _suggestionListBox.SelectedIndex < count - 1)
-            {
-                e.Handled = true;
-                _suggestionListBox.SelectedIndex++;
-            }
-            else if (key == Key.Up && _suggestionListBox.SelectedIndex > 0)
-            {
-                e.Handled = true;
-                _suggestionListBox.SelectedIndex--;
-            }
-            else if (key == Key.Tab)
-            {
-                e.Handled = true;
-                ApplySelectedSuggestion();
+                    if (key == Key.Down && _suggestionListBox.SelectedIndex < count - 1)
+                    {
+                        e.Handled = true;
+                        _suggestionListBox.SelectedIndex++;
+                    }
+                    else if (key == Key.Up && _suggestionListBox.SelectedIndex > 0)
+                    {
+                        e.Handled = true;
+                        _suggestionListBox.SelectedIndex--;
+                    }
+                    else if (key == Key.Tab)
+                    {
+                        e.Handled = true;
+                        ApplySelectedSuggestion();
+                    }
+                }
             }
         }
 
@@ -256,7 +409,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
             string formulaName = null;
 
-            if (_suggestionListBox.SelectedIndex >= 0 && _suggestionListBox.ItemsSource != null)
+            if (_suggestionListBox.SelectedItem is FormulaInfo fi)
+            {
+                formulaName = fi.Name;
+            }
+            else if (_suggestionListBox.SelectedIndex >= 0 && _suggestionListBox.ItemsSource != null)
             {
                 int index = 0;
                 foreach (var item in _suggestionListBox.ItemsSource)
@@ -273,21 +430,26 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 }
             }
 
-            if (string.IsNullOrEmpty(formulaName))
-            {
-                if (_suggestionListBox.SelectedItem is FormulaInfo fi)
-                    formulaName = fi.Name;
-                else if (_suggestionListBox.SelectedValue != null)
-                    formulaName = _suggestionListBox.SelectedValue.ToString();
-                else if (_suggestionListBox.SelectedItem != null)
-                    formulaName = _suggestionListBox.SelectedItem.ToString();
-            }
-
             if (!string.IsNullOrEmpty(formulaName))
             {
-                _attachedEditor.Text = $"={formulaName}(";
-                _attachedEditor.CaretIndex = _attachedEditor.Text.Length;
-                Hide();
+                string text = _attachedEditor.Text ?? "";
+                int caretIndex = _attachedEditor.CaretIndex;
+                var editContext = ParseFormulaAtCaret(text, caretIndex);
+
+                if (editContext.IncompletePrefixStartIndex >= 0 && !string.IsNullOrEmpty(editContext.IncompletePrefix))
+                {
+                    string before = text.Substring(0, editContext.IncompletePrefixStartIndex);
+                    string after = text.Substring(Math.Min(editContext.IncompletePrefixStartIndex + editContext.IncompletePrefix.Length, text.Length));
+                    _attachedEditor.Text = $"{before}{formulaName}({after}";
+                    _attachedEditor.CaretIndex = editContext.IncompletePrefixStartIndex + formulaName.Length + 1;
+                }
+                else
+                {
+                    _attachedEditor.Text = $"={formulaName}(";
+                    _attachedEditor.CaretIndex = _attachedEditor.Text.Length;
+                }
+
+                TryShowSuggestions();
             }
         }
 
@@ -299,39 +461,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             }
         }
 
-        private void OnFormulaSelected(object sender, SelectionChangedEventArgs e)
-        {
-            var selectedFormula = _suggestionListBox?.SelectedItem as FormulaInfo;
-            if (selectedFormula == null && _suggestionListBox?.SelectedIndex >= 0 && _suggestionListBox?.ItemsSource != null)
-            {
-                int index = 0;
-                foreach (var item in _suggestionListBox.ItemsSource)
-                {
-                    if (index == _suggestionListBox.SelectedIndex)
-                    {
-                        selectedFormula = item as FormulaInfo;
-                        break;
-                    }
-                    index++;
-                }
-            }
-
-            if (selectedFormula == null)
-            {
-                if (_descriptionPopup != null)
-                    _descriptionPopup.IsOpen = false;
-                return;
-            }
-
-            var listBoxItem = _suggestionListBox?.ItemContainerGenerator?.ContainerFromItem(selectedFormula) as ListBoxItem;
-            if (listBoxItem != null && _descriptionPopup != null && _descriptionTextBlock != null)
-            {
-                _descriptionPopup.PlacementTarget = listBoxItem;
-                _descriptionTextBlock.Text = selectedFormula.Description;
-                _descriptionPopup.IsOpen = true;
-            }
-        }
-
         public override void Dispose()
         {
             Detach();
@@ -339,13 +468,12 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             if (_suggestionListBox != null)
             {
                 _suggestionListBox.PreviewMouseLeftButtonDown -= OnSuggestionListBoxMouseLeftButtonDown;
-                _suggestionListBox.SelectionChanged -= OnFormulaSelected;
                 _suggestionListBox = null;
             }
 
             _suggestionPopup = null;
-            _descriptionPopup = null;
-            _descriptionTextBlock = null;
+            _parameterPopup = null;
+            _parameterTooltip = null;
 
             base.Dispose();
         }

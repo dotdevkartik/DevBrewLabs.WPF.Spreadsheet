@@ -9,25 +9,46 @@
     <Style x:Key="SuggestionListBoxItemStyle" TargetType="ListBoxItem">
         <Setter Property="SnapsToDevicePixels" Value="true" />
         <Setter Property="OverridesDefaultStyle" Value="true" />
+        <Setter Property="Cursor" Value="Hand" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ListBoxItem">
                     <Border x:Name="Border"
-                            Padding="6,3"
+                            Padding="8,5,8,5"
+                            CornerRadius="2"
+                            Margin="1,0"
+                            Background="Transparent"
                             SnapsToDevicePixels="true">
-                        <Border.Background>
-                            <SolidColorBrush Color="Transparent" />
-                        </Border.Background>
-                        <ContentPresenter />
+                        <StackPanel>
+                            <TextBlock x:Name="FormulaNameText"
+                                       Text="{Binding Name}"
+                                       FontFamily="Segoe UI, -apple-system, BlinkMacSystemFont, Roboto, sans-serif"
+                                       FontSize="12"
+                                       Foreground="#1F2937"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock x:Name="DescriptionText"
+                                       Text="{Binding Description}"
+                                       FontFamily="Segoe UI, -apple-system, BlinkMacSystemFont, Roboto, sans-serif"
+                                       FontSize="11"
+                                       Foreground="#4B5563"
+                                       TextWrapping="Wrap"
+                                       Margin="0,2,0,1"
+                                       LineHeight="15"
+                                       Visibility="Collapsed"/>
+                        </StackPanel>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter Property="Background" TargetName="Border" Value="#FF4141E9"/>
-                            <Setter Property="Foreground" Value="White"/>
+                            <Setter Property="Background" TargetName="Border" Value="#EEF2F6"/>
+                            <Setter TargetName="DescriptionText" Property="Visibility" Value="Visible"/>
                         </Trigger>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" TargetName="Border" Value="#FFE8EDF9"/>
-                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsMouseOver" Value="True"/>
+                                <Condition Property="IsSelected" Value="False"/>
+                            </MultiTrigger.Conditions>
+                            <Setter Property="Background" TargetName="Border" Value="#F9FAFB"/>
+                        </MultiTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
@@ -36,10 +57,11 @@
 
     <Style TargetType="{x:Type components:SuggestionListBox}">
         <Setter Property="SnapsToDevicePixels" Value="true" />
-        <Setter Property="MinWidth" Value="120" />
-        <Setter Property="MaxHeight" Value="300" />
-        <Setter Property="Background" Value="White"/>
-        <Setter Property="BorderBrush" Value="#FF888888"/>
+        <Setter Property="MinWidth" Value="240" />
+        <Setter Property="MaxWidth" Value="340" />
+        <Setter Property="MaxHeight" Value="260" />
+        <Setter Property="Background" Value="#FFFFFF"/>
+        <Setter Property="BorderBrush" Value="#D1D5DB"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="ItemContainerStyle" Value="{StaticResource SuggestionListBoxItemStyle}"/>
         <Setter Property="Template">
@@ -48,18 +70,20 @@
                     <Border Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="2"
+                            CornerRadius="3"
+                            Padding="2"
                             SnapsToDevicePixels="True">
                         <Border.Effect>
-                            <DropShadowEffect BlurRadius="6" Opacity="0.15" ShadowDepth="2" Direction="270"/>
+                            <DropShadowEffect BlurRadius="8" Opacity="0.12" ShadowDepth="3" Direction="270" Color="#000000"/>
                         </Border.Effect>
                         <ListBox x:Name="PART_ListBox"
                                  Background="Transparent"
                                  BorderThickness="0"
                                  MinWidth="{TemplateBinding MinWidth}"
+                                 MaxWidth="{TemplateBinding MaxWidth}"
                                  MaxHeight="{TemplateBinding MaxHeight}"
                                  ItemContainerStyle="{TemplateBinding ItemContainerStyle}"
-                                 ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                                  ScrollViewer.VerticalScrollBarVisibility="Auto"
                                  ScrollViewer.CanContentScroll="True">
                             <ListBox.Resources>
@@ -69,8 +93,8 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsEnabled" Value="false">
-                            <Setter Property="Background" Value="#FFE8EDF9" />
-                            <Setter Property="BorderBrush" Value="#FFAAAAAA" />
+                            <Setter Property="Background" Value="#F3F4F6" />
+                            <Setter Property="BorderBrush" Value="#E5E7EB" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
