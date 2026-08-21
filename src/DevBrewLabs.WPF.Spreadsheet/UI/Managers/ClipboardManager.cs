@@ -129,12 +129,12 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                             }
                             catch
                             {
-                                workSheet.Cells[activeRow + row, activeColumn + column].Value = strVal;
+                                workSheet.SetValue(activeRow + row, activeColumn + column,  strVal);
                             }
                         }
                         else
                         {
-                            workSheet.Cells[activeRow + row, activeColumn + column].Value = value;
+                            workSheet.SetValue(activeRow + row, activeColumn + column, value);
                         }
                     }
                 }

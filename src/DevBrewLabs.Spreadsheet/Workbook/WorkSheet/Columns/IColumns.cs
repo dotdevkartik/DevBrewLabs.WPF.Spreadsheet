@@ -1,4 +1,4 @@
-﻿namespace DevBrewLabs.Spreadsheet
+namespace DevBrewLabs.Spreadsheet
 {
     public interface IColumns
     {
@@ -22,6 +22,12 @@
         /// <param name="column"></param>
         /// <returns></returns>
         int GetColumnWidth(int column);
+        /// <summary>
+        /// Gets whether the column is visible.
+        /// </summary>
+        /// <param name="column"></param>
+        /// <returns></returns>
+        bool IsColumnVisible(int column);
         /// <summary>
         /// Gets the column index of the provided column.
         /// </summary>

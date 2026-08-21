@@ -16,7 +16,8 @@ namespace DevBrewLabs.Spreadsheet
         Delete,
         Height,
         Style,
-        StyleName
+        StyleName,
+        Visibility
     }
 
     public enum ColumnChangeType
@@ -25,7 +26,8 @@ namespace DevBrewLabs.Spreadsheet
         Delete,
         Width,
         Style,
-        StyleName
+        StyleName,
+        Visibility
     }
 
     public enum RangeChangeType

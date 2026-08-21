@@ -1,0 +1,58 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:components="clr-namespace:DevBrewLabs.WPF.Spreadsheet.Components">
+
+    <Style TargetType="{x:Type components:FormulaParameterTooltip}">
+        <Setter Property="Background" Value="#FFFFFF" />
+        <Setter Property="BorderBrush" Value="#D1D5DB" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Foreground" Value="#1F2937" />
+        <Setter Property="FontFamily" Value="Segoe UI, -apple-system, BlinkMacSystemFont, Roboto, sans-serif" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="MaxWidth" Value="380" />
+        <Setter Property="MinWidth" Value="200" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type components:FormulaParameterTooltip}">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="3"
+                            Padding="8,6,8,6"
+                            SnapsToDevicePixels="True">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="8" Opacity="0.12" ShadowDepth="3" Direction="270" Color="#000000"/>
+                        </Border.Effect>
+                        <StackPanel>
+                            <!-- Signature line with highlighted parameter -->
+                            <TextBlock x:Name="PART_SignatureHost" 
+                                       FontFamily="{TemplateBinding FontFamily}" 
+                                       FontSize="{TemplateBinding FontSize}" 
+                                       Foreground="{TemplateBinding Foreground}"
+                                       TextWrapping="Wrap"
+                                       VerticalAlignment="Center"/>
+
+                            <!-- Subtle divider -->
+                            <Rectangle Height="1" Fill="#E5E7EB" Margin="0,5,0,4" />
+
+                            <!-- Summary section -->
+                            <TextBlock Text="Summary" 
+                                       FontFamily="{TemplateBinding FontFamily}" 
+                                       FontSize="11" 
+                                       Foreground="#6B7280" 
+                                       Margin="0,0,0,1" />
+
+                            <TextBlock x:Name="PART_SummaryText" 
+                                       FontFamily="{TemplateBinding FontFamily}" 
+                                       FontSize="12" 
+                                       Foreground="{TemplateBinding Foreground}" 
+                                       TextWrapping="Wrap" 
+                                       LineHeight="16" />
+                        </StackPanel>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

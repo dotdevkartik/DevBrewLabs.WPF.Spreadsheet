@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 
 namespace DevBrewLabs.Spreadsheet
@@ -29,6 +29,16 @@ namespace DevBrewLabs.Spreadsheet
                 return ColumnHeaders.DefaultRowHeight;
 
             return sheetRow.Height;
+        }
+
+        public bool IsRowVisible(int row)
+        {
+            var sheetRow = GetItem(row, false);
+
+            if (sheetRow == null)
+                return ColumnHeaders.DefaultRowHeight > 0;
+
+            return sheetRow.Visible;
         }
 
         public int GetRowIndex(IRow row)

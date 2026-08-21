@@ -1,4 +1,4 @@
-﻿using DevBrewLabs.Spreadsheet.Formatters;
+using DevBrewLabs.Spreadsheet.Formatters;
 using System;
 
 namespace DevBrewLabs.Spreadsheet
@@ -100,7 +100,53 @@ namespace DevBrewLabs.Spreadsheet
             }
         }
 
-        public bool Visible => Height > 0;
+        private bool _isHidden;
+        public bool IsHidden
+        {
+            get => _isHidden;
+            set
+            {
+                if (_isHidden == value)
+                {
+                    return;
+                }
+
+                bool oldValue = _isHidden;
+                _isHidden = value;
+
+                _parent?.WorkSheet?.OnRowChanged(new RowChangedEventArgs(
+                    SheetRegion.Cells,
+                    _parent.WorkSheet,
+                    Index,
+                    oldValue,
+                    value,
+                    RowChangeType.Visibility));
+            }
+        }
+        private bool _isFilteredOut;
+        public bool IsFilteredOut
+        {
+            get => _isFilteredOut;
+            set
+            {
+                if (_isFilteredOut == value)
+                {
+                    return;
+                }
+
+                bool oldValue = _isFilteredOut;
+                _isFilteredOut = value;
+
+                _parent?.WorkSheet?.OnRowChanged(new RowChangedEventArgs(
+                    SheetRegion.Cells,
+                    _parent.WorkSheet,
+                    Index,
+                    oldValue,
+                    value,
+                    RowChangeType.Visibility));
+            }
+        }
+        public bool Visible => !IsHidden && !IsFilteredOut && Height > 0;
         public int Index { get; internal set; }
         public bool Locked { get; set; }
 

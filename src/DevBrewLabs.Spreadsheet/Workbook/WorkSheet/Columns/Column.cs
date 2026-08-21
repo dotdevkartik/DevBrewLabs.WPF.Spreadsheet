@@ -120,6 +120,7 @@ namespace DevBrewLabs.Spreadsheet
         }
         public ICellType CellType { get; set; }
         public bool Locked { get; set; }
+        public bool AllowFiltering { get; set; } = true;
         public bool Visible => Width > 0;
         public int Index { get; internal set; }
 

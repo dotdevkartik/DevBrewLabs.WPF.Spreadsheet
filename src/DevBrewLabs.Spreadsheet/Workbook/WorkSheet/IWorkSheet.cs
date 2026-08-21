@@ -1,5 +1,8 @@
 using DevBrewLabs.Spreadsheet.Sorting;
+using DevBrewLabs.Spreadsheet.Filtering;
 using System;
+using System.Collections.Generic;
+using DevBrewLabs.Spreadsheet.Formatters;
 
 namespace DevBrewLabs.Spreadsheet
 {
@@ -27,6 +30,11 @@ namespace DevBrewLabs.Spreadsheet
         /// </summary>
         IWorkbook WorkBook { get; }
         
+        /// <summary>
+        /// Gets the AutoFilter for this worksheet.
+        /// </summary>
+        AutoFilter AutoFilter { get; }
+
         /// <summary>
         /// Gets or sets name for this sheet.
         /// </summary>

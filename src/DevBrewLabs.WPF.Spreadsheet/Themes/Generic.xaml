@@ -1,13 +1,16 @@
-﻿<ResourceDictionary
+<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:DevBrewLabs.WPF.Spreadsheet"
     xmlns:components="clr-namespace:DevBrewLabs.WPF.Spreadsheet.Components">
 
     <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="DevBrewLabs.WPF.Spreadsheet;component/Themes/SheetTabControlStyle.xaml"></ResourceDictionary>
-        <ResourceDictionary Source="DevBrewLabs.WPF.Spreadsheet;component/Themes/SuggestionListBoxStyle.xaml"></ResourceDictionary>
         <ResourceDictionary Source="/DevBrewLabs.WPF.Spreadsheet;component/Themes/ScrollBarStyle.xaml"/>
+        <ResourceDictionary Source="/DevBrewLabs.WPF.Spreadsheet;component/Themes/SheetTabControlStyle.xaml"/>
+        <ResourceDictionary Source="/DevBrewLabs.WPF.Spreadsheet;component/Themes/SuggestionListBoxStyle.xaml"/>
+        <ResourceDictionary Source="/DevBrewLabs.WPF.Spreadsheet;component/Themes/FilterDropdownStyle.xaml"/>
+        <ResourceDictionary Source="/DevBrewLabs.WPF.Spreadsheet;component/Themes/FormulaTextBoxStyle.xaml"/>
+        <ResourceDictionary Source="/DevBrewLabs.WPF.Spreadsheet;component/Themes/FormulaParameterTooltipStyle.xaml"/>
     </ResourceDictionary.MergedDictionaries>
 
     <Style TargetType="{x:Type local:Spread}">

@@ -24,7 +24,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
 
         private void Execute(CellEditState state)
         {
-            SheetView.WorkSheet.Cells[state.Row, state.Column].Value = state.Value;
+            SheetView.WorkSheet.SetValue(state.Row, state.Column, state.Value);
             var selection = state.Selection;
             SheetView.ActiveRow = state.Row;
             SheetView.ActiveColumn = state.Column;

@@ -1,12 +1,16 @@
-﻿using System.Reflection;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Markup;
+
+[assembly: InternalsVisibleTo("DevBrewLabs.WPF.Spreadsheet.Tests")]
 
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: XmlnsDefinition("http://schemas.devbrewlabs.com/2026/wpf/spreadsheet", "DevBrewLabs.WPF.Spreadsheet")]
+[assembly: XmlnsDefinition("http://schemas.devbrewlabs.com/2026/wpf/spreadsheet", "DevBrewLabs.WPF.Spreadsheet.Components")]
 [assembly: AssemblyTitle("DevBrewLabs.WPF.Spreadsheet")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]

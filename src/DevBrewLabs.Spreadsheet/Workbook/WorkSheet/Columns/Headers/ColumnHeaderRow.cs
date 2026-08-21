@@ -10,6 +10,10 @@ namespace DevBrewLabs.Spreadsheet
         private ColumnHeaderRows _parent;
         private IStyle _style;
 
+        public bool IsHidden { get; set; }
+        public bool IsFilteredOut { get; set; }
+        public bool Visible => !IsHidden && !IsFilteredOut && Height > 0;
+
         public int Height
         {
             get
@@ -99,7 +103,6 @@ namespace DevBrewLabs.Spreadsheet
 
         public IFormatter Formatter { get; set; }
 
-        public bool Visible => Height > 0;
         public int Index { get; set; }
         public bool Locked { get; set; }
 

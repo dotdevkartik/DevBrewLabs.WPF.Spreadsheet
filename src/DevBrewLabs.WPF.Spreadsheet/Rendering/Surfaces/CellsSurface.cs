@@ -64,6 +64,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
             for (int row = viewRange.TopRow; row <= viewRange.BottomRow; row++)
             {
+                var sheetRowObj = rows.GetItem(row);
+                if (sheetRowObj != null && !sheetRowObj.Visible) continue;
+
                 var rowLocation = SheetView.ViewPort.GetRowLocation(row);
                 double rowHeight = workSheet.Rows.GetRowHeight(row);
 
@@ -93,6 +96,17 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                                 y = cellRect.Y;
                                 columnWidth = cellRect.Width;
                                 rowHeight = cellRect.Height;
+                            }
+
+                            if (SheetView.Spread.AllowFiltering && 
+                                workSheet.AutoFilter != null && workSheet.AutoFilter.IsFilterHeaderCell(hitTestInfo.Row, hitTestInfo.Column) &&
+                                (columns.GetItem(hitTestInfo.Column) == null || columns.GetItem(hitTestInfo.Column).AllowFiltering))
+                            {
+                                double filterButtonWidth = 16;
+                                if (point.X >= x + columnWidth - filterButtonWidth)
+                                {
+                                    hitTestInfo.Element = VisualElement.CellFilterButton;
+                                }
                             }
 
                             break;

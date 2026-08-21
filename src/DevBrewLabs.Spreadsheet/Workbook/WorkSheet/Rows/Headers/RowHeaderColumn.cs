@@ -103,6 +103,7 @@ namespace DevBrewLabs.Spreadsheet
 
         public bool Visible => Width > 0;
         public bool Locked { get; set; }
+        public bool AllowFiltering { get; set; } = true;
         public DataMap DataMap { get; set; }
         public ICellType CellType { get; set; }
         public IFormatter Formatter { get; set; }

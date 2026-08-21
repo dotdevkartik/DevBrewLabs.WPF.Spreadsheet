@@ -53,6 +53,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                     activeSheetView.InternalSetZoomFactor(newZoom);
                 }
 
+                Spread.FilterManager?.HideFilterDropdown();
+                Spread.FormulaSuggestionManager?.Hide();
                 Spread.RaiseZoomChanged(oldZoom, newZoom);
                 Spread.SheetViewHost?.UpdateZoomTransform();
                 (activeSheetView.ViewPort as ViewPort)?.CalculateVisibleRange();
