@@ -6,6 +6,7 @@
 
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/DevBrewLabs.WPF.Spreadsheet;component/Themes/ScrollBarStyle.xaml"/>
+        <ResourceDictionary Source="/DevBrewLabs.WPF.Spreadsheet;component/Themes/ResizeMarkerStyle.xaml"/>
         <ResourceDictionary Source="/DevBrewLabs.WPF.Spreadsheet;component/Themes/SheetTabControlStyle.xaml"/>
         <ResourceDictionary Source="/DevBrewLabs.WPF.Spreadsheet;component/Themes/SuggestionListBoxStyle.xaml"/>
         <ResourceDictionary Source="/DevBrewLabs.WPF.Spreadsheet;component/Themes/FilterDropdownStyle.xaml"/>
@@ -29,5 +30,6 @@
             </Setter.Value>
         </Setter>
         <Setter Property="ScrollBarStyle" Value="{StaticResource ScrollBarStyle}" />
+        <Setter Property="ResizeMarkerStyle" Value="{StaticResource ResizeMarkerStyle}" />
     </Style>
 </ResourceDictionary>

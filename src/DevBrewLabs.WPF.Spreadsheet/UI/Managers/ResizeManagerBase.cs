@@ -12,11 +12,25 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
         {
             ResizeLine = new Line
             {
-                Stroke = Brushes.Black,
-                StrokeThickness = 0.75,
-                StrokeDashArray = new DoubleCollection(new double[] { 5, 2 }),
                 Visibility = Visibility.Collapsed
             };
+
+            UpdateResizeMarkerStyle(spread.ResizeMarkerStyle);
+        }
+
+        public void UpdateResizeMarkerStyle(Style style)
+        {
+            if (style != null)
+            {
+                ResizeLine.Style = style;
+            }
+            else
+            {
+                ResizeLine.Style = null;
+                ResizeLine.Stroke = Brushes.Black;
+                ResizeLine.StrokeThickness = 0.75;
+                ResizeLine.StrokeDashArray = new DoubleCollection(new double[] { 5, 2 });
+            }
         }
 
         public abstract void BeginResize(SheetView sheetView, int index, int location);

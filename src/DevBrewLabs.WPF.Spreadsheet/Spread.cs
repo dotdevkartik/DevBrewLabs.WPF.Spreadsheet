@@ -33,6 +33,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
 
         #region Dependency Properties
         public static readonly DependencyProperty ScrollBarStyleProperty;
+        public static readonly DependencyProperty ResizeMarkerStyleProperty;
         public static readonly DependencyProperty ScrollModeProperty;
         public static readonly DependencyProperty SelectionBackgroundProperty;
         public static readonly DependencyProperty GridLineBrushProperty;
@@ -145,6 +146,12 @@ namespace DevBrewLabs.WPF.Spreadsheet
                 typeof(Style),
                 typeof(Spread),
                 new PropertyMetadata(null));
+
+            ResizeMarkerStyleProperty = DependencyProperty.Register(
+                nameof(ResizeMarkerStyle),
+                typeof(Style),
+                typeof(Spread),
+                new PropertyMetadata(null, OnResizeMarkerStyleChanged));
         }
 
         /// <summary>
@@ -154,6 +161,23 @@ namespace DevBrewLabs.WPF.Spreadsheet
         {
             get { return (Style)GetValue(ScrollBarStyleProperty); }
             set { SetValue(ScrollBarStyleProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the resize marker line style.
+        /// </summary>
+        public Style ResizeMarkerStyle
+        {
+            get { return (Style)GetValue(ResizeMarkerStyleProperty); }
+            set { SetValue(ResizeMarkerStyleProperty, value); }
+        }
+
+        private static void OnResizeMarkerStyleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var spread = (Spread)d;
+            var style = (Style)e.NewValue;
+            spread._columnResizeManager?.UpdateResizeMarkerStyle(style);
+            spread._rowResizeManager?.UpdateResizeMarkerStyle(style);
         }
 
         /// <summary>
@@ -562,7 +586,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
     #region Internals
     public partial class Spread
     {
-        internal const double GridLineThickness = 0.25;
+        internal const double GridLineThickness = 0.35;
         internal const double SelectionBorderThickness = 1.5;
         internal double PixelPerDip { get; set; }
 
