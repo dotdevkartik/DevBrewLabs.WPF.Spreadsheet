@@ -18,11 +18,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
             for (int row = topRow; row <= bottomRow; row++)
             {
-                var sheetRowObj = context.Rows.GetItem(row) as Row;
-                if (sheetRowObj != null && !sheetRowObj.Visible) continue;
+                int? tempHeight = context.ViewPort.GetTemporaryRowHeight(row);
+                if (tempHeight == 0) continue;
+                if (tempHeight == null && !context.Rows.IsRowVisible(row)) continue;
                 
-                int rowHeight = context.ViewPort.GetTemporaryRowHeight(row) ?? context.Rows.GetRowHeight(row);
-
+                int rowHeight = tempHeight ?? context.Rows.GetRowHeight(row);
                 if (rowHeight == 0)
                     continue;
 
@@ -62,6 +62,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
                 for (int row = topRow; row <= bottomRow; row++)
                 {
+                    int? tempHeight = context.ViewPort.GetTemporaryRowHeight(row);
+                    if (tempHeight == 0) continue;
+                    if (tempHeight == null && !context.Rows.IsRowVisible(row)) continue;
+
                     var sheetColumn = context.RowHeaderColumns.GetItem(col);
                     var sheetRow = context.Rows.GetItem(row);
                     var style = context.Worksheet.GetRowHeaderCellStyle(row, col, sheetRow, sheetColumn);
@@ -97,6 +101,3 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
         }
     }
 }
-
-
-

@@ -1,5 +1,6 @@
 using System;
 using System.Windows;
+using DevBrewLabs.Spreadsheet;
 
 namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 {
@@ -27,7 +28,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             _initialHeights = new int[workSheet.RowCount];
             for (int i = 0; i < workSheet.RowCount; i++)
             {
-                _initialHeights[i] = workSheet.Rows.GetRowHeight(i);
+                _initialHeights[i] = workSheet.Rows.IsRowVisible(i) ? workSheet.Rows.GetRowHeight(i) : 0;
             }
 
             Spread.SuspendUpdates = true;
@@ -46,10 +47,13 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 currentLocation = 0;
             }
 
-            ResizeLine.Y1 = ResizeLine.Y2 = currentLocation;
-            ResizeLine.X1 = sheetView.GetRowHeaderWidth() * zoom;
-            ResizeLine.X2 = sheetView.Spread.SheetViewHost.ActualWidth;
-            ResizeLine.Visibility = Visibility.Visible;
+            if (ResizeLine != null)
+            {
+                ResizeLine.Y1 = ResizeLine.Y2 = currentLocation;
+                ResizeLine.X1 = sheetView.GetRowHeaderWidth() * zoom;
+                ResizeLine.X2 = sheetView.Spread.SheetViewHost != null ? sheetView.Spread.SheetViewHost.ActualWidth : 0;
+                ResizeLine.Visibility = Visibility.Visible;
+            }
 
             var view = (SheetView)sheetView;
 
@@ -73,6 +77,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
                 for (int r = _resizingRow - 1; r >= 0; r--)
                 {
+                    if (_initialHeights[r] == 0) continue;
+
                     double rowTop = currentTop - _initialHeights[r];
                     if (logicalCurrentLocation >= rowTop)
                     {
@@ -87,7 +93,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 {
                     for (int r = activeRow + 1; r < _resizingRow; r++)
                     {
-                        view.ViewPort.SetTemporaryRowHeight(r, 0);
+                        if (_initialHeights[r] > 0)
+                            view.ViewPort.SetTemporaryRowHeight(r, 0);
                     }
 
                     view.ViewPort.SetTemporaryRowHeight(activeRow, Math.Max(0, (int)(logicalCurrentLocation - activeRowTop)));
@@ -96,7 +103,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 {
                     for (int r = 0; r <= _resizingRow; r++)
                     {
-                        view.ViewPort.SetTemporaryRowHeight(r, 0);
+                        if (_initialHeights[r] > 0)
+                            view.ViewPort.SetTemporaryRowHeight(r, 0);
                     }
                 }
             }
@@ -117,14 +125,26 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 
                 for (int i = 0; i < workSheet.RowCount; i++)
                 {
-                    int oldHeight = _initialHeights[i];
-                    int newHeight = view.ViewPort.GetTemporaryRowHeight(i) ?? oldHeight;
-                    if (oldHeight != newHeight)
+                    int? tempHeight = view.ViewPort.GetTemporaryRowHeight(i);
+                    if (tempHeight.HasValue)
                     {
-                        workSheet.Rows[i].Height = newHeight;
-                        action.OldHeights[i] = oldHeight;
-                        action.NewHeights[i] = newHeight;
-                        hasChanges = true;
+                        int oldHeight = workSheet.Rows.GetRowHeight(i);
+                        int newHeight = tempHeight.Value;
+                        if (oldHeight != newHeight || (!workSheet.Rows.IsRowVisible(i) && newHeight > 0))
+                        {
+                            var rowObj = workSheet.Rows[i];
+                            if (rowObj != null)
+                            {
+                                if (newHeight > 0 && rowObj.IsHidden)
+                                {
+                                    rowObj.IsHidden = false;
+                                }
+                            }
+                            workSheet.Rows[i].Height = newHeight;
+                            action.OldHeights[i] = oldHeight;
+                            action.NewHeights[i] = newHeight;
+                            hasChanges = true;
+                        }
                     }
                 }
                 
@@ -139,9 +159,12 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             _resizingRow = -1;
             _rowLocation = -1;
             _initialHeights = null;
-            ResizeLine.Visibility = Visibility.Collapsed;
-            Spread.SheetTabControl.UpdateScrollbars();
-            Spread.SheetViewHost.RefreshInteractionLayers(true, false, true);
+            if (ResizeLine != null)
+            {
+                ResizeLine.Visibility = Visibility.Collapsed;
+            }
+            Spread.SheetTabControl?.UpdateScrollbars();
+            Spread.SheetViewHost?.RefreshInteractionLayers(true, false, true);
             Spread.SuspendUpdates = false;
         }
 
@@ -152,16 +175,19 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
             var view = (SheetView)sheetView;
 
-            // Discard any temporary heights â€” restores visual state to original
+            // Discard any temporary heights — restores visual state to original
             view.ViewPort.ClearTemporaryRowHeights();
 
             _resizingRow = -1;
             _rowLocation = -1;
             _initialHeights = null;
-            ResizeLine.Visibility = Visibility.Collapsed;
-            Spread.SheetTabControl.UpdateScrollbars();
+            if (ResizeLine != null)
+            {
+                ResizeLine.Visibility = Visibility.Collapsed;
+            }
+            Spread.SheetTabControl?.UpdateScrollbars();
             sheetView.ViewPort.CalculateVisibleRange();
-            Spread.SheetViewHost.RefreshInteractionLayers(true, false, true);
+            Spread.SheetViewHost?.RefreshInteractionLayers(true, false, true);
             Spread.SuspendUpdates = false;
         }
     }

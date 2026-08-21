@@ -14,15 +14,20 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             
             for (int row = topRow; row <= bottomRow; row++)
             {
-                var sheetRowObj = context.Rows.GetItem(row) as Row;
-                if (sheetRowObj != null && !sheetRowObj.Visible) continue;
+                int? tempHeight = context.ViewPort.GetTemporaryRowHeight(row);
+                if (tempHeight == 0) continue;
+                if (tempHeight == null && !context.Rows.IsRowVisible(row)) continue;
 
-                var rowHeight = context.Rows.GetRowHeight(row);
+                var rowHeight = tempHeight ?? context.Rows.GetRowHeight(row);
                 if (rowHeight == 0) continue;
 
                 for (int col = leftColumn; col <= rightColumn; col++)
                 {
-                    var columnWidth = context.Columns.GetColumnWidth(col);
+                    int? tempWidth = context.ViewPort.GetTemporaryColumnWidth(col);
+                    if (tempWidth == 0) continue;
+                    if (tempWidth == null && !context.Columns.IsColumnVisible(col)) continue;
+
+                    var columnWidth = tempWidth ?? context.Columns.GetColumnWidth(col);
                     if (columnWidth == 0) continue;
 
                     var anchor = context.Worksheet.GetSpanCellRange(row, col);

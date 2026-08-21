@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 
 namespace DevBrewLabs.Spreadsheet
@@ -38,6 +38,16 @@ namespace DevBrewLabs.Spreadsheet
                 return RowHeaders.DefaultColumnWidth;
 
             return col.Width;
+        }
+
+        public bool IsColumnVisible(int column)
+        {
+            var col = GetItem(column, false);
+
+            if (col == null)
+                return RowHeaders.DefaultColumnWidth > 0;
+
+            return col.Visible;
         }
 
         public int GetColumnIndex(IColumn column)

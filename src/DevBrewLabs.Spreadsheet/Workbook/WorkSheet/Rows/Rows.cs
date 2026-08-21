@@ -28,6 +28,16 @@ namespace DevBrewLabs.Spreadsheet
             return sheetRow.Height;
         }
 
+        public bool IsRowVisible(int row)
+        {
+            var sheetRow = GetItem(row, false);
+
+            if (sheetRow == null)
+                return WorkSheet.DefaultRowHeight > 0;
+
+            return sheetRow.Visible;
+        }
+
         
 
         public override void Insert(int index, int count)

@@ -100,7 +100,29 @@ namespace DevBrewLabs.Spreadsheet
             }
         }
 
-        public bool IsHidden { get; set; }
+        private bool _isHidden;
+        public bool IsHidden
+        {
+            get => _isHidden;
+            set
+            {
+                if (_isHidden == value)
+                {
+                    return;
+                }
+
+                bool oldValue = _isHidden;
+                _isHidden = value;
+
+                _parent?.WorkSheet?.OnRowChanged(new RowChangedEventArgs(
+                    SheetRegion.Cells,
+                    _parent.WorkSheet,
+                    Index,
+                    oldValue,
+                    value,
+                    RowChangeType.Visibility));
+            }
+        }
         public bool IsFilteredOut { get; set; }
         public bool Visible => !IsHidden && !IsFilteredOut && Height > 0;
         public int Index { get; internal set; }

@@ -24,10 +24,13 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                 var y = rowLocation * context.Zoom;
                 var scaledRowHeight = rowHeight * context.Zoom;
 
-
                 for (int col = leftColumn; col <= rightColumn; col++)
                 {
-                    int columnWidth = context.ViewPort.GetTemporaryColumnWidth(col) ?? context.Columns.GetColumnWidth(col);
+                    int? tempWidth = context.ViewPort.GetTemporaryColumnWidth(col);
+                    if (tempWidth == 0) continue;
+                    if (tempWidth == null && !context.Columns.IsColumnVisible(col)) continue;
+
+                    int columnWidth = tempWidth ?? context.Columns.GetColumnWidth(col);
 
                     if (columnWidth == 0)
                         continue;
@@ -63,5 +66,3 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
         }      
     }
 }
-
-

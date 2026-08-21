@@ -22,11 +22,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
 
             for (int row = topRow; row <= bottomRow; row++)
             {
-                var sheetRowObj = context.Rows.GetItem(row) as Row;
-                if (sheetRowObj != null && !sheetRowObj.Visible) continue;
+                int? tempHeight = context.ViewPort.GetTemporaryRowHeight(row);
+                if (tempHeight == 0) continue;
+                if (tempHeight == null && !context.Rows.IsRowVisible(row)) continue;
 
-                int rowHeight = context.ViewPort.GetTemporaryRowHeight(row) ?? context.Rows.GetRowHeight(row);
-
+                int rowHeight = tempHeight ?? context.Rows.GetRowHeight(row);
                 if (rowHeight == 0)
                     continue;
 
@@ -65,12 +65,19 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
 
             for (int row = minRow; row <= maxRow; row++)
             {
-                int currentHeight = context.ViewPort.GetTemporaryRowHeight(row) ?? context.Rows.GetRowHeight(row);
-                if (currentHeight == 0)
+                int? tempHeight = context.ViewPort.GetTemporaryRowHeight(row);
+                bool isHidden = (tempHeight == 0) || (tempHeight == null && !context.Rows.IsRowVisible(row));
+
+                if (isHidden)
                 {
-                    int prevHeight = row == 0 ? 0 : context.ViewPort.GetTemporaryRowHeight(row - 1) ?? context.Rows.GetRowHeight(row - 1);
+                    bool isPrevHidden = false;
+                    if (row > 0)
+                    {
+                        int? prevTempHeight = context.ViewPort.GetTemporaryRowHeight(row - 1);
+                        isPrevHidden = (prevTempHeight == 0) || (prevTempHeight == null && !context.Rows.IsRowVisible(row - 1));
+                    }
                     
-                    if (row == 0 || prevHeight > 0)
+                    if (row == 0 || !isPrevHidden)
                     {
                         double rowLocation = context.ViewPort.GetTemporaryRowLocation(row) ?? context.ViewPort.GetRowLocation(row);
                         var y = (rowLocation - context.ViewPort.TopRowLocation) * context.Zoom;

@@ -34,7 +34,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
 
                 for (int col = leftColumn; col <= rightColumn; col++)
                 {
-                    int columnWidth = context.ViewPort.GetTemporaryColumnWidth(col) ?? context.Columns.GetColumnWidth(col);
+                    int? tempWidth = context.ViewPort.GetTemporaryColumnWidth(col);
+                    if (tempWidth == 0) continue;
+                    if (tempWidth == null && !context.Columns.IsColumnVisible(col)) continue;
+
+                    int columnWidth = tempWidth ?? context.Columns.GetColumnWidth(col);
 
                     if (columnWidth == 0)
                         continue;
@@ -60,13 +64,19 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
 
                 for (int col = minCol; col <= maxCol; col++)
                 {
-                    int currentWidth = context.ViewPort.GetTemporaryColumnWidth(col) ?? context.Columns.GetColumnWidth(col);
-                    if (currentWidth == 0)
+                    int? tempWidth = context.ViewPort.GetTemporaryColumnWidth(col);
+                    bool isHidden = (tempWidth == 0) || (tempWidth == null && !context.Columns.IsColumnVisible(col));
+
+                    if (isHidden)
                     {
-                        // Draw double line indicator only for the first hidden column in a contiguous block
-                        int prevWidth = col == 0 ? 0 : context.ViewPort.GetTemporaryColumnWidth(col - 1) ?? context.Columns.GetColumnWidth(col - 1);
+                        bool isPrevHidden = false;
+                        if (col > 0)
+                        {
+                            int? prevTempWidth = context.ViewPort.GetTemporaryColumnWidth(col - 1);
+                            isPrevHidden = (prevTempWidth == 0) || (prevTempWidth == null && !context.Columns.IsColumnVisible(col - 1));
+                        }
                         
-                        if (col == 0 || prevWidth > 0)
+                        if (col == 0 || !isPrevHidden)
                         {
                             double colLocation = context.ViewPort.GetTemporaryColumnLocation(col) ?? context.ViewPort.GetColumnLocation(col);
                             var x = (colLocation - context.ViewPort.LeftColumnLocation) * context.Zoom;

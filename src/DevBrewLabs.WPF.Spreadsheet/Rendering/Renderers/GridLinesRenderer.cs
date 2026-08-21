@@ -1,4 +1,3 @@
-﻿
 using DevBrewLabs.Spreadsheet;
 using System.Windows;
 using System.Windows.Media;
@@ -33,14 +32,15 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
             for (int row = topRow; row <= bottomRow; row++)
             {
-                var sheetRowObj = context.Rows.GetItem(row) as Row;
-                if (sheetRowObj != null && !sheetRowObj.Visible) continue;
+                int? tempHeight = context.ViewPort.GetTemporaryRowHeight(row);
+                if (tempHeight == 0) continue;
+                if (tempHeight == null && !context.Rows.IsRowVisible(row)) continue;
 
-                var rowHeight = context.Rows.GetRowHeight(row);
+                var rowHeight = tempHeight ?? context.Rows.GetRowHeight(row);
                 if (rowHeight == 0)
                     continue;
 
-                var rowLocation = context.ViewPort.GetRowLocation(row);
+                var rowLocation = context.ViewPort.GetTemporaryRowLocation(row) ?? context.ViewPort.GetRowLocation(row);
                 double y = (rowLocation - context.ViewPort.TopRowLocation + rowHeight) * context.Zoom;
                 guidelines.GuidelinesY.Add(y + context.HalfPenWidth);
 
@@ -50,10 +50,14 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
                 for (int col = leftColumn; col <= rightColumn; col++)
                 {
-                    var colWidth = context.Columns.GetColumnWidth(col);
+                    int? tempWidth = context.ViewPort.GetTemporaryColumnWidth(col);
+                    if (tempWidth == 0) continue;
+                    if (tempWidth == null && !context.Columns.IsColumnVisible(col)) continue;
+
+                    var colWidth = tempWidth ?? context.Columns.GetColumnWidth(col);
                     if (colWidth == 0) continue;
 
-                    double x = (context.ViewPort.GetColumnLocation(col) - context.ViewPort.LeftColumnLocation) * context.Zoom;
+                    double x = ((context.ViewPort.GetTemporaryColumnLocation(col) ?? context.ViewPort.GetColumnLocation(col)) - context.ViewPort.LeftColumnLocation) * context.Zoom;
                     double nextX = x + colWidth * context.Zoom;
 
                     var anchor1 = context.Worksheet.GetSpanCellRange(row, col);
@@ -62,7 +66,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                     if (anchor1 != default && row < anchor1.BottomRow)
                     {
                         int nextRow = row + 1;
-                        while (nextRow <= anchor1.BottomRow && context.Rows.GetRowHeight(nextRow) == 0)
+                        while (nextRow <= anchor1.BottomRow && !context.Rows.IsRowVisible(nextRow))
                             nextRow++;
                             
                         if (nextRow <= anchor1.BottomRow)
@@ -104,11 +108,15 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
             for (int col = leftColumn; col <= rightColumn; col++)
             {
-                var columnWidth = context.Columns.GetColumnWidth(col);
+                int? tempWidth = context.ViewPort.GetTemporaryColumnWidth(col);
+                if (tempWidth == 0) continue;
+                if (tempWidth == null && !context.Columns.IsColumnVisible(col)) continue;
+
+                var columnWidth = tempWidth ?? context.Columns.GetColumnWidth(col);
                 if (columnWidth == 0)
                     continue;
 
-                var colLocation = context.ViewPort.GetColumnLocation(col);
+                var colLocation = context.ViewPort.GetTemporaryColumnLocation(col) ?? context.ViewPort.GetColumnLocation(col);
                 double x = (colLocation - context.ViewPort.LeftColumnLocation + columnWidth) * context.Zoom;
                 guidelines.GuidelinesX.Add(x + context.HalfPenWidth);
 
@@ -118,10 +126,14 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
                 for (int row = topRow; row <= bottomRow; row++)
                 {
-                    var rowHeight = context.Rows.GetRowHeight(row);
+                    int? tempHeight = context.ViewPort.GetTemporaryRowHeight(row);
+                    if (tempHeight == 0) continue;
+                    if (tempHeight == null && !context.Rows.IsRowVisible(row)) continue;
+
+                    var rowHeight = tempHeight ?? context.Rows.GetRowHeight(row);
                     if (rowHeight == 0) continue;
 
-                    double y = (context.ViewPort.GetRowLocation(row) - context.ViewPort.TopRowLocation) * context.Zoom;
+                    double y = ((context.ViewPort.GetTemporaryRowLocation(row) ?? context.ViewPort.GetRowLocation(row)) - context.ViewPort.TopRowLocation) * context.Zoom;
                     double nextY = y + rowHeight * context.Zoom;
 
                     var anchor1 = context.Worksheet.GetSpanCellRange(row, col);
@@ -130,7 +142,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                     if (anchor1 != default && col < anchor1.RightColumn)
                     {
                         int nextCol = col + 1;
-                        while (nextCol <= anchor1.RightColumn && context.Columns.GetColumnWidth(nextCol) == 0)
+                        while (nextCol <= anchor1.RightColumn && !context.Columns.IsColumnVisible(nextCol))
                             nextCol++;
                             
                         if (nextCol <= anchor1.RightColumn)

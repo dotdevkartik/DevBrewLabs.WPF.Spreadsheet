@@ -88,6 +88,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
             _rowLocCache.Reset();
         }
 
+        internal void ResetColumnLocations()
+        {
+            _colLocCache.Reset();
+        }
+
         /// <summary>
         /// Get column location
         /// </summary>
@@ -151,15 +156,15 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
         public Rect GetColumnRect(int column)
         {
             var location = GetTemporaryColumnLocation(column) ?? GetColumnLocation(column);
-            return new Rect(location, _actualBounds.Top,
-                _columns.GetColumnWidth(column), _actualBounds.Height);
+            var width = GetTemporaryColumnWidth(column) ?? _columns.GetColumnWidth(column);
+            return new Rect(location, _actualBounds.Top, width, _actualBounds.Height);
         }
 
         public Rect GetRowRect(int row)
         {
             var location = GetTemporaryRowLocation(row) ?? GetRowLocation(row);
-            return new Rect(_actualBounds.Left, location,
-                _actualBounds.Width, _rows.GetRowHeight(row));
+            var height = GetTemporaryRowHeight(row) ?? _rows.GetRowHeight(row);
+            return new Rect(_actualBounds.Left, location, _actualBounds.Width, height);
         }
 
         public Rect GetRangeRect(CellRange range)
@@ -238,21 +243,25 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
                 colSpan = spanRange.ColumnCount;
             }
 
-            var colLocation = GetColumnLocation(col);
-            var rowLocation = GetRowLocation(row);
-            var width = _columns.GetColumnWidth(col);
-            var height = _rows.GetRowHeight(row);
+            var colLocation = GetTemporaryColumnLocation(col) ?? GetColumnLocation(col);
+            var rowLocation = GetTemporaryRowLocation(row) ?? GetRowLocation(row);
+            var width = GetTemporaryColumnWidth(col) ?? _columns.GetColumnWidth(col);
+            var height = GetTemporaryRowHeight(row) ?? _rows.GetRowHeight(row);
 
             if (rowSpan > 1)
             {
                 int bottomRow = row + rowSpan - 1;
-                height = (int)(GetRowLocation(bottomRow) - rowLocation + _rows.GetRowHeight(bottomRow));
+                double bottomRowLoc = GetTemporaryRowLocation(bottomRow) ?? GetRowLocation(bottomRow);
+                int bottomRowHeight = GetTemporaryRowHeight(bottomRow) ?? _rows.GetRowHeight(bottomRow);
+                height = (int)(bottomRowLoc - rowLocation + bottomRowHeight);
             }
 
             if (colSpan > 1)
             {
                 int rightColumn = col + colSpan - 1;
-                width = (int)(GetColumnLocation(rightColumn) - colLocation + _columns.GetColumnWidth(rightColumn));
+                double rightColLoc = GetTemporaryColumnLocation(rightColumn) ?? GetColumnLocation(rightColumn);
+                int rightColWidth = GetTemporaryColumnWidth(rightColumn) ?? _columns.GetColumnWidth(rightColumn);
+                width = (int)(rightColLoc - colLocation + rightColWidth);
             }
 
             return new Rect(colLocation, rowLocation, width, height);
@@ -398,8 +407,13 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
         /// <returns></returns>
         private bool IsTopRow(int row, double rowLocation)
         {
+            var rowObj = _rows.GetItem(row);
+            bool isVisible = (rowObj == null || rowObj.Visible) && _rows.GetRowHeight(row) > 0;
+            int height = isVisible ? (GetTemporaryRowHeight(row) ?? _rows.GetRowHeight(row)) : 0;
+            if (height == 0) return false;
+
             return _sheetView.ScrollPosition.Y >= rowLocation &&
-                _sheetView.ScrollPosition.Y < rowLocation + _rows.GetRowHeight(row);
+                _sheetView.ScrollPosition.Y < rowLocation + height;
         }
 
         /// <summary>
@@ -409,8 +423,13 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
         /// <returns></returns>
         private bool IsLeftColumn(int column, double colLocation)
         {
+            var colObj = _columns.GetItem(column);
+            bool isVisible = (colObj == null || colObj.Visible) && _columns.GetColumnWidth(column) > 0;
+            int width = isVisible ? (GetTemporaryColumnWidth(column) ?? _columns.GetColumnWidth(column)) : 0;
+            if (width == 0) return false;
+
             return _sheetView.ScrollPosition.X >= colLocation &&
-                _sheetView.ScrollPosition.X < colLocation + _columns.GetColumnWidth(column);
+                _sheetView.ScrollPosition.X < colLocation + width;
         }
 
         public void SetTopRow(int row)
@@ -472,7 +491,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
             {
                 if (kvp.Key < column)
                 {
-                    loc += kvp.Value - _workSheet.Columns.GetColumnWidth(kvp.Key);
+                    var colObj = _columns.GetItem(kvp.Key);
+                    bool wasVisible = (colObj == null || colObj.Visible) && _columns.GetColumnWidth(kvp.Key) > 0;
+                    int oldEffectiveWidth = wasVisible ? _columns.GetColumnWidth(kvp.Key) : 0;
+                    loc += kvp.Value - oldEffectiveWidth;
                 }
             }
             return loc;
@@ -493,7 +515,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
             {
                 if (kvp.Key < row)
                 {
-                    loc += kvp.Value - _workSheet.Rows.GetRowHeight(kvp.Key);
+                    var rowObj = _rows.GetItem(kvp.Key);
+                    bool wasVisible = (rowObj == null || rowObj.Visible) && _rows.GetRowHeight(kvp.Key) > 0;
+                    int oldEffectiveHeight = wasVisible ? _rows.GetRowHeight(kvp.Key) : 0;
+                    loc += kvp.Value - oldEffectiveHeight;
                 }
             }
             return loc;
