@@ -8,10 +8,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
     {
         public override void OnRender(RenderContext context, int topRow, int leftColumn, int bottomRow, int rightColumn)
         {
-            var width = context.SheetView.GetRowHeaderWidth() * context.Zoom;
-            var height = context.SheetView.GetColumnHeaderHeight() * context.Zoom;
-            var topLeft = context.Worksheet.TopLeft;
-            var style = context.Worksheet.GetTopLeftStyle();
+            var width = context.RowHeaderWidth;
+            var height = context.ColumnHeaderHeight;
+            var topLeft = context.Worksheet?.TopLeft;
+            var style = context.Worksheet?.GetTopLeftStyle();
 
             var rect = new Rect(-context.GridLinePen.Thickness, -context.GridLinePen.Thickness, width, height);
 

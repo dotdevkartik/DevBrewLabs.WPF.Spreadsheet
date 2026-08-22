@@ -63,13 +63,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                 }
             }
 
-            var unzoomedRect = context.ViewPort.GetCellRect(row, col);
-            var x = (unzoomedRect.X - context.ViewPort.LeftColumnLocation) * context.Zoom;
-            var y = (unzoomedRect.Y - context.ViewPort.TopRowLocation) * context.Zoom;
-            var width = unzoomedRect.Width * context.Zoom;
-            var height = unzoomedRect.Height * context.Zoom;
-
-            var cellRect = new Rect(x, y, width - context.GridLinePen.Thickness, height - context.GridLinePen.Thickness);
+            var cellRect = context.GetCellRect(row, col);
 
             var style = context.Worksheet.GetCellStyle(row, col, sheetRow, sheetColumn);
 

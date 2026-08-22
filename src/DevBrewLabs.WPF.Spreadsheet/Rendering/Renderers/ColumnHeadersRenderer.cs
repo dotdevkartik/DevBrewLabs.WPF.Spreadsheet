@@ -52,9 +52,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             DrawingFontWeight fontWeight = style.FontWeight;
             DrawingColor foreColor = style.ForeColor;
 
-            if (context.SheetView.Selection.ContainsColumn(column))
+            if (context.Selection.ContainsColumn(column))
             {
-                var selection = context.SheetView.Selection;
+                var selection = context.Selection;
                 bool isFullColumn = selection.RowCount == context.Worksheet.RowCount;
 
                 var headerBrush = isFullColumn
