@@ -24,6 +24,10 @@ namespace DevBrewLabs.Spreadsheet
         /// Fires when column/columns changes.
         /// </summary>
         event EventHandler<ColumnChangedEventArgs> ColumnChanged;
+        /// <summary>
+        /// Fires when cel value set fails.
+        /// </summary>
+        event EventHandler<CellValueSetFailedEventArgs> CellValueSetFailed;
 
         /// <summary>
         /// Gets the parent workbook.
