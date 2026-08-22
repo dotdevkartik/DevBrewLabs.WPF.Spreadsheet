@@ -83,7 +83,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
         private void DrawRowHeaderCell(RenderContext context, int row, object cellValue, IStyle style, Rect cellRect)
         {
             Brush backGroundBrush = WpfResourceCache.GetBrush(style.BackColor);
-            IStyle renderStyle = style;
+            DrawingFontWeight fontWeight = style.FontWeight;
+            DrawingColor foreColor = style.ForeColor;
 
             if (context.SheetView.Selection.ContainsRow(row))
             {
@@ -101,13 +102,12 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
                 if (isFullRow)
                 {
-                    renderStyle = style.Clone();
-                    renderStyle.FontWeight = DrawingFontWeight.Bold;
+                    fontWeight = DrawingFontWeight.Bold;
 
                     var selectedForeground = context.SelectedHeaderForeground;
                     if (selectedForeground is SolidColorBrush scb)
                     {
-                        renderStyle.ForeColor = DrawingColor.FromArgb(scb.Color.A, scb.Color.R, scb.Color.G, scb.Color.B);
+                        foreColor = DrawingColor.FromArgb(scb.Color.A, scb.Color.R, scb.Color.G, scb.Color.B);
                     }
                 }
             }
@@ -126,14 +126,20 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
             context.DrawRectangle(backGroundBrush, null, cellRect);
 
-            if (cellValue != null)
-            {
-                TextRenderer.DrawText(context, cellValue.ToString(), cellRect, renderStyle);
-            }
-            else
-            {
-                TextRenderer.DrawText(context, (row + 1).ToString(), cellRect, renderStyle);
-            }
+            string text = cellValue != null ? cellValue.ToString() : (row + 1).ToString();
+            TextRenderer.DrawText(
+                context,
+                text,
+                cellRect,
+                style.FontFamily,
+                style.FontSize,
+                fontWeight,
+                style.FontStyle,
+                foreColor,
+                style.HorizontalAlignment,
+                style.VerticalAlignment,
+                style.TextTrimming,
+                style.AllowMultiLineText);
         }
     }
 }

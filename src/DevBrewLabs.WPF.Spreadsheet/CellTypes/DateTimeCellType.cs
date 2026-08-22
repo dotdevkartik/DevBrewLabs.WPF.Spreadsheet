@@ -42,7 +42,19 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
                 textToDraw = value.ToString();
             }
             
-            TextRenderer.DrawText(renderContext, textToDraw, cellRect, style, align);
+            TextRenderer.DrawText(
+                renderContext,
+                textToDraw,
+                cellRect,
+                style.FontFamily,
+                style.FontSize,
+                style.FontWeight,
+                style.FontStyle,
+                style.ForeColor,
+                align,
+                style.VerticalAlignment,
+                style.TextTrimming,
+                style.AllowMultiLineText);
         }
 
         public override EditorBase GetEditor(IStyle style)

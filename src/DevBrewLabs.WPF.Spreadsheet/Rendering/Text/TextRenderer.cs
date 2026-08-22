@@ -1,7 +1,7 @@
 using DevBrewLabs.Spreadsheet;
+using DevBrewLabs.Spreadsheet.Drawing;
 using DevBrewLabs.Spreadsheet.Utils;
 using System.Windows;
-using System.Windows.Media;
 
 namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
 {
@@ -11,13 +11,20 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
             RenderContext renderContext,
             string text,
             Rect bounds,
-            IStyle style,
-            CellHorizontalAlignment? alignment = null)
+            DrawingFontFamily fontFamily,
+            double fontSize,
+            DrawingFontWeight fontWeight,
+            DrawingFontStyle fontStyle,
+            DrawingColor foreColor,
+            CellHorizontalAlignment horizontalAlignment = CellHorizontalAlignment.Left,
+            CellVerticalAlignment verticalAlignment = CellVerticalAlignment.Bottom,
+            CellTextTrimming textTrimming = CellTextTrimming.None,
+            bool allowMultiLineText = false)
         {
             if (string.IsNullOrEmpty(text))
                 return;
 
-            if (!style.AllowMultiLineText)
+            if (!allowMultiLineText)
             {
                 text = TextUtils.NormalizeToSingleLine(text);
             }
@@ -26,11 +33,13 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
             if (availableWidth <= 0)
                 return;
 
+            var fontResources = Styling.WpfResourceCache.GetFontResources(fontFamily, fontWeight, fontStyle);
+
             if (!CharacterAnalyzer.IsSupported(text))
             {
                 // Fallback behavior for unsupported scripts (e.g. Emoji, Arabic).
                 // We convert it to a string of '?' if we have a replacement glyph.
-                if (Styling.WpfResourceCache.GetFontResources(style).GlyphMetrics.ReplacementGlyph != 0)
+                if (fontResources.GlyphMetrics.ReplacementGlyph != 0)
                 {
                     text = new string('?', text.Length);
                 }
@@ -41,9 +50,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
                 }
             }
 
-            double scaledFontSize = style.FontSize * renderContext.Zoom;
+            double scaledFontSize = fontSize * renderContext.Zoom;
 
-            string[] lines = style.AllowMultiLineText 
+            string[] lines = allowMultiLineText 
                 ? TextUtils.GetLines(text) 
                 : new[] { text };
 
@@ -54,12 +63,21 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
             for (int i = 0; i < lines.Length; i++)
             {
                 string line = lines[i];
-                layouts[i] = TextLayoutCache.GetOrCreate(line, availableWidth, scaledFontSize, style, renderContext, style.TextTrimming == CellTextTrimming.Character);
+                layouts[i] = TextLayoutCache.GetOrCreate(
+                    line,
+                    availableWidth,
+                    scaledFontSize,
+                    fontFamily,
+                    fontSize,
+                    fontWeight,
+                    fontStyle,
+                    renderContext,
+                    textTrimming == CellTextTrimming.Character);
                 totalHeight += layouts[i].Height;
             }
 
             double startY;
-            switch (style.VerticalAlignment)
+            switch (verticalAlignment)
             {
                 case CellVerticalAlignment.Top:
                     startY = bounds.Top + renderContext.TextPadding;
@@ -78,7 +96,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
 
             startY = PixelSnapper.Snap(startY, renderContext.PixelPerDip);
             double currentY = startY;
-            double ascent = Styling.WpfResourceCache.GetFontResources(style).GlyphMetrics.Baseline * scaledFontSize;
+            double ascent = fontResources.GlyphMetrics.Baseline * scaledFontSize;
 
             for (int i = 0; i < layouts.Length; i++)
             {
@@ -86,8 +104,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
                 if (layout.GlyphCount > 0)
                 {
                     double x;
-                    var effectiveAlignment = alignment ?? style.HorizontalAlignment;
-                    switch (effectiveAlignment)
+                    switch (horizontalAlignment)
                     {
                         case CellHorizontalAlignment.Center:
                             x = bounds.Left + (bounds.Width - layout.Width) / 2;
@@ -107,11 +124,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
 
                     Point baselineOrigin = new Point(x, PixelSnapper.Snap(currentY + ascent, renderContext.PixelPerDip));
                     
-                    var glyphRun = GlyphRunFactory.Create(layout, Styling.WpfResourceCache.GetFontResources(style).GlyphMetrics, scaledFontSize, renderContext, baselineOrigin);
+                    var glyphRun = GlyphRunFactory.Create(layout, fontResources.GlyphMetrics, scaledFontSize, renderContext, baselineOrigin);
                     
                     if (glyphRun != null)
                     {
-                        renderContext.DrawGlyphRun(style.ForeColor, glyphRun);
+                        renderContext.DrawGlyphRun(foreColor, glyphRun);
                     }
                 }
 
