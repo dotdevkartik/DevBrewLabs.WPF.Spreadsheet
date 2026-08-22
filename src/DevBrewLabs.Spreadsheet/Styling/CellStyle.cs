@@ -32,5 +32,24 @@ namespace DevBrewLabs.Spreadsheet.Styling
         public bool AllowMultiLineText { get; set; }
         public CellTextTrimming TextTrimming { get; set; }
         public CellTextWrapping TextWrapping { get; set; }
+
+        public IStyle Clone()
+        {
+            return new CellStyle
+            {
+                ForeColor = ForeColor,
+                BackColor = BackColor,
+                FontSize = FontSize,
+                FontFamily = FontFamily,
+                FontWeight = FontWeight,
+                FontStyle = FontStyle,
+                Padding = Padding,
+                HorizontalAlignment = HorizontalAlignment,
+                VerticalAlignment = VerticalAlignment,
+                AllowMultiLineText = AllowMultiLineText,
+                TextTrimming = TextTrimming,
+                TextWrapping = TextWrapping
+            };
+        }
     }
 }

@@ -3,6 +3,7 @@ using DevBrewLabs.Spreadsheet.Drawing;
 using DevBrewLabs.Spreadsheet.Filtering;
 using DevBrewLabs.WPF.Spreadsheet.Styling;
 using DevBrewLabs.WPF.Spreadsheet.UI;
+using DevBrewLabs.WPF.Spreadsheet.UI.Managers;
 using System;
 using System.Windows;
 using System.Windows.Media;
@@ -25,6 +26,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
         private ViewPort _viewPort;
         private Pen _gridLinePen;
         private AutoFilter _filter;
+        private HeaderHoverManager _headerHoverManager;
+        private Brush _selectedHeaderBackground;
+        private Brush _selectedHeaderForeground;
+        private Brush _rangeSelectedHeaderBackground;
 
         public double Zoom { get; }
         public double PixelPerDip { get; }
@@ -42,14 +47,18 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
         public RowHeaderColumns RowHeaderColumns => _rowHeaderColumns;
         public ColumnHeaders ColumnHeaders => _columnHeaders;
         public ColumnHeaderRows ColumnHeaderRows => _columnHeaderRows;
+        public HeaderHoverManager HeaderHoverManager => _headerHoverManager;
         public Worksheet Worksheet => _worksheet;
         public SheetView SheetView => _sheetView;
         public ViewPort ViewPort => _viewPort;
         public AutoFilter AutoFilter => _filter;
+        public Brush SelectedHeaderBackground => _selectedHeaderBackground;
+        public Brush SelectedHeaderForeground => _selectedHeaderForeground;
+        public Brush RangeSelectedHeaderBackground => _rangeSelectedHeaderBackground;
 
-        public RenderContext(DrawingContext context, SheetView view, double textPadding = 5, bool snapsToDevicePixels = true)
+        public RenderContext(DrawingGroup drawing, SheetView view, double textPadding = 5, bool snapsToDevicePixels = true)
         {
-            _drawingContext = context;
+            _drawingContext = drawing.Open();
             _sheetView = view;
             _viewPort = _sheetView.ViewPort;
             TopRow = _viewPort.ViewRange.TopRow;
@@ -58,6 +67,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             RightColumn = _viewPort.ViewRange.RightColumn;
             _gridLinePen = _sheetView.Spread.GridLinePen;
             _worksheet = (Worksheet)_sheetView.WorkSheet;
+            _headerHoverManager = _sheetView.Spread.HeaderHoverManager;
             _rows = (Rows)_worksheet.Rows;
             _filter = _worksheet.AutoFilter;
             _columns = (Columns)_worksheet.Columns;
@@ -65,6 +75,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             _columnHeaderRows = (ColumnHeaderRows)_columnHeaders.Rows;
             _rowHeaders = (RowHeaders)_worksheet.RowHeaders;
             _rowHeaderColumns = (RowHeaderColumns)_rowHeaders.Columns;
+            _selectedHeaderBackground = _sheetView.Spread.SelectedHeaderBackground;
+            _selectedHeaderForeground = _sheetView.Spread.SelectedHeaderForeground;
+            _rangeSelectedHeaderBackground = _sheetView.Spread.RangeSelectedHeaderBackground;
             Zoom = _sheetView.ZoomFactor > 0 ? _sheetView.ZoomFactor : 1.0;
             PixelPerDip = _sheetView.Spread.PixelPerDip;
             HalfPenWidth = _gridLinePen.Thickness * PixelPerDip / 2;
@@ -150,6 +163,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             _disposed = true;
             _viewPort = null;
             _filter = null;
+            _headerHoverManager = null;
+            _rangeSelectedHeaderBackground = null;
+            _selectedHeaderBackground = null;
+            _selectedHeaderForeground = null;
         }
     }
 }

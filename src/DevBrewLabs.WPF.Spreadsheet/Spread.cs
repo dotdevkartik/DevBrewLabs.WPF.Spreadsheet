@@ -47,25 +47,47 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public static readonly DependencyProperty ShowFormulaSuggestionsProperty;
         public static readonly DependencyProperty ZoomFactorProperty;
         public static readonly DependencyProperty AllowZoomingProperty;
-        public static readonly DependencyProperty BackgroundProperty;
         public static readonly DependencyProperty AllowFilteringProperty;
-        public static readonly DependencyProperty HeaderHoverBrushProperty;
+        public static readonly DependencyProperty MouseHoverHeaderBackgroundProperty;
+        public static readonly DependencyProperty SelectedHeaderBackgroundProperty;
+        public static readonly DependencyProperty RangeSelectedHeaderBackgroundProperty;
+        public static readonly DependencyProperty SelectedHeaderForegroundProperty;
 
         static Spread()
         {
             DefaultStyleKeyProperty.OverrideMetadata(typeof(Spread), new FrameworkPropertyMetadata(typeof(Spread)));
 
-            BackgroundProperty = DependencyProperty.Register(
-                nameof(Background),
+            MouseHoverHeaderBackgroundProperty = DependencyProperty.Register(
+                nameof(MouseHoverHeaderBackground),
                 typeof(Brush),
                 typeof(Spread),
-                new PropertyMetadata(Brushes.White));
+                new PropertyMetadata(
+                    new SolidColorBrush(Color.FromRgb(134, 196, 162)),
+                    OnHeaderAppearanceChanged));
 
-            HeaderHoverBrushProperty = DependencyProperty.Register(
-                nameof(HeaderHoverBrush),
+            SelectedHeaderBackgroundProperty = DependencyProperty.Register(
+                nameof(SelectedHeaderBackground),
                 typeof(Brush),
                 typeof(Spread),
-                new PropertyMetadata(new SolidColorBrush(Color.FromRgb(160, 213, 184))));
+                new PropertyMetadata(
+                    new SolidColorBrush(Color.FromRgb(16, 124, 65)),
+                    OnHeaderAppearanceChanged));
+
+            RangeSelectedHeaderBackgroundProperty = DependencyProperty.Register(
+                nameof(RangeSelectedHeaderBackground),
+                typeof(Brush),
+                typeof(Spread),
+                new PropertyMetadata(
+                    new SolidColorBrush(Color.FromRgb(225, 229, 235)),
+                    OnHeaderAppearanceChanged));
+
+            SelectedHeaderForegroundProperty = DependencyProperty.Register(
+                nameof(SelectedHeaderForeground),
+                typeof(Brush),
+                typeof(Spread),
+                new PropertyMetadata(
+                    Brushes.White,
+                    OnHeaderAppearanceChanged));
 
             AllowFilteringProperty = DependencyProperty.Register(
                 nameof(AllowFiltering),
@@ -281,11 +303,40 @@ namespace DevBrewLabs.WPF.Spreadsheet
         /// <summary>
         /// Gets or sets the header hover brush.
         /// </summary>
-        public Brush HeaderHoverBrush
+        public Brush MouseHoverHeaderBackground
         {
-            get { return (Brush)GetValue(HeaderHoverBrushProperty); }
-            set { SetValue(HeaderHoverBrushProperty, value); }
+            get { return (Brush)GetValue(MouseHoverHeaderBackgroundProperty); }
+            set { SetValue(MouseHoverHeaderBackgroundProperty, value); }
         }
+
+        /// <summary>
+        /// Gets or sets the selected header background brush.
+        /// </summary>
+        public Brush SelectedHeaderBackground
+        {
+            get { return (Brush)GetValue(SelectedHeaderBackgroundProperty); }
+            set { SetValue(SelectedHeaderBackgroundProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the range selected header background brush.
+        /// </summary>
+        public Brush RangeSelectedHeaderBackground
+        {
+            get { return (Brush)GetValue(RangeSelectedHeaderBackgroundProperty); }
+            set { SetValue(RangeSelectedHeaderBackgroundProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the selected header foreground brush.
+        /// </summary>
+        public Brush SelectedHeaderForeground
+        {
+            get { return (Brush)GetValue(SelectedHeaderForegroundProperty); }
+            set { SetValue(SelectedHeaderForegroundProperty, value); }
+        }
+
+
 
         /// <summary>
         /// Gets or sets the zoom factor for the active worksheet view. (1.0 = 100%).
@@ -777,6 +828,12 @@ namespace DevBrewLabs.WPF.Spreadsheet
             var spread = d as Spread;
             if (e.NewValue != null && !e.NewValue.Equals(e.OldValue))
                 spread.UpdateGridlinePen(spread.GridLineBrush, GridLineThickness);
+        }
+
+        private static void OnHeaderAppearanceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var spread = (Spread)d;
+            spread.Invalidate(rowHeaders: true, columnHeaders: true, cells: false, topLeft: false);
         }
     }
     #endregion

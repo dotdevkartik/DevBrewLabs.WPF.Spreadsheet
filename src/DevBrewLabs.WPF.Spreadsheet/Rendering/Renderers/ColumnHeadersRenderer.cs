@@ -1,4 +1,5 @@
 using DevBrewLabs.Spreadsheet;
+using DevBrewLabs.Spreadsheet.Drawing;
 using DevBrewLabs.WPF.Spreadsheet.Rendering.Text;
 using DevBrewLabs.WPF.Spreadsheet.Styling;
 using System.Windows;
@@ -48,10 +49,38 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
         private void DrawColumnHeaderCell(RenderContext context, int row, int column, object cellValue, IStyle style, Rect cellRect)
         {
             Brush backGroundBrush = WpfResourceCache.GetBrush(style.BackColor);
+            IStyle renderStyle = style;
 
-            if (context.SheetView?.Spread?.HeaderHoverManager?.HoveredColumn == column)
+            if (context.SheetView.Selection.ContainsColumn(column))
             {
-                var hoverBrush = context.SheetView.Spread?.HeaderHoverBrush;
+                var selection = context.SheetView.Selection;
+                bool isFullColumn = selection.RowCount == context.Worksheet.RowCount;
+
+                var headerBrush = isFullColumn
+                    ? context.SelectedHeaderBackground
+                    : context.RangeSelectedHeaderBackground;
+
+                if (headerBrush != null)
+                {
+                    backGroundBrush = headerBrush;
+                }
+
+                if (isFullColumn)
+                {
+                    renderStyle = style.Clone();
+                    renderStyle.FontWeight = DrawingFontWeight.Bold;
+
+                    var selectedForeground = context.SelectedHeaderForeground;
+                    if (selectedForeground is SolidColorBrush scb)
+                    {
+                        renderStyle.ForeColor = DrawingColor.FromArgb(scb.Color.A, scb.Color.R, scb.Color.G, scb.Color.B);
+                    }
+                }
+            }
+
+            if (context.HeaderHoverManager.HoveredColumn == column)
+            {
+                var hoverBrush = context.SheetView.Spread?.MouseHoverHeaderBackground;
                 if (hoverBrush != null)
                 {
                     backGroundBrush = hoverBrush;
@@ -62,11 +91,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
             if (cellValue != null)
             {
-                TextRenderer.DrawText(context, cellValue.ToString(), cellRect, style);
+                TextRenderer.DrawText(context, cellValue.ToString(), cellRect, renderStyle);
             }
             else
             {
-                TextRenderer.DrawText(context, RenderingExtensions.GetColumnHeader(column), cellRect, style);
+                TextRenderer.DrawText(context, RenderingExtensions.GetColumnHeader(column), cellRect, renderStyle);
             }
         }      
     }
