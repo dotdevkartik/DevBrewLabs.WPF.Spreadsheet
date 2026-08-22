@@ -25,6 +25,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         private RenderEngine _renderEngine;
         private FilterManager _filterManager;
         private FormulaSuggestionManager _formulaSuggestionManager;
+        private HeaderHoverManager _headerHoverManager;
         private SheetViewHost _sheetViewHost;
         private SheetTabControl _sheetTabControl;
         private UndoRedoManager _undoRedoManager;
@@ -33,6 +34,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
 
         #region Dependency Properties
         public static readonly DependencyProperty ScrollBarStyleProperty;
+        public static readonly DependencyProperty ResizeMarkerStyleProperty;
         public static readonly DependencyProperty ScrollModeProperty;
         public static readonly DependencyProperty SelectionBackgroundProperty;
         public static readonly DependencyProperty GridLineBrushProperty;
@@ -45,18 +47,47 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public static readonly DependencyProperty ShowFormulaSuggestionsProperty;
         public static readonly DependencyProperty ZoomFactorProperty;
         public static readonly DependencyProperty AllowZoomingProperty;
-        public static readonly DependencyProperty BackgroundProperty;
         public static readonly DependencyProperty AllowFilteringProperty;
+        public static readonly DependencyProperty MouseHoverHeaderBackgroundProperty;
+        public static readonly DependencyProperty SelectedHeaderBackgroundProperty;
+        public static readonly DependencyProperty RangeSelectedHeaderBackgroundProperty;
+        public static readonly DependencyProperty SelectedHeaderForegroundProperty;
 
         static Spread()
         {
             DefaultStyleKeyProperty.OverrideMetadata(typeof(Spread), new FrameworkPropertyMetadata(typeof(Spread)));
 
-            BackgroundProperty = DependencyProperty.Register(
-                nameof(Background),
+            MouseHoverHeaderBackgroundProperty = DependencyProperty.Register(
+                nameof(MouseHoverHeaderBackground),
                 typeof(Brush),
                 typeof(Spread),
-                new PropertyMetadata(Brushes.White));
+                new PropertyMetadata(
+                    new SolidColorBrush(Color.FromRgb(134, 196, 162)),
+                    OnHeaderAppearanceChanged));
+
+            SelectedHeaderBackgroundProperty = DependencyProperty.Register(
+                nameof(SelectedHeaderBackground),
+                typeof(Brush),
+                typeof(Spread),
+                new PropertyMetadata(
+                    new SolidColorBrush(Color.FromRgb(16, 124, 65)),
+                    OnHeaderAppearanceChanged));
+
+            RangeSelectedHeaderBackgroundProperty = DependencyProperty.Register(
+                nameof(RangeSelectedHeaderBackground),
+                typeof(Brush),
+                typeof(Spread),
+                new PropertyMetadata(
+                    new SolidColorBrush(Color.FromRgb(225, 229, 235)),
+                    OnHeaderAppearanceChanged));
+
+            SelectedHeaderForegroundProperty = DependencyProperty.Register(
+                nameof(SelectedHeaderForeground),
+                typeof(Brush),
+                typeof(Spread),
+                new PropertyMetadata(
+                    Brushes.White,
+                    OnHeaderAppearanceChanged));
 
             AllowFilteringProperty = DependencyProperty.Register(
                 nameof(AllowFiltering),
@@ -145,6 +176,12 @@ namespace DevBrewLabs.WPF.Spreadsheet
                 typeof(Style),
                 typeof(Spread),
                 new PropertyMetadata(null));
+
+            ResizeMarkerStyleProperty = DependencyProperty.Register(
+                nameof(ResizeMarkerStyle),
+                typeof(Style),
+                typeof(Spread),
+                new PropertyMetadata(null, OnResizeMarkerStyleChanged));
         }
 
         /// <summary>
@@ -154,6 +191,23 @@ namespace DevBrewLabs.WPF.Spreadsheet
         {
             get { return (Style)GetValue(ScrollBarStyleProperty); }
             set { SetValue(ScrollBarStyleProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the resize marker line style.
+        /// </summary>
+        public Style ResizeMarkerStyle
+        {
+            get { return (Style)GetValue(ResizeMarkerStyleProperty); }
+            set { SetValue(ResizeMarkerStyleProperty, value); }
+        }
+
+        private static void OnResizeMarkerStyleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var spread = (Spread)d;
+            var style = (Style)e.NewValue;
+            spread._columnResizeManager?.UpdateResizeMarkerStyle(style);
+            spread._rowResizeManager?.UpdateResizeMarkerStyle(style);
         }
 
         /// <summary>
@@ -247,6 +301,44 @@ namespace DevBrewLabs.WPF.Spreadsheet
         }
 
         /// <summary>
+        /// Gets or sets the header hover brush.
+        /// </summary>
+        public Brush MouseHoverHeaderBackground
+        {
+            get { return (Brush)GetValue(MouseHoverHeaderBackgroundProperty); }
+            set { SetValue(MouseHoverHeaderBackgroundProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the selected header background brush.
+        /// </summary>
+        public Brush SelectedHeaderBackground
+        {
+            get { return (Brush)GetValue(SelectedHeaderBackgroundProperty); }
+            set { SetValue(SelectedHeaderBackgroundProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the range selected header background brush.
+        /// </summary>
+        public Brush RangeSelectedHeaderBackground
+        {
+            get { return (Brush)GetValue(RangeSelectedHeaderBackgroundProperty); }
+            set { SetValue(RangeSelectedHeaderBackgroundProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the selected header foreground brush.
+        /// </summary>
+        public Brush SelectedHeaderForeground
+        {
+            get { return (Brush)GetValue(SelectedHeaderForegroundProperty); }
+            set { SetValue(SelectedHeaderForegroundProperty, value); }
+        }
+
+
+
+        /// <summary>
         /// Gets or sets the zoom factor for the active worksheet view. (1.0 = 100%).
         /// </summary>
         public double ZoomFactor
@@ -334,6 +426,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             _clipboardManager = new ClipboardManager(this);
             _rowResizeManager = new RowResizeManager(this);
             _columnResizeManager = new ColumnResizeManager(this);
+            _headerHoverManager = new HeaderHoverManager(this);
             _zoomManager = new ZoomManager(this);
             SelectCell(0, 0);
             Loaded += OnLoaded;
@@ -556,13 +649,14 @@ namespace DevBrewLabs.WPF.Spreadsheet
             RenderEngine.Dispose();
             _filterManager?.Dispose();
             _formulaSuggestionManager?.Dispose();
+            _headerHoverManager?.Dispose();
         }
     }
 
     #region Internals
     public partial class Spread
     {
-        internal const double GridLineThickness = 0.25;
+        internal const double GridLineThickness = 0.35;
         internal const double SelectionBorderThickness = 1.5;
         internal double PixelPerDip { get; set; }
 
@@ -578,6 +672,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         internal ColumnResizeManager ColumnResizeManager => _columnResizeManager;
         internal FilterManager FilterManager => _filterManager;
         internal FormulaSuggestionManager FormulaSuggestionManager => _formulaSuggestionManager;
+        internal HeaderHoverManager HeaderHoverManager => _headerHoverManager;
         internal FormulaTextBox FormulaTextBox { get; set; }
         internal Pen GridLinePen { get; private set; }
         internal Pen SelectionBorderPen { get; private set; }
@@ -733,6 +828,12 @@ namespace DevBrewLabs.WPF.Spreadsheet
             var spread = d as Spread;
             if (e.NewValue != null && !e.NewValue.Equals(e.OldValue))
                 spread.UpdateGridlinePen(spread.GridLineBrush, GridLineThickness);
+        }
+
+        private static void OnHeaderAppearanceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var spread = (Spread)d;
+            spread.Invalidate(rowHeaders: true, columnHeaders: true, cells: false, topLeft: false);
         }
     }
     #endregion

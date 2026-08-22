@@ -1,8 +1,9 @@
+using DevBrewLabs.Parserly;
 using DevBrewLabs.Spreadsheet.Drawing;
 
 namespace DevBrewLabs.Spreadsheet
 {
-    public interface IStyle
+    public interface IStyle : ICloneable<IStyle>
     {
         /// <summary>
         /// Gets or sets the foreground color.

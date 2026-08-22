@@ -35,15 +35,20 @@ namespace DevBrewLabs.WPF.Spreadsheet.Styling
             return pen;
         }
 
-        public static WpfFontResources GetFontResources(IStyle style)
+        public static WpfFontResources GetFontResources(DrawingFontFamily fontFamily, DrawingFontWeight weight, DrawingFontStyle style)
         {
-            var key = new FontCacheKey(style.FontFamily.FamilyName, style.FontWeight, style.FontStyle);
+            return GetFontResources(fontFamily.FamilyName, weight, style);
+        }
+
+        public static WpfFontResources GetFontResources(string fontFamily, DrawingFontWeight weight, DrawingFontStyle style)
+        {
+            var key = new FontCacheKey(fontFamily, weight, style);
 
             if (!_fontCache.TryGetValue(key, out WpfFontResources resources))
             {
-                var wpfFontFamily = new FontFamily(style.FontFamily.FamilyName);
-                var wpfFontWeight = ToWpfFontWeight(style.FontWeight);
-                var wpfFontStyle = ToWpfFontStyle(style.FontStyle);
+                var wpfFontFamily = new FontFamily(fontFamily);
+                var wpfFontWeight = ToWpfFontWeight(weight);
+                var wpfFontStyle = ToWpfFontStyle(style);
 
                 var typeface = new Typeface(wpfFontFamily, wpfFontStyle, wpfFontWeight, FontStretches.Normal, new FontFamily("Arial"));
                 
@@ -55,6 +60,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.Styling
             }
 
             return resources;
+        }
+
+        public static WpfFontResources GetFontResources(IStyle style)
+        {
+            return GetFontResources(style.FontFamily.FamilyName, style.FontWeight, style.FontStyle);
         }
 
         internal static FontFamily ToWpfFontFamily(DrawingFontFamily fontFamily)

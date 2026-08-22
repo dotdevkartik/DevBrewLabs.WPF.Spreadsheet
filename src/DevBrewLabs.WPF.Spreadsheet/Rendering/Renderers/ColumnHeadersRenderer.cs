@@ -1,6 +1,9 @@
 using DevBrewLabs.Spreadsheet;
+using DevBrewLabs.Spreadsheet.Drawing;
 using DevBrewLabs.WPF.Spreadsheet.Rendering.Text;
+using DevBrewLabs.WPF.Spreadsheet.Styling;
 using System.Windows;
+using System.Windows.Media;
 
 namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 {
@@ -45,16 +48,61 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
         private void DrawColumnHeaderCell(RenderContext context, int row, int column, object cellValue, IStyle style, Rect cellRect)
         {
-            context.DrawRectangle(style.BackColor, null, cellRect);
+            Brush backGroundBrush = WpfResourceCache.GetBrush(style.BackColor);
+            DrawingFontWeight fontWeight = style.FontWeight;
+            DrawingColor foreColor = style.ForeColor;
 
-            if (cellValue != null)
+            if (context.Selection.ContainsColumn(column))
             {
-                TextRenderer.DrawText(context, cellValue.ToString(), cellRect, style);
+                var selection = context.Selection;
+                bool isFullColumn = selection.RowCount == context.Worksheet.RowCount;
+
+                var headerBrush = isFullColumn
+                    ? context.SelectedHeaderBackground
+                    : context.RangeSelectedHeaderBackground;
+
+                if (headerBrush != null)
+                {
+                    backGroundBrush = headerBrush;
+                }
+
+                if (isFullColumn)
+                {
+                    fontWeight = DrawingFontWeight.Bold;
+
+                    var selectedForeground = context.SelectedHeaderForeground;
+                    if (selectedForeground is SolidColorBrush scb)
+                    {
+                        foreColor = DrawingColor.FromArgb(scb.Color.A, scb.Color.R, scb.Color.G, scb.Color.B);
+                    }
+                }
             }
-            else
+
+            if (context.HeaderHoverManager.HoveredColumn == column)
             {
-                TextRenderer.DrawText(context, RenderingExtensions.GetColumnHeader(column), cellRect, style);
+                var hoverBrush = context.SheetView.Spread?.MouseHoverHeaderBackground;
+                if (hoverBrush != null)
+                {
+                    backGroundBrush = hoverBrush;
+                }
             }
+
+            context.DrawRectangle(backGroundBrush, null, cellRect);
+
+            string text = cellValue != null ? cellValue.ToString() : RenderingExtensions.GetColumnHeader(column);
+            TextRenderer.DrawText(
+                context,
+                text,
+                cellRect,
+                style.FontFamily,
+                style.FontSize,
+                fontWeight,
+                style.FontStyle,
+                foreColor,
+                style.HorizontalAlignment,
+                style.VerticalAlignment,
+                style.TextTrimming,
+                style.AllowMultiLineText);
         }      
     }
 }

@@ -9,8 +9,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
     {
         public RowHeadersInteractionLayer(SheetView view) : base(view)
         {
-            
         }
+
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
             base.OnMouseLeftButtonDown(e);
@@ -71,6 +71,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
             if (SheetView.Spread.RowResizeManager.IsResizing)
             {
+                ClearHover();
                 SheetView.Spread.RowResizeManager.Resize(SheetView, (int)e.GetPosition(this).Y);
                 return;
             }
@@ -78,7 +79,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             var hitTest = HitTest();
 
             if (hitTest == null)
+            {
+                ClearHover();
                 return;
+            }
 
             if (hitTest.Element == VisualElement.RowHeaderResizeBar && SheetView.Spread.AllowRowResize)
             {
@@ -89,12 +93,26 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 Cursor = SheetUtils.RowHeaderCursor;
             }
 
+            int newHover = (hitTest.Element == VisualElement.RowHeader) ? hitTest.Row : -1;
+            SheetView?.Spread?.HeaderHoverManager?.SetHoveredRow(SheetView, newHover);
+
             if (e.LeftButton != MouseButtonState.Pressed)
                 return;
 
             int topRow = Math.Min(hitTest.Row, SheetView.ActiveRow);
             int bottomRow = Math.Max(hitTest.Row, SheetView.ActiveRow);
             SheetView.SelectRows(topRow, bottomRow - topRow + 1);
+        }
+
+        protected override void OnMouseLeave(MouseEventArgs e)
+        {
+            base.OnMouseLeave(e);
+            ClearHover();
+        }
+
+        private void ClearHover()
+        {
+            SheetView?.Spread?.HeaderHoverManager?.ClearHoveredRow(SheetView);
         }
 
         protected override void OnRender(DrawingContext dc)

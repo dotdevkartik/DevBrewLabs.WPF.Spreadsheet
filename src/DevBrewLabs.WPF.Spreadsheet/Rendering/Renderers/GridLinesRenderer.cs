@@ -8,7 +8,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
     {
         public override void OnRender(RenderContext context, int topRow, int leftColumn, int bottomRow, int rightColumn)
         {
-            switch (context.SheetView.GridLineVisibility)
+            switch (context.GridLineVisibility)
             {
                 case GridLineVisibility.Vertical:
                     DrawVerticalGridlines(context, topRow, leftColumn, bottomRow, rightColumn);

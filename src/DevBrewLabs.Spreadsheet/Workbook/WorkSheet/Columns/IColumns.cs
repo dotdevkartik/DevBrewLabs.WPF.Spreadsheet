@@ -11,6 +11,12 @@ namespace DevBrewLabs.Spreadsheet
         /// <returns></returns>
         IColumn this[int index] { get; }
         /// <summary>
+        /// Gets the column present at the specified index without creating it if it doesn't exist.
+        /// </summary>
+        /// <param name="index">Column index.</param>
+        /// <returns>The column, or null if not created.</returns>
+        IColumn GetItem(int index);
+        /// <summary>
         /// Gets the column with specific column name.
         /// </summary>
         /// <param name="columnName"></param>

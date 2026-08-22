@@ -1,6 +1,10 @@
 using DevBrewLabs.Spreadsheet;
+using DevBrewLabs.Spreadsheet.Drawing;
 using DevBrewLabs.WPF.Spreadsheet.Rendering.Text;
+using DevBrewLabs.WPF.Spreadsheet.Styling;
+using System.Data.Common;
 using System.Windows;
+using System.Windows.Media;
 
 namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 {
@@ -78,16 +82,64 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
         private void DrawRowHeaderCell(RenderContext context, int row, object cellValue, IStyle style, Rect cellRect)
         {
-            context.DrawRectangle(style.BackColor, null, cellRect);
+            Brush backGroundBrush = WpfResourceCache.GetBrush(style.BackColor);
+            DrawingFontWeight fontWeight = style.FontWeight;
+            DrawingColor foreColor = style.ForeColor;
 
-            if (cellValue != null)
+            if (context.Selection.ContainsRow(row))
             {
-                TextRenderer.DrawText(context, cellValue.ToString(), cellRect, style);
+                var selection = context.Selection;
+                bool isFullRow = selection.ColumnCount == context.Worksheet.ColumnCount;
+
+                var headerBrush = isFullRow
+                    ? context.SelectedHeaderBackground
+                    : context.RangeSelectedHeaderBackground;
+
+                if (headerBrush != null)
+                {
+                    backGroundBrush = headerBrush;
+                }
+
+                if (isFullRow)
+                {
+                    fontWeight = DrawingFontWeight.Bold;
+
+                    var selectedForeground = context.SelectedHeaderForeground;
+                    if (selectedForeground is SolidColorBrush scb)
+                    {
+                        foreColor = DrawingColor.FromArgb(scb.Color.A, scb.Color.R, scb.Color.G, scb.Color.B);
+                    }
+                }
             }
-            else
+
+            if (context.HeaderHoverManager.HoveredRow == row)
             {
-                TextRenderer.DrawText(context, (row + 1).ToString(), cellRect, style);
+                var hoverBrush = context.SheetView.Spread?.HeaderHoverManager?.HoveredRow == row
+                    ? context.SheetView.Spread?.MouseHoverHeaderBackground
+                    : null;
+
+                if (hoverBrush != null)
+                {
+                    backGroundBrush = hoverBrush;
+                }
             }
+
+            context.DrawRectangle(backGroundBrush, null, cellRect);
+
+            string text = cellValue != null ? cellValue.ToString() : (row + 1).ToString();
+            TextRenderer.DrawText(
+                context,
+                text,
+                cellRect,
+                style.FontFamily,
+                style.FontSize,
+                fontWeight,
+                style.FontStyle,
+                foreColor,
+                style.HorizontalAlignment,
+                style.VerticalAlignment,
+                style.TextTrimming,
+                style.AllowMultiLineText);
         }
     }
 }

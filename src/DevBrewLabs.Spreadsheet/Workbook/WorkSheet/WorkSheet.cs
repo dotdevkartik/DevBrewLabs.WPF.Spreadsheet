@@ -8,6 +8,7 @@ using DevBrewLabs.Spreadsheet.Sorting;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Reflection;
 
 namespace DevBrewLabs.Spreadsheet
 {
@@ -17,6 +18,7 @@ namespace DevBrewLabs.Spreadsheet
         public event EventHandler<RangeChangedEventArgs> RangeChanged;
         public event EventHandler<RowChangedEventArgs> RowChanged;
         public event EventHandler<ColumnChangedEventArgs> ColumnChanged;
+        public event EventHandler<CellValueSetFailedEventArgs> CellValueSetFailed;
 
         private string _name;
         private Workbook _workBook;
@@ -303,13 +305,6 @@ namespace DevBrewLabs.Spreadsheet
             }
 
             _dataStore.SetValue(row, column, value);
-
-            var colData = _dataStore.GetColumnData(column, false);
-
-            if(colData != null)
-            {
-                colData.SetFormula(row, null);
-            }
 
             _workBook.RaiseValueChanged(new ValueChangedEventArgs()
             {
@@ -855,6 +850,11 @@ namespace DevBrewLabs.Spreadsheet
         {
             _workBook?.ChangeListener.OnWorksheetChanged(args);
         }
+
+        internal void OnCellValueSetFailed(CellValueSetFailedEventArgs args)
+        {
+            CellValueSetFailed?.Invoke(this, args);
+        }
         #endregion
 
         #region worksheet datastore
@@ -913,6 +913,7 @@ namespace DevBrewLabs.Spreadsheet
 
                 if (value != null)
                 {
+                    value = DataTypeConverter.ConvertType(value);
                     return value;
                 }
 
@@ -954,13 +955,13 @@ namespace DevBrewLabs.Spreadsheet
                         && !string.IsNullOrEmpty(propertyDataMap.PropertyName))
                     {
                         var item = _collection.GetItemAt(row);
-                        return _collection.GetPropertyInfo(propertyDataMap.PropertyName).GetValue(item);
+                        return DataTypeConverter.ConvertType(_collection.GetPropertyInfo(propertyDataMap.PropertyName).GetValue(item));
                     }
                     else if (dataMap != null && dataMap is DataColumnDataMap dataColumnMap
                         && !string.IsNullOrEmpty(dataColumnMap.ColumnName))
                     {
                         var item = _collection.GetItemAt(row) as DataRow;
-                        return item[dataColumnMap.ColumnName];
+                        return DataTypeConverter.ConvertType(item[dataColumnMap.ColumnName]);
                     }
                 }
 
@@ -992,6 +993,7 @@ namespace DevBrewLabs.Spreadsheet
                 {
                     var colData = GetColumnData(column, true);
                     colData.SetValue(row, value);
+                    colData.SetFormatter(row, null);
                 }
             }
 
@@ -1022,10 +1024,20 @@ namespace DevBrewLabs.Spreadsheet
                 var item = _collection.GetItemAt(row);
                 var propertyInfo = _collection.GetPropertyInfo(map.PropertyName);
 
-                if (propertyInfo.PropertyType != value.GetType() || propertyInfo.SetMethod == null)
+                if(propertyInfo.SetMethod == null)
+                {
                     return;
+                }
 
-                propertyInfo.SetValue(item, value);
+                try
+                {
+                    value = TryConvertType(value, propertyInfo.PropertyType);
+                    propertyInfo.SetValue(item, value);
+                }
+                catch(Exception ex)
+                {
+                    _workSheet.OnCellValueSetFailed(new CellValueSetFailedEventArgs(row, column, value, ex));
+                }
             }
 
             /// <summary>
@@ -1040,12 +1052,27 @@ namespace DevBrewLabs.Spreadsheet
                 var item = _collection.GetItemAt(row) as DataRow;
                 var type = item.Table.Columns[map.ColumnName].DataType;
 
-                if (type != value.GetType())
-                    return;
+                try
+                {
+                    value = TryConvertType(value, type);
+                    item.BeginEdit();
+                    item[map.ColumnName] = value;
+                    item.EndEdit();
+                }
+                catch(Exception ex)
+                {
+                    _workSheet.OnCellValueSetFailed(new CellValueSetFailedEventArgs(row, column, value, ex));
+                }
+            }
 
-                item.BeginEdit();
-                item[map.ColumnName] = value;
-                item.EndEdit();
+            private object TryConvertType(object value, Type targetType)
+            {
+                if(value.GetType() == targetType)
+                {
+                    return value;
+                }
+
+                return Convert.ChangeType(value, targetType);
             }
 
             public void Dispose()

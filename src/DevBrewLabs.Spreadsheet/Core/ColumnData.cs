@@ -57,11 +57,13 @@ namespace DevBrewLabs.Spreadsheet.Core
         }
 
         #region Values
-        public object GetValue(int row) => _values.GetValue(row);
+        public object GetValue(int row)
+        {
+            return _values.GetValue(row);
+        }
 
         public void SetValue(int row, object value)
         {
-            value = DataTypeConverter.ConvertType(value);
             if (value == null) _values.Remove(row);
             else _values.SetValue(row, value);
         }

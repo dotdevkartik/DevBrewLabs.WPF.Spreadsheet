@@ -29,7 +29,19 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
             else
                 textToDraw = formatter.Format(value);
 
-            TextRenderer.DrawText(renderContext, textToDraw, cellRect, style, align);
+            TextRenderer.DrawText(
+                renderContext,
+                textToDraw,
+                cellRect,
+                style.FontFamily,
+                style.FontSize,
+                style.FontWeight,
+                style.FontStyle,
+                style.ForeColor,
+                align,
+                style.VerticalAlignment,
+                style.TextTrimming,
+                style.AllowMultiLineText);
         }
 
         /// <inheritdoc/>

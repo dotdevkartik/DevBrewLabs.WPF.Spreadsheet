@@ -43,7 +43,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             DrawingGroup group = view.CellsSurface.GetDrawing();
             DrawingGroup gridLinesDrawing = group.Children[1] as DrawingGroup;
             gridLinesDrawing.ClipGeometry = null;
-            using (RenderContext context = new RenderContext(gridLinesDrawing.Open(), view))
+            using (RenderContext context = new RenderContext(gridLinesDrawing, view))
             {
                 _gridLinesRenderer.OnRender(context, topRow, leftCol, bottomRow, rightCol);
             }
@@ -54,7 +54,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             DrawingGroup group = view.CellsSurface.GetDrawing();
             DrawingGroup cellsDrawing = group.Children[0] as DrawingGroup;
             cellsDrawing.ClipGeometry = null;
-            using (RenderContext context = new RenderContext(cellsDrawing.Open(), view))
+            using (RenderContext context = new RenderContext(cellsDrawing, view))
             {
                 _cellsRenderer.OnRender(context, topRow, leftColumn, bottomRow, rightColumn);
             }
@@ -70,7 +70,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             DrawingGroup group = view.RowHeadersSurface.GetDrawing();
             DrawingGroup rowHeadersDrawing = group.Children[0] as DrawingGroup;
             rowHeadersDrawing.ClipGeometry = null;
-            using (RenderContext context = new RenderContext(rowHeadersDrawing.Open(), view))
+            using (RenderContext context = new RenderContext(rowHeadersDrawing, view))
             {
                 _rowHeadersRenderer.OnRender(context, topRow, 0, bottomRow, view.WorkSheet.RowHeaders.ColumnCount - 1);
             }
@@ -86,7 +86,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             DrawingGroup group = view.RowHeadersSurface.GetDrawing();
             DrawingGroup gridLinesDrawing = group.Children[1] as DrawingGroup;
             gridLinesDrawing.ClipGeometry = null;
-            using (RenderContext context = new RenderContext(gridLinesDrawing.Open(), view))
+            using (RenderContext context = new RenderContext(gridLinesDrawing, view))
             {
                 _rowHeaderGridLinesRenderer.OnRender(context, topRow, 0, bottomRow, view.WorkSheet.RowHeaders.ColumnCount - 1);
             }
@@ -103,7 +103,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             DrawingGroup group = view.ColumnHeadersSurface.GetDrawing();
             DrawingGroup columnHeaderDrawing = group.Children[0] as DrawingGroup;
             columnHeaderDrawing.ClipGeometry = null;
-            using (RenderContext context = new RenderContext(columnHeaderDrawing.Open(), view))
+            using (RenderContext context = new RenderContext(columnHeaderDrawing, view))
             {
                 _columnHeadersRenderer.OnRender(context, 0, leftCol, view.WorkSheet.ColumnHeaders.RowCount - 1, rightCol);
             }
@@ -120,7 +120,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             DrawingGroup group = view.ColumnHeadersSurface.GetDrawing();
             DrawingGroup gridLineDrawing = group.Children[1] as DrawingGroup;
             gridLineDrawing.ClipGeometry = null;
-            using (RenderContext context = new RenderContext(gridLineDrawing.Open(), view))
+            using (RenderContext context = new RenderContext(gridLineDrawing, view))
             {
                 _columnHeaderGridLinesRenderer.OnRender(context, 0, leftCol, view.WorkSheet.ColumnHeaders.RowCount - 1, rightCol);
             }
@@ -129,7 +129,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
         public void DrawTopLeft(SheetView view)
         {
             DrawingGroup drawing = view.TopLeftSurface.GetDrawing();
-            using (RenderContext context = new RenderContext(drawing.Open(), view))
+            using (RenderContext context = new RenderContext(drawing, view))
             {
                 _topLeftRenderer.OnRender(context, -1, -1, -1, -1);
             }
