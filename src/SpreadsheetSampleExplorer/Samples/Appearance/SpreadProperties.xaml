@@ -23,6 +23,8 @@
                     <CheckBox Content="Show Add New Sheet" IsChecked="{Binding ElementName=spread, Path=ShowAddNewSheet, Mode=TwoWay}" Margin="0,4"/>
                     <CheckBox Content="Selection Animation" IsChecked="{Binding ElementName=spread, Path=IsSelectionAnimationEnabled, Mode=TwoWay}" Margin="0,4"/>
                     <CheckBox Content="Formula Suggestions" IsChecked="{Binding ElementName=spread, Path=ShowFormulaSuggestions, Mode=TwoWay}" Margin="0,4"/>
+                    <CheckBox Content="Allow Context Menu" IsChecked="{Binding ElementName=spread, Path=AllowContextMenu, Mode=TwoWay}" Margin="0,4"/>
+                    <CheckBox x:Name="_chkCustomContextMenu" Content="Use Custom Context Menu" Checked="OnCustomContextMenuChecked" Unchecked="OnCustomContextMenuUnchecked" Margin="0,4"/>
 
                     <TextBlock Text="Scroll Mode:" Margin="0,15,0,4" FontWeight="SemiBold"/>
                     <ComboBox x:Name="_cmbScrollMode" SelectionChanged="OnScrollModeChanged">

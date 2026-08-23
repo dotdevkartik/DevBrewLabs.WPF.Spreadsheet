@@ -37,6 +37,10 @@
                             <Setter TargetName="menuBorder" Property="Background" Value="#E5E7EB" />
                             <Setter TargetName="menuBorder" Property="BorderBrush" Value="#D1D5DB" />
                         </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="menuBorder" Property="Opacity" Value="0.4" />
+                            <Setter Property="Cursor" Value="Arrow" />
+                        </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
@@ -121,20 +125,33 @@
         <Setter Property="Foreground" Value="#1F2937" />
         <Setter Property="FontFamily" Value="Segoe UI, -apple-system, BlinkMacSystemFont, Roboto, sans-serif" />
         <Setter Property="FontSize" Value="12" />
-        <Setter Property="Width" Value="248" />
+        <Setter Property="Width" Value="264" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type components:FilterDropdown}">
-                    <Border Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="6"
-                            SnapsToDevicePixels="True">
-                        <Border.Effect>
-                            <DropShadowEffect BlurRadius="16" Opacity="0.12" ShadowDepth="5" Direction="270" Color="#000000" />
-                        </Border.Effect>
-                        <Grid Margin="2,4,2,6">
+                    <Grid SnapsToDevicePixels="True"
+                          UseLayoutRounding="True"
+                          TextOptions.TextFormattingMode="Display"
+                          TextOptions.TextRenderingMode="ClearType"
+                          RenderOptions.ClearTypeHint="Enabled">
+                        <!-- Drop Shadow Background Layer -->
+                        <Border Background="#FFFFFF"
+                                CornerRadius="6"
+                                Margin="8,6,8,14">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="8" Opacity="0.14" ShadowDepth="3" Direction="270" Color="#000000" />
+                            </Border.Effect>
+                        </Border>
+
+                        <!-- Dropdown Content Layer -->
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                Margin="8,6,8,14">
+                            <Grid Margin="2,4,2,6">
                             <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
@@ -176,7 +193,7 @@
                                                Margin="0,0,8,0"
                                                RenderTransformOrigin="0.5,0.5">
                                         <TextBlock.RenderTransform>
-                                            <ScaleTransform ScaleY="-1"/>
+                                             <ScaleTransform ScaleY="-1"/>
                                         </TextBlock.RenderTransform>
                                     </TextBlock>
                                     <TextBlock Text="Sort Z to A" 
@@ -185,12 +202,30 @@
                                                Foreground="#1F2937" />
                                 </StackPanel>
                             </Button>
+
+                            <!-- Clear Filter -->
+                            <Button x:Name="PART_ClearFilter" Grid.Row="2" Style="{StaticResource FilterMenuItemButton}">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock FontFamily="Segoe MDL2 Assets" 
+                                               Text="&#xE71C;" 
+                                               VerticalAlignment="Center" 
+                                               FontSize="13" 
+                                               Width="20" 
+                                               TextAlignment="Center" 
+                                               Foreground="#4B5563" 
+                                               Margin="0,0,8,0" />
+                                    <TextBlock Text="Clear Filter" 
+                                               FontSize="12" 
+                                               VerticalAlignment="Center" 
+                                               Foreground="#1F2937" />
+                                </StackPanel>
+                            </Button>
                             
                             <!-- Divider -->
-                            <Rectangle Grid.Row="2" Height="1" Fill="#E5E7EB" Margin="6,4" />
+                            <Rectangle Grid.Row="3" Height="1" Fill="#E5E7EB" Margin="6,4" />
 
                             <!-- Search Box -->
-                            <Grid Grid.Row="3" Margin="6,3,6,6">
+                            <Grid Grid.Row="4" Margin="6,3,6,6">
                                 <Border x:Name="searchBorder" 
                                         Background="#F9FAFB" 
                                         BorderBrush="#D1D5DB" 
@@ -219,7 +254,7 @@
 
                             <!-- Select All Checkbox -->
                             <CheckBox x:Name="PART_SelectAll" 
-                                      Grid.Row="4" 
+                                      Grid.Row="5" 
                                       Margin="10,2,10,6" 
                                       Content="(Select All)" 
                                       FontSize="12" 
@@ -228,7 +263,7 @@
                                       Cursor="Hand" />
 
                             <!-- Values List Box -->
-                            <Border Grid.Row="5" 
+                            <Border Grid.Row="6" 
                                     Margin="6,0,6,6" 
                                     BorderBrush="#E5E7EB" 
                                     BorderThickness="1" 
@@ -289,10 +324,10 @@
                             </Border>
 
                             <!-- Divider -->
-                            <Rectangle Grid.Row="6" Height="1" Fill="#E5E7EB" Margin="6,2,6,6" />
+                            <Rectangle Grid.Row="7" Height="1" Fill="#E5E7EB" Margin="6,2,6,6" />
 
                             <!-- Bottom Action Buttons -->
-                            <Grid Grid.Row="7" Margin="6,2,6,2">
+                            <Grid Grid.Row="8" Margin="6,2,6,2">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
@@ -310,6 +345,7 @@
                             </Grid>
                         </Grid>
                     </Border>
+                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

@@ -1,0 +1,228 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Fluent Vector Icon Geometries -->
+    <Geometry x:Key="CutIconGeometry">M9.64 7.64c.23-.5.36-1.05.36-1.64 0-2.21-1.79-4-4-4S2 3.79 2 6s1.79 4 4 4c.59 0 1.14-.13 1.64-.36L10 12l-2.36 2.36C7.14 14.13 6.59 14 6 14c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4c0-.59-.13-1.14-.36-1.64L12 14l7 7h3v-1L9.64 7.64zM6 8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm0 12c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm6-7.5c-.28 0-.5-.22-.5-.5s.22-.5.5-.5.5.22.5.5-.22.5-.5.5zM19 3l-6 6 2 2 7-7V3h-3z</Geometry>
+    <Geometry x:Key="CopyIconGeometry">M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z</Geometry>
+    <Geometry x:Key="PasteIconGeometry">M19 2h-4.18C14.4 0.84 13.3 0 12 0c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm7 18H5V4h2v3h10V4h2v16z</Geometry>
+    <Geometry x:Key="ClearIconGeometry">M19.36 10.04l-7.4-7.4a2 2 0 0 0-2.82 0L2.3 9.48a2 2 0 0 0 0 2.83l6.59 6.59c.38.38.88.58 1.41.58H20v-2h-7.17l5.53-5.53a2 2 0 0 0 1-1.91zM4.41 10.9L10.5 4.81l5.7 5.7L10.1 16.6l-5.69-5.7z</Geometry>
+    <Geometry x:Key="MergeIconGeometry">M 3 6 h 18 v 12 H 3 V 6 Z M 5 8 v 8 h 14 V 8 H 5 Z M 8 9 l 3 3 l -3 3 V 9 Z M 16 9 l -3 3 l 3 3 V 9 Z</Geometry>
+    <Geometry x:Key="UnmergeIconGeometry">M 3 6 h 18 v 12 H 3 V 6 Z M 5 8 v 8 h 14 V 8 H 5 Z M 11 8 h 2 v 8 h -2 V 8 Z M 9 9 l -3 3 l 3 3 V 9 Z M 15 9 l 3 3 l -3 3 V 9 Z</Geometry>
+    <Geometry x:Key="SortAscGeometry">M 4 6 h 4 v 2 H 4 V 6 Z M 4 11 h 8 v 2 H 4 V 11 Z M 4 16 h 12 v 2 H 4 V 16 Z M 18 6 v 10 h -2 l 3 4 l 3 -4 h -2 V 6 H 18 Z</Geometry>
+    <Geometry x:Key="SortDescGeometry">M 4 6 h 12 v 2 H 4 V 6 Z M 4 11 h 8 v 2 H 4 V 11 Z M 4 16 h 4 v 2 H 4 V 16 Z M 18 6 v 10 h -2 l 3 4 l 3 -4 h -2 V 6 H 18 Z</Geometry>
+    <Geometry x:Key="HideGeometry">M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z</Geometry>
+    <Geometry x:Key="UnhideGeometry">M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.44-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z</Geometry>
+    <Geometry x:Key="AutoFitGeometry">M4 8l3-3v2h10V5l3 3-3 3V9H7v2L4 8zm0 8l3-3v2h10v-2l3 3-3 3v-2H7v2l-3-3z</Geometry>
+    <Geometry x:Key="AddSheetGeometry">M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z</Geometry>
+    <Geometry x:Key="DeleteSheetGeometry">M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z</Geometry>
+    <Geometry x:Key="RenameSheetGeometry">M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z</Geometry>
+    <Geometry x:Key="DuplicateSheetGeometry">M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14zm-6-2h2v-3h3v-2h-3V8h-2v3H8v2h3v3z</Geometry>
+    <Geometry x:Key="SubmenuArrowGeometry">M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z</Geometry>
+    <Geometry x:Key="FilterIconGeometry">M 3 6 v 2 h 18 V 6 H 3 z M 6 13 h 12 v -2 H 6 v 2 z M 10 18 h 4 v -2 h -4 v 2 z</Geometry>
+    <Geometry x:Key="CheckmarkGeometry">M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z</Geometry>
+
+    <!-- Quick Action Button Style -->
+    <Style x:Key="SpreadQuickActionButtonStyle" TargetType="{x:Type Button}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Width" Value="32" />
+        <Setter Property="Height" Value="30" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Border x:Name="btnBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="5"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="btnBorder" Property="Background" Value="#F1F5F9" />
+                            <Setter TargetName="btnBorder" Property="BorderBrush" Value="#CBD5E1" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="btnBorder" Property="Background" Value="#E2E8F0" />
+                            <Setter TargetName="btnBorder" Property="BorderBrush" Value="#94A3B8" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="btnBorder" Property="Opacity" Value="0.35" />
+                            <Setter Property="Cursor" Value="Arrow" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ContextMenu Separator Style -->
+    <Style x:Key="SpreadMenuSeparatorStyle" TargetType="{x:Type Separator}">
+        <Setter Property="Height" Value="1" />
+        <Setter Property="Background" Value="#F1F5F9" />
+        <Setter Property="Margin" Value="6,2" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Separator}">
+                    <Border Height="{TemplateBinding Height}"
+                            Background="{TemplateBinding Background}"
+                            Margin="{TemplateBinding Margin}" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- MenuItem Style -->
+    <Style x:Key="SpreadMenuItemStyle" TargetType="{x:Type MenuItem}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="#1E293B" />
+        <Setter Property="FontSize" Value="11.5" />
+        <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI, -apple-system, BlinkMacSystemFont, Roboto, sans-serif" />
+        <Setter Property="Padding" Value="8,4" />
+        <Setter Property="Margin" Value="3,0" />
+        <Setter Property="MinHeight" Value="24" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type MenuItem}">
+                    <Border x:Name="itemBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="Transparent"
+                            BorderThickness="1"
+                            CornerRadius="5"
+                            Padding="{TemplateBinding Padding}"
+                            SnapsToDevicePixels="True">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="22" SharedSizeGroup="MenuItemIconColumn" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="MenuItemGestureColumn" />
+                                <ColumnDefinition Width="14" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Icon Area -->
+                            <ContentPresenter x:Name="iconPresenter"
+                                              Grid.Column="0"
+                                              Content="{TemplateBinding Icon}"
+                                              ContentSource="Icon"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              Width="16" Height="16" />
+
+                            <!-- Header / Text Area -->
+                            <ContentPresenter x:Name="headerPresenter"
+                                              Grid.Column="1"
+                                              Content="{TemplateBinding Header}"
+                                              ContentSource="Header"
+                                              RecognizesAccessKey="True"
+                                              VerticalAlignment="Center"
+                                              Margin="8,0,16,0" />
+
+                            <!-- Input Gesture Text -->
+                            <TextBlock x:Name="gestureText"
+                                       Grid.Column="2"
+                                       Text="{TemplateBinding InputGestureText}"
+                                       Foreground="#64748B"
+                                       FontSize="11"
+                                       FontWeight="Normal"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Right"
+                                       Margin="0,0,4,0" />
+
+                            <!-- Submenu Arrow (if has items) -->
+                            <Path x:Name="submenuArrow"
+                                  Grid.Column="3"
+                                  Data="{StaticResource SubmenuArrowGeometry}"
+                                  Fill="#94A3B8"
+                                  Width="7" Height="7"
+                                  Stretch="Uniform"
+                                  VerticalAlignment="Center"
+                                  HorizontalAlignment="Right"
+                                  Visibility="Collapsed" />
+
+                            <!-- Submenu Popup -->
+                            <Popup x:Name="PART_Popup"
+                                   AllowsTransparency="True"
+                                   Placement="Right"
+                                   IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}"
+                                   Focusable="False"
+                                   PopupAnimation="Fade">
+                                <Border Background="#FFFFFF"
+                                        BorderBrush="#E2E8F0"
+                                        BorderThickness="1"
+                                        CornerRadius="8"
+                                        Padding="4,4"
+                                        Margin="4">
+                                    <Border.Effect>
+                                        <DropShadowEffect BlurRadius="16" Direction="270" ShadowDepth="4" Color="#0B132B" Opacity="0.12" />
+                                    </Border.Effect>
+                                    <ScrollViewer CanContentScroll="True" Style="{DynamicResource {ComponentResourceKey TypeInTargetAssembly={x:Type FrameworkElement}, ResourceId=MenuScrollViewer}}">
+                                        <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle" Grid.IsSharedSizeScope="True" />
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="HasItems" Value="True">
+                            <Setter TargetName="submenuArrow" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsHighlighted" Value="True">
+                            <Setter TargetName="itemBorder" Property="Background" Value="#F1F5F9" />
+                            <Setter TargetName="itemBorder" Property="BorderBrush" Value="#CBD5E1" />
+                            <Setter Property="Foreground" Value="#0F172A" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="itemBorder" Property="Opacity" Value="0.4" />
+                            <Setter Property="Cursor" Value="Arrow" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ContextMenu Style -->
+    <Style x:Key="SpreadContextMenuStyle" TargetType="{x:Type ContextMenu}">
+        <Setter Property="Background" Value="#FFFFFF" />
+        <Setter Property="BorderBrush" Value="#E2E8F0" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="4,4" />
+        <Setter Property="MinWidth" Value="170" />
+        <Setter Property="Grid.IsSharedSizeScope" Value="True" />
+        <Setter Property="HasDropShadow" Value="True" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ContextMenu}">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="8"
+                            Padding="{TemplateBinding Padding}"
+                            Margin="4"
+                            SnapsToDevicePixels="True">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="16" Direction="270" ShadowDepth="4" Color="#0B132B" Opacity="0.12" />
+                        </Border.Effect>
+                        <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="ItemContainerStyle" Value="{StaticResource SpreadMenuItemStyle}" />
+    </Style>
+
+    <Style TargetType="{x:Type ContextMenu}" BasedOn="{StaticResource SpreadContextMenuStyle}" />
+    <Style TargetType="{x:Type MenuItem}" BasedOn="{StaticResource SpreadMenuItemStyle}" />
+    <Style TargetType="{x:Type Separator}" BasedOn="{StaticResource SpreadMenuSeparatorStyle}" />
+
+</ResourceDictionary>

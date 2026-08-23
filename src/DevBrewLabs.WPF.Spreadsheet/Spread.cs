@@ -26,6 +26,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         private FilterManager _filterManager;
         private FormulaSuggestionManager _formulaSuggestionManager;
         private HeaderHoverManager _headerHoverManager;
+        private ContextMenuManager _contextMenuManager;
         private SheetViewHost _sheetViewHost;
         private SheetTabControl _sheetTabControl;
         private UndoRedoManager _undoRedoManager;
@@ -48,6 +49,11 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public static readonly DependencyProperty ZoomFactorProperty;
         public static readonly DependencyProperty AllowZoomingProperty;
         public static readonly DependencyProperty AllowFilteringProperty;
+        public static readonly DependencyProperty AllowContextMenuProperty;
+        public static readonly DependencyProperty CellContextMenuProperty;
+        public static readonly DependencyProperty RowHeaderContextMenuProperty;
+        public static readonly DependencyProperty ColumnHeaderContextMenuProperty;
+        public static readonly DependencyProperty SheetTabContextMenuProperty;
         public static readonly DependencyProperty MouseHoverHeaderBackgroundProperty;
         public static readonly DependencyProperty SelectedHeaderBackgroundProperty;
         public static readonly DependencyProperty RangeSelectedHeaderBackgroundProperty;
@@ -94,6 +100,36 @@ namespace DevBrewLabs.WPF.Spreadsheet
                 typeof(bool),
                 typeof(Spread),
                 new PropertyMetadata(false));
+
+            AllowContextMenuProperty = DependencyProperty.Register(
+                nameof(AllowContextMenu),
+                typeof(bool),
+                typeof(Spread),
+                new PropertyMetadata(true));
+
+            CellContextMenuProperty = DependencyProperty.Register(
+                nameof(CellContextMenu),
+                typeof(ContextMenu),
+                typeof(Spread),
+                new PropertyMetadata(null));
+
+            RowHeaderContextMenuProperty = DependencyProperty.Register(
+                nameof(RowHeaderContextMenu),
+                typeof(ContextMenu),
+                typeof(Spread),
+                new PropertyMetadata(null));
+
+            ColumnHeaderContextMenuProperty = DependencyProperty.Register(
+                nameof(ColumnHeaderContextMenu),
+                typeof(ContextMenu),
+                typeof(Spread),
+                new PropertyMetadata(null));
+
+            SheetTabContextMenuProperty = DependencyProperty.Register(
+                nameof(SheetTabContextMenu),
+                typeof(ContextMenu),
+                typeof(Spread),
+                new PropertyMetadata(null));
 
             ZoomFactorProperty = DependencyProperty.Register(
                 nameof(ZoomFactor),
@@ -361,8 +397,57 @@ namespace DevBrewLabs.WPF.Spreadsheet
             get { return (bool)GetValue(AllowFilteringProperty); }
             set { SetValue(AllowFilteringProperty, value); }
         }
+
+        /// <summary>
+        /// Gets or sets whether context menus are allowed across Spread.
+        /// </summary>
+        public bool AllowContextMenu
+        {
+            get { return (bool)GetValue(AllowContextMenuProperty); }
+            set { SetValue(AllowContextMenuProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets custom ContextMenu for cell area.
+        /// </summary>
+        public ContextMenu CellContextMenu
+        {
+            get { return (ContextMenu)GetValue(CellContextMenuProperty); }
+            set { SetValue(CellContextMenuProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets custom ContextMenu for row headers.
+        /// </summary>
+        public ContextMenu RowHeaderContextMenu
+        {
+            get { return (ContextMenu)GetValue(RowHeaderContextMenuProperty); }
+            set { SetValue(RowHeaderContextMenuProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets custom ContextMenu for column headers.
+        /// </summary>
+        public ContextMenu ColumnHeaderContextMenu
+        {
+            get { return (ContextMenu)GetValue(ColumnHeaderContextMenuProperty); }
+            set { SetValue(ColumnHeaderContextMenuProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets custom ContextMenu for sheet tabs.
+        /// </summary>
+        public ContextMenu SheetTabContextMenu
+        {
+            get { return (ContextMenu)GetValue(SheetTabContextMenuProperty); }
+            set { SetValue(SheetTabContextMenuProperty, value); }
+        }
         #endregion
 
+        /// <summary>
+        /// Fires before a context menu is displayed on any spreadsheet region.
+        /// </summary>
+        public new event EventHandler<SpreadContextMenuOpeningEventArgs> ContextMenuOpening;
         /// <summary>
         /// Fires when cell selection changes.
         /// </summary>
@@ -382,7 +467,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         /// <summary>
         /// Gets the sheetview collection.
         /// </summary>
-        public SheetViewCollection SheetViews { get; }
+        public SheetViewCollection Sheets { get; }
 
         /// <summary>
         /// Suspend UI updates
@@ -407,7 +492,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             _changeListener = new WorksheetChangeListener(this);
             _workBook = new Workbook("Book1", _changeListener);
             _undoRedoManager = new UndoRedoManager(this);
-            SheetViews = new SheetViewCollection(this);
+            Sheets = new SheetViewCollection(this);
             _renderEngine = new RenderEngine();
             _sheetViewHost = new SheetViewHost(this);
             ScrollMode = SheetScrollMode.Item;
@@ -424,6 +509,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             _filterManager = new FilterManager(this);
             _formulaSuggestionManager = new FormulaSuggestionManager(this);
             _clipboardManager = new ClipboardManager(this);
+            _contextMenuManager = new ContextMenuManager(this);
             _rowResizeManager = new RowResizeManager(this);
             _columnResizeManager = new ColumnResizeManager(this);
             _headerHoverManager = new HeaderHoverManager(this);
@@ -439,9 +525,9 @@ namespace DevBrewLabs.WPF.Spreadsheet
         /// <returns></returns>
         public SpreadHitTestResult HitTest(Point point)
         {
-            if (SheetViews.ActiveSheetView != null)
+            if (Sheets.ActiveSheet != null)
             {
-                var activeSheetView = SheetViews.ActiveSheetView.As<SheetView>();
+                var activeSheetView = Sheets.ActiveSheet.As<SheetView>();
                 double zoom = activeSheetView.ZoomFactor > 0 ? activeSheetView.ZoomFactor : 1.0;
                 var columnHeaderHeight = activeSheetView.GetColumnHeaderHeight() * zoom;
                 var rowHeaderWidth = activeSheetView.GetRowHeaderWidth() * zoom;
@@ -514,7 +600,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         /// <param name="column"></param>
         public void BeginEdit(int row, int column)
         {
-            _editingManager.BeginEdit((SheetView)SheetViews.ActiveSheetView, row, column);
+            _editingManager.BeginEdit((SheetView)Sheets.ActiveSheet, row, column);
         }
 
         /// <summary>
@@ -528,62 +614,77 @@ namespace DevBrewLabs.WPF.Spreadsheet
 
         public void SelectCell(int row, int col)
         {
-            SheetViews.ActiveSheetView.SelectCell(row, col);
+            Sheets.ActiveSheet.SelectCell(row, col);
         }
 
         public void SelectColumn(int column)
         {
-            SheetViews.ActiveSheetView.SelectColumn(column);
+            Sheets.ActiveSheet.SelectColumn(column);
         }
 
         public void SelectColumns(int column, int count)
         {
-            SheetViews.ActiveSheetView.SelectColumns(column, count);
+            Sheets.ActiveSheet.SelectColumns(column, count);
         }
 
         public void SelectRow(int row)
         {
-            SheetViews.ActiveSheetView.SelectRow(row);
+            Sheets.ActiveSheet.SelectRow(row);
         }
 
         public void SelectRows(int row, int count)
         {
-            SheetViews.ActiveSheetView.SelectRows(row, count);
+            Sheets.ActiveSheet.SelectRows(row, count);
         }
 
         public void SelectRange(CellRange range)
         {
-            SheetViews.ActiveSheetView.SelectRange(range);
+            Sheets.ActiveSheet.SelectRange(range);
         }
 
         public void SelectRange(int row, int column, int rowCount, int columnCount)
         {
-            SheetViews.ActiveSheetView.SelectRange(row, column, rowCount, columnCount);
+            Sheets.ActiveSheet.SelectRange(row, column, rowCount, columnCount);
+        }
+
+        public void Cut()
+        {
+            Sheets.ActiveSheet.Cut();
         }
 
         public void Copy()
         {
-            SheetViews.ActiveSheetView.Copy();
+            Sheets.ActiveSheet.Copy();
         }
 
         public void Paste()
         {
-            SheetViews.ActiveSheetView.Paste();
+            Sheets.ActiveSheet.Paste();
+        }
+
+        public void ClearContents()
+        {
+            Sheets.ActiveSheet.ClearContents();
+        }
+
+        public void ClearContents(CellRange range)
+        {
+            Sheets.ActiveSheet.ClearContents(range);
         }
 
         public void CopyRange(CellRange range)
         {
-            SheetViews.ActiveSheetView.CopyRange(range);
+            Sheets.ActiveSheet.CopyRange(range);
         }
 
         public void MergeRange(CellRange range)
         {
-            SheetViews.ActiveSheetView.MergeRange(range);
+            Sheets.ActiveSheet.MergeRange(range);
         }
 
         public void UnmergeRange(CellRange range)
         {
-            SheetViews.ActiveSheetView.UnmergeRange(range);
+            Sheets.ActiveSheet.UnmergeRange(range);
         }
 
         public void ZoomIn()
@@ -650,6 +751,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             _filterManager?.Dispose();
             _formulaSuggestionManager?.Dispose();
             _headerHoverManager?.Dispose();
+            _contextMenuManager?.Dispose();
         }
     }
 
@@ -663,6 +765,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         internal EditingManager EditingManager => _editingManager;
         internal SelectionManager SelectionManager => _selectionManager;
         internal ClipboardManager ClipboardManager => _clipboardManager;
+        internal ContextMenuManager ContextMenuManager => _contextMenuManager;
         internal ZoomManager ZoomManager => _zoomManager;
         internal RenderEngine RenderEngine => _renderEngine;
         internal SheetViewHost SheetViewHost => _sheetViewHost;
@@ -686,6 +789,11 @@ namespace DevBrewLabs.WPF.Spreadsheet
         {
             CalculationError?.Invoke(this, args);
         }
+
+        internal void RaiseContextMenuOpening(SpreadContextMenuOpeningEventArgs args)
+        {
+            ContextMenuOpening?.Invoke(this, args);
+        }
     }
     #endregion
 
@@ -699,11 +807,15 @@ namespace DevBrewLabs.WPF.Spreadsheet
             if (EditingManager != null && EditingManager.IsEditing)
                 return;
 
-            var activeSheetView = SheetViews.ActiveSheetView.As<SheetView>();
+            var activeSheetView = Sheets.ActiveSheet.As<SheetView>();
             if (Keyboard.Modifiers == ModifierKeys.Control)
             {
                 switch (e.Key)
                 {
+                    case Key.X:
+                        ClipboardManager.Cut(activeSheetView);
+                        break;
+
                     case Key.C:
                         ClipboardManager.Copy(activeSheetView);
                         break;
@@ -734,7 +846,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             _filterManager?.HideFilterDropdown();
             _formulaSuggestionManager?.Hide();
 
-            var activeSheetView = SheetViews.ActiveSheetView.As<SheetView>();
+            var activeSheetView = Sheets.ActiveSheet.As<SheetView>();
 
             if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
             {
@@ -772,7 +884,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             _formulaSuggestionManager?.Hide();
 
             SheetTabControl.UpdateScrollbars();
-            var activeSheetView = SheetViews.ActiveSheetView;
+            var activeSheetView = Sheets.ActiveSheet;
             activeSheetView.ScrollToHorizontalOffset(activeSheetView.ScrollPosition.X);
             activeSheetView.ScrollToVerticalOffset(activeSheetView.ScrollPosition.Y);
         }

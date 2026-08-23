@@ -39,14 +39,27 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             base.OnMouseRightButtonDown(e);
             var hitTest = HitTest();
 
+            if (hitTest == null || hitTest.Row == -1)
+                return;
+
             if (SheetView.Spread.EditingManager.IsEditing)
             {
                 if (!SheetView.Spread.EditingManager.EndEdit(true))
                     return;
             }
 
-            if(SheetView.Selection.RowCount <= 1)
+            if (!SheetView.Selection.ContainsRow(hitTest.Row) || SheetView.Selection.ColumnCount < SheetView.WorkSheet.ColumnCount)
                 SheetView.SelectRow(hitTest.Row);
+        }
+
+        protected override void OnMouseRightButtonUp(MouseButtonEventArgs e)
+        {
+            base.OnMouseRightButtonUp(e);
+            var hitTest = HitTest();
+            if (hitTest != null && (hitTest.Element == VisualElement.RowHeader || hitTest.Element == VisualElement.RowHeaderResizeBar))
+            {
+                SheetView.Spread?.ContextMenuManager?.ShowContextMenu(SheetView, hitTest, this);
+            }
         }
 
         protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)

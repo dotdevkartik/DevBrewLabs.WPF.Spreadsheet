@@ -190,7 +190,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
             if (Spread == null || !_txtEditor.IsFocused)
                 return;
 
-            var activeSheetView = Spread.SheetViews?.ActiveSheetView;
+            var activeSheetView = Spread.Sheets?.ActiveSheet;
             if (activeSheetView == null)
                 return;
 
@@ -240,7 +240,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
             {
                 e.Handled = true;
                 CommitCommand?.Execute(null);
-                var activeSheetView = Spread.SheetViews?.ActiveSheetView;
+                var activeSheetView = Spread.Sheets?.ActiveSheet;
                 if (activeSheetView != null)
                 {
                     Spread.SelectCell(activeSheetView.ActiveRow + 1, activeSheetView.ActiveColumn);

@@ -118,6 +118,16 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             }
         }
 
+        protected override void OnMouseRightButtonUp(MouseButtonEventArgs e)
+        {
+            base.OnMouseRightButtonUp(e);
+            var hitTest = HitTest();
+            if (hitTest != null && (hitTest.Element == VisualElement.Cell || hitTest.Element == VisualElement.TopLeft))
+            {
+                SheetView.Spread?.ContextMenuManager?.ShowContextMenu(SheetView, hitTest, this);
+            }
+        }
+
         protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
         {
             base.OnMouseLeftButtonUp(e);

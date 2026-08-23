@@ -12,7 +12,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         private Spread _spread;
         private Dictionary<IWorksheet, ISheetView> _sheetViewStore;
 
-        public ISheetView ActiveSheetView { get; private set; }
+        public ISheetView ActiveSheet { get; private set; }
 
         public event NotifyCollectionChangedEventHandler CollectionChanged;
         public event EventHandler<SheetViewEventArgs> ActiveSheetChanged;
@@ -49,7 +49,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
 
             if (_spread.WorkBook.WorkSheets.Count == 0)
             {
-                ActiveSheetView = null;
+                ActiveSheet = null;
             }
 
             OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, sheetView));
@@ -57,9 +57,9 @@ namespace DevBrewLabs.WPF.Spreadsheet
 
         private void OnActiveSheetChanged(object sender, WorksheetEventArgs e)
         {
-            var args = new SheetViewEventArgs() { OldSheetView = ActiveSheetView };
-            ActiveSheetView = _sheetViewStore[(Worksheet)e.Worksheet];
-            args.NewSheetView = ActiveSheetView;
+            var args = new SheetViewEventArgs() { OldSheetView = ActiveSheet };
+            ActiveSheet = _sheetViewStore[(Worksheet)e.Worksheet];
+            args.NewSheetView = ActiveSheet;
             ActiveSheetChanged?.Invoke(this, args);
         }
 

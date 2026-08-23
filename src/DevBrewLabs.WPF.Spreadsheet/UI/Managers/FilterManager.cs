@@ -43,6 +43,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 _filterDropdown.Applied += OnFilterApplied;
                 _filterDropdown.Cancelled += OnFilterCancelled;
                 _filterDropdown.SortRequested += OnSortRequested;
+                _filterDropdown.ClearFilterRequested += OnClearFilterRequested;
 
                 _filterPopup = new Popup
                 {
@@ -78,41 +79,48 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             var columnFilter = sheetView.WorkSheet.AutoFilter.GetColumnFilter(column);
             _filterDropdown.Initialize(availableValues, columnFilter);
 
-            _filterDropdown.LayoutTransform = Math.Abs(zoom - 1.0) > 0.001 ? new ScaleTransform(zoom, zoom) : Transform.Identity;
+            const double shadowMarginLeft = 8;
+            const double shadowMarginTop = 6;
+            const double shadowMarginRight = 8;
+            const double shadowMarginBottom = 14;
+
+            _filterDropdown.LayoutTransform = Transform.Identity;
 
             _filterDropdown.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
             double dropdownWidth = _filterDropdown.DesiredSize.Width > 0 
                 ? _filterDropdown.DesiredSize.Width 
-                : (!double.IsNaN(_filterDropdown.Width) ? _filterDropdown.Width * zoom : 240 * zoom);
+                : (!double.IsNaN(_filterDropdown.Width) ? _filterDropdown.Width : 264);
             double dropdownHeight = _filterDropdown.DesiredSize.Height > 0 
                 ? _filterDropdown.DesiredSize.Height 
-                : 360 * zoom;
+                : 360;
+
+            double contentHeight = dropdownHeight - (shadowMarginTop + shadowMarginBottom);
 
             // Vertical placement: flip to Top if bottom would overflow visible canvas and Top fits
             double surfaceHeight = sheetView.CellsSurface?.ActualHeight ?? 0;
-            if (surfaceHeight > 0 && (y + cellHeight + dropdownHeight > surfaceHeight) && (y - dropdownHeight >= 0))
+            if (surfaceHeight > 0 && (y + cellHeight + contentHeight > surfaceHeight) && (y - contentHeight >= 0))
             {
                 _filterPopup.Placement = PlacementMode.Top;
+                _filterPopup.VerticalOffset = shadowMarginBottom;
             }
             else
             {
                 _filterPopup.Placement = PlacementMode.Bottom;
+                _filterPopup.VerticalOffset = -shadowMarginTop;
             }
 
             // Horizontal placement:
-            // 1. Prefer right-aligning popup with cell right edge (where filter button is)
-            // 2. If right-alignment overflows left boundary (< 0), align with cell left edge or clamp
-            double rightAlignedLeft = x + cellWidth - dropdownWidth;
-            if (rightAlignedLeft >= 0)
+            // 1. Prefer right-aligning content box with cell right edge (where filter button is)
+            // 2. If right-alignment overflows left boundary (< 0), align content box with left boundary
+            double rightAlignedLeft = x + cellWidth - dropdownWidth + shadowMarginRight;
+            if (rightAlignedLeft >= -shadowMarginLeft)
             {
-                _filterPopup.HorizontalOffset = cellWidth - dropdownWidth;
+                _filterPopup.HorizontalOffset = cellWidth - dropdownWidth + shadowMarginRight;
             }
             else
             {
-                _filterPopup.HorizontalOffset = Math.Max(-x, 0);
+                _filterPopup.HorizontalOffset = -x - shadowMarginLeft;
             }
-
-            _filterPopup.VerticalOffset = 0;
 
             AttachWindowEvents(sheetView.CellsSurface);
             _filterPopup.IsOpen = true;
@@ -189,6 +197,16 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             HideFilterDropdown();
         }
 
+        private void OnClearFilterRequested(object sender, EventArgs e)
+        {
+            if (_activeSheetView != null && _activeFilterColumn >= 0)
+            {
+                _activeSheetView.WorkSheet.AutoFilter.ClearFilter(_activeFilterColumn);
+            }
+
+            HideFilterDropdown();
+        }
+
         public void Dispose()
         {
             HideFilterDropdown();
@@ -197,6 +215,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 _filterDropdown.Applied -= OnFilterApplied;
                 _filterDropdown.Cancelled -= OnFilterCancelled;
                 _filterDropdown.SortRequested -= OnSortRequested;
+                _filterDropdown.ClearFilterRequested -= OnClearFilterRequested;
                 _filterDropdown = null;
             }
             _filterPopup = null;

@@ -64,7 +64,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void Spread_SheetViews_IsInitialized()
         {
             var spread = new Spread();
-            Assert.That(spread.SheetViews, Is.Not.Null);
+            Assert.That(spread.Sheets, Is.Not.Null);
         }
 
         [Test]
@@ -133,8 +133,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
             var spread = new Spread();
             spread.SelectCell(5, 10);
             
-            Assert.That(spread.SheetViews.ActiveSheetView.ActiveRow, Is.EqualTo(5));
-            Assert.That(spread.SheetViews.ActiveSheetView.ActiveColumn, Is.EqualTo(10));
+            Assert.That(spread.Sheets.ActiveSheet.ActiveRow, Is.EqualTo(5));
+            Assert.That(spread.Sheets.ActiveSheet.ActiveColumn, Is.EqualTo(10));
         }
 
         [Test]
@@ -143,8 +143,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
             var spread = new Spread();
             spread.SelectRow(3);
             
-            Assert.That(spread.SheetViews.ActiveSheetView.Selection.TopRow, Is.EqualTo(3));
-            Assert.That(spread.SheetViews.ActiveSheetView.Selection.RowCount, Is.EqualTo(1));
+            Assert.That(spread.Sheets.ActiveSheet.Selection.TopRow, Is.EqualTo(3));
+            Assert.That(spread.Sheets.ActiveSheet.Selection.RowCount, Is.EqualTo(1));
         }
 
         [Test]
@@ -153,8 +153,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
             var spread = new Spread();
             spread.SelectColumn(4);
             
-            Assert.That(spread.SheetViews.ActiveSheetView.Selection.LeftColumn, Is.EqualTo(4));
-            Assert.That(spread.SheetViews.ActiveSheetView.Selection.ColumnCount, Is.EqualTo(1));
+            Assert.That(spread.Sheets.ActiveSheet.Selection.LeftColumn, Is.EqualTo(4));
+            Assert.That(spread.Sheets.ActiveSheet.Selection.ColumnCount, Is.EqualTo(1));
         }
 
         [Test]
@@ -163,10 +163,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
             var spread = new Spread();
             spread.SelectRange(1, 2, 3, 4);
             
-            Assert.That(spread.SheetViews.ActiveSheetView.Selection.TopRow, Is.EqualTo(1));
-            Assert.That(spread.SheetViews.ActiveSheetView.Selection.LeftColumn, Is.EqualTo(2));
-            Assert.That(spread.SheetViews.ActiveSheetView.Selection.RowCount, Is.EqualTo(3));
-            Assert.That(spread.SheetViews.ActiveSheetView.Selection.ColumnCount, Is.EqualTo(4));
+            Assert.That(spread.Sheets.ActiveSheet.Selection.TopRow, Is.EqualTo(1));
+            Assert.That(spread.Sheets.ActiveSheet.Selection.LeftColumn, Is.EqualTo(2));
+            Assert.That(spread.Sheets.ActiveSheet.Selection.RowCount, Is.EqualTo(3));
+            Assert.That(spread.Sheets.ActiveSheet.Selection.ColumnCount, Is.EqualTo(4));
         }
 
         [Test]
@@ -182,7 +182,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void Spread_ActiveSheetView_HasExpectedDefaultSettings()
         {
             var spread = new Spread();
-            var view = spread.SheetViews.ActiveSheetView;
+            var view = spread.Sheets.ActiveSheet;
             
             Assert.That(view, Is.Not.Null);
             Assert.That(view.ZoomFactor, Is.EqualTo(1.0));

@@ -93,9 +93,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
         public void UpdateEditorLayout()
         {
-            if (ActiveEditor is EditorBase editor && Spread?.SheetViews?.ActiveSheetView != null)
+            if (ActiveEditor is EditorBase editor && Spread?.Sheets?.ActiveSheet != null)
             {
-                var sheetView = Spread.SheetViews.ActiveSheetView.As<SheetView>();
+                var sheetView = Spread.Sheets.ActiveSheet.As<SheetView>();
                 var workSheet = sheetView.WorkSheet;
                 double zoom = sheetView.ZoomFactor > 0 ? sheetView.ZoomFactor : 1.0;
                 var viewPort = sheetView.ViewPort.As<ViewPort>();

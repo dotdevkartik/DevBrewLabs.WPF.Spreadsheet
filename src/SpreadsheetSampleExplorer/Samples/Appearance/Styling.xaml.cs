@@ -37,11 +37,11 @@ namespace SpreadsheetSampleExplorer.Samples
         {
             var sheet = spread.WorkBook.WorkSheets.GetSheet(0);
             SetupSheetDataSource(sheet);
-            styleAction(spread.SheetViews.GetSheetView(sheet));
+            styleAction(spread.Sheets.GetSheetView(sheet));
 
             spread.WorkBook.WorkSheets.SheetAdded += (s, e) =>
             {
-                styleAction(spread.SheetViews.GetSheetView(e.AddedSheet));
+                styleAction(spread.Sheets.GetSheetView(e.AddedSheet));
             };
         }
 
@@ -190,7 +190,7 @@ namespace SpreadsheetSampleExplorer.Samples
             if (_isInitializing || spreadMain == null)
                 return;
 
-            var sheetView = spreadMain.SheetViews.GetSheetView(spreadMain.WorkBook.WorkSheets.GetSheet(0));
+            var sheetView = spreadMain.Sheets.GetSheetView(spreadMain.WorkBook.WorkSheets.GetSheet(0));
             UpdateSheetStyle(sheetView, GetSelectedThemeKey(), GetAltRowsEnabled(), GetSelectedAlignment());
         }
 
