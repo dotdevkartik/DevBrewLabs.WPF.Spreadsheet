@@ -121,19 +121,31 @@
         <Setter Property="Foreground" Value="#1F2937" />
         <Setter Property="FontFamily" Value="Segoe UI, -apple-system, BlinkMacSystemFont, Roboto, sans-serif" />
         <Setter Property="FontSize" Value="12" />
-        <Setter Property="Width" Value="248" />
+        <Setter Property="Width" Value="264" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type components:FilterDropdown}">
-                    <Border Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="6"
-                            SnapsToDevicePixels="True">
-                        <Border.Effect>
-                            <DropShadowEffect BlurRadius="16" Opacity="0.12" ShadowDepth="5" Direction="270" Color="#000000" />
-                        </Border.Effect>
-                        <Grid Margin="2,4,2,6">
+                    <Grid SnapsToDevicePixels="True"
+                          UseLayoutRounding="True"
+                          TextOptions.TextFormattingMode="Display"
+                          TextOptions.TextRenderingMode="ClearType"
+                          RenderOptions.ClearTypeHint="Enabled">
+                        <!-- Drop Shadow Background Layer -->
+                        <Border Background="#FFFFFF"
+                                CornerRadius="6"
+                                Margin="8,6,8,14">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="8" Opacity="0.14" ShadowDepth="3" Direction="270" Color="#000000" />
+                            </Border.Effect>
+                        </Border>
+
+                        <!-- Dropdown Content Layer -->
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                Margin="8,6,8,14">
+                            <Grid Margin="2,4,2,6">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
@@ -310,6 +322,7 @@
                             </Grid>
                         </Grid>
                     </Border>
+                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
