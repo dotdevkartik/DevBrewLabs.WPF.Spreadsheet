@@ -43,8 +43,8 @@ We optimized the core data engine and WPF renderer for sub-second data loading a
 | Dataset Size | Data Volume | Load Time | Experience |
 | :--- | :--- | :--- | :--- |
 | **100,000 Rows** | 1,000,000 Cells | **50 - 60 ms** | ⚡ Instantaneous |
-| **500,000 Rows** | 5,000,000 Cells | **~250 ms** | ⚡ Ultra Fast |
-| **1,000,000 Rows** | 10,000,000 Cells | **500 - 700 ms** | 🚀 Sub-Second Virtualized |
+| **500,000 Rows** | 5,000,000 Cells | **150 - 200 ms** | ⚡ Ultra Fast |
+| **1,000,000 Rows** | 10,000,000 Cells | **300 - 400 ms** | 🚀 Enterprise Scale |
 
 *(Benchmarks measure engine loading and first UI frame render on standard hardware.)*
 
