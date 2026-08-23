@@ -33,6 +33,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
     [TemplatePart(Name = "PART_SelectAll", Type = typeof(CheckBox))]
     [TemplatePart(Name = "PART_SortAscending", Type = typeof(Button))]
     [TemplatePart(Name = "PART_SortDescending", Type = typeof(Button))]
+    [TemplatePart(Name = "PART_ClearFilter", Type = typeof(Button))]
     [TemplatePart(Name = "PART_ApplyButton", Type = typeof(Button))]
     [TemplatePart(Name = "PART_CancelButton", Type = typeof(Button))]
     public class FilterDropdown : Control
@@ -40,18 +41,21 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
         public event EventHandler<FilterApplyEventArgs> Applied;
         public event EventHandler Cancelled;
         public event EventHandler<SortRequestedEventArgs> SortRequested;
+        public event EventHandler ClearFilterRequested;
 
         private TextBox _searchBox;
         private ListBox _valuesList;
         private CheckBox _selectAllCheckBox;
         private Button _sortAscendingBtn;
         private Button _sortDescendingBtn;
+        private Button _clearFilterBtn;
         private Button _applyBtn;
         private Button _cancelBtn;
 
         private IReadOnlyList<object> _availableValues;
         private HashSet<object> _currentSelected;
         private bool _isUpdatingList;
+        private bool _isFiltered;
 
         static FilterDropdown()
         {
@@ -83,6 +87,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
             if (_sortDescendingBtn != null)
                 _sortDescendingBtn.Click -= OnSortDescendingClick;
 
+            if (_clearFilterBtn != null)
+                _clearFilterBtn.Click -= OnClearFilterClick;
+
             if (_applyBtn != null)
                 _applyBtn.Click -= OnApplyClick;
 
@@ -110,6 +117,13 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
             if (_sortDescendingBtn != null)
                 _sortDescendingBtn.Click += OnSortDescendingClick;
 
+            _clearFilterBtn = GetTemplateChild("PART_ClearFilter") as Button;
+            if (_clearFilterBtn != null)
+            {
+                _clearFilterBtn.Click += OnClearFilterClick;
+                _clearFilterBtn.IsEnabled = _isFiltered;
+            }
+
             _applyBtn = GetTemplateChild("PART_ApplyButton") as Button;
             if (_applyBtn != null)
                 _applyBtn.Click += OnApplyClick;
@@ -131,6 +145,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
             SortRequested?.Invoke(this, new SortRequestedEventArgs(false));
         }
 
+        private void OnClearFilterClick(object sender, RoutedEventArgs e)
+        {
+            ClearFilterRequested?.Invoke(this, EventArgs.Empty);
+        }
+
         private void OnApplyClick(object sender, RoutedEventArgs e)
         {
             Applied?.Invoke(this, new FilterApplyEventArgs(new HashSet<object>(_currentSelected ?? new HashSet<object>())));
@@ -145,6 +164,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
         {
             _availableValues = availableValues;
             _currentSelected = new HashSet<object>();
+            _isFiltered = currentFilter != null && currentFilter.IsFiltered;
+
+            if (_clearFilterBtn != null)
+                _clearFilterBtn.IsEnabled = _isFiltered;
 
             if (currentFilter != null && currentFilter.IsFiltered)
             {

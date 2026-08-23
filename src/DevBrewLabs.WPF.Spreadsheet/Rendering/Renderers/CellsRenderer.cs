@@ -89,6 +89,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             }
         }
 
+        private static readonly DrawingColor ActiveFilterColor = DrawingColor.FromArgb(255, 16, 124, 65); // #107C41 Excel Green
+        private static readonly DrawingColor InactiveFilterColor = DrawingColor.FromArgb(255, 107, 114, 128); // #6B7280 Muted Slate
+
         private void DrawFilterIcon(RenderContext context, Rect rect, bool isActive)
         {
             double iconSize = 8 * context.Zoom;
@@ -116,7 +119,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             }
             geometry.Freeze();
 
-            var color = isActive ? DrawingColor.DodgerBlue : DrawingColor.DimGray;
+            var color = isActive ? ActiveFilterColor : InactiveFilterColor;
             context.DrawGeometry(color, null, geometry);
         }
     }

@@ -43,6 +43,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 _filterDropdown.Applied += OnFilterApplied;
                 _filterDropdown.Cancelled += OnFilterCancelled;
                 _filterDropdown.SortRequested += OnSortRequested;
+                _filterDropdown.ClearFilterRequested += OnClearFilterRequested;
 
                 _filterPopup = new Popup
                 {
@@ -196,6 +197,16 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             HideFilterDropdown();
         }
 
+        private void OnClearFilterRequested(object sender, EventArgs e)
+        {
+            if (_activeSheetView != null && _activeFilterColumn >= 0)
+            {
+                _activeSheetView.WorkSheet.AutoFilter.ClearFilter(_activeFilterColumn);
+            }
+
+            HideFilterDropdown();
+        }
+
         public void Dispose()
         {
             HideFilterDropdown();
@@ -204,6 +215,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 _filterDropdown.Applied -= OnFilterApplied;
                 _filterDropdown.Cancelled -= OnFilterCancelled;
                 _filterDropdown.SortRequested -= OnSortRequested;
+                _filterDropdown.ClearFilterRequested -= OnClearFilterRequested;
                 _filterDropdown = null;
             }
             _filterPopup = null;
