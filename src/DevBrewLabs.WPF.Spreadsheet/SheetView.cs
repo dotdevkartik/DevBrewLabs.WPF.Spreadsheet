@@ -96,6 +96,11 @@ namespace DevBrewLabs.WPF.Spreadsheet
             AutoSizeColumns = false;
         }
 
+        public void Cut()
+        {
+            Spread.ClipboardManager.Cut(this);
+        }
+
         public void Copy()
         {
             Spread.ClipboardManager.Copy(this);
@@ -104,6 +109,60 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public void Paste()
         {
             Spread.ClipboardManager.Paste(this);
+        }
+
+        public void ClearContents()
+        {
+            ClearContents(Selection);
+        }
+
+        public void ClearContents(CellRange range)
+        {
+            if (range == default || range.RowCount <= 0 || range.ColumnCount <= 0 || WorkSheet == null)
+                return;
+
+            Spread.SuspendUpdates = true;
+            try
+            {
+                var pasteAction = new ClipboardPasteAction { SheetView = this };
+                pasteAction.OldState.Value = WorkSheet.GetData(range.TopRow, range.LeftColumn, range.RowCount, range.ColumnCount);
+                pasteAction.OldState.Row = range.TopRow;
+                pasteAction.OldState.Column = range.LeftColumn;
+                pasteAction.OldState.Selection = Selection.Clone();
+
+                object[,] emptyData = new object[range.RowCount, range.ColumnCount];
+
+                for (int r = 0; r < range.RowCount; r++)
+                {
+                    for (int c = 0; c < range.ColumnCount; c++)
+                    {
+                        var ws = (Worksheet)WorkSheet;
+                        ws.SetValue(range.TopRow + r, range.LeftColumn + c, null);
+                        ws.SetFormula(range.TopRow + r, range.LeftColumn + c, null);
+                    }
+                }
+
+                pasteAction.NewState.Value = emptyData;
+                pasteAction.NewState.Row = range.TopRow;
+                pasteAction.NewState.Column = range.LeftColumn;
+                pasteAction.NewState.Selection = Selection.Clone();
+
+                Spread.UndoRedoManager.AddAction(pasteAction);
+            }
+            finally
+            {
+                Spread.SuspendUpdates = false;
+            }
+
+            if (AutoSizeRows)
+            {
+                for (int r = range.TopRow; r <= range.BottomRow; r++)
+                {
+                    AutoSizeRow(r);
+                }
+            }
+
+            Spread.Invalidate();
         }
 
         public void CopyRange(CellRange range)

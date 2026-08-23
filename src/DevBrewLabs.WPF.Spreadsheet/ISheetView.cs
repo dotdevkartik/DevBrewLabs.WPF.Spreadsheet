@@ -61,6 +61,10 @@ namespace DevBrewLabs.WPF.Spreadsheet
         /// </summary>
         IWorksheet WorkSheet { get; }
         /// <summary>
+        /// Cuts current selection to clipboard.
+        /// </summary>
+        void Cut();
+        /// <summary>
         /// Copies current selection to clipboard.
         /// </summary>
         void Copy();
@@ -68,6 +72,14 @@ namespace DevBrewLabs.WPF.Spreadsheet
         /// Pastes data from clipboard to sheet.
         /// </summary>
         void Paste();
+        /// <summary>
+        /// Clears contents (values and formulas) of current selection.
+        /// </summary>
+        void ClearContents();
+        /// <summary>
+        /// Clears contents (values and formulas) of the specified range.
+        /// </summary>
+        void ClearContents(CellRange range);
         /// <summary>
         /// Copies the provided cell range to clipboard.
         /// </summary>

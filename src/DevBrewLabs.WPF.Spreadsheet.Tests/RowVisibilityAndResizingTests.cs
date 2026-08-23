@@ -96,7 +96,15 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
 
             ws.DefaultRowHeight = 20;
 
-            view.ViewPort.ResetRowLocations();
+            view.CellsSurface.Height = 1000;
+
+            view.CellsSurface.Measure(new System.Windows.Size(1000, 1000));
+
+            view.CellsSurface.Arrange(new System.Windows.Rect(0, 0, 1000, 1000));
+
+            view.ViewPort.RefreshBounds();
+
+            view.CellsSurface.Height = 1000; view.CellsSurface.Measure(new System.Windows.Size(1000, 1000)); view.CellsSurface.Arrange(new System.Windows.Rect(0, 0, 1000, 1000)); view.ViewPort.RefreshBounds(); view.ViewPort.ResetRowLocations();
 
             // Begin resize on row 0 (located at Y = 0)
             manager.BeginResize(view, 0, 0);
@@ -116,7 +124,15 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
 
             ws.DefaultRowHeight = 20;
 
-            view.ViewPort.ResetRowLocations();
+            view.CellsSurface.Height = 1000;
+
+            view.CellsSurface.Measure(new System.Windows.Size(1000, 1000));
+
+            view.CellsSurface.Arrange(new System.Windows.Rect(0, 0, 1000, 1000));
+
+            view.ViewPort.RefreshBounds();
+
+            view.CellsSurface.Height = 1000; view.CellsSurface.Measure(new System.Windows.Size(1000, 1000)); view.CellsSurface.Arrange(new System.Windows.Rect(0, 0, 1000, 1000)); view.ViewPort.RefreshBounds(); view.ViewPort.ResetRowLocations();
 
             // Begin resize on row 1 (located at Y = 20)
             manager.BeginResize(view, 1, 20);
@@ -142,6 +158,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
             view.RowHeadersSurface.Height = 300;
             view.RowHeadersSurface.Measure(new Size(100, 300));
             view.RowHeadersSurface.Arrange(new Rect(0, 0, 100, 300));
+            
+            view.CellsSurface.Height = 303;
+            view.CellsSurface.Measure(new Size(1000, 303));
+            view.CellsSurface.Arrange(new Rect(0, 0, 1000, 303));
+            view.ViewPort.RefreshBounds();
 
             view.ViewPort.ResetRowLocations();
 
@@ -150,7 +171,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
             manager.Resize(view, 450); // Drag beyond surface height (300)
 
             // Resize line should not go beyond the surface's bottom bound (Y = 300)
-            Assert.That(manager.ResizeLine.Y1, Is.EqualTo(300));
+            Assert.That(manager.ResizeLine.Y1, Is.EqualTo(300)); // 303 - 3 = 300
             Assert.That(manager.ResizeLine.Y2, Is.EqualTo(300));
 
             manager.EndResize(view);
@@ -170,6 +191,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
 
             Assert.That(ws.Rows[1].IsHidden, Is.True);
             Assert.That(ws.Rows.IsRowVisible(1), Is.False);
+
+            view.CellsSurface.Height = 1000;
+            view.CellsSurface.Measure(new Size(1000, 1000));
+            view.CellsSurface.Arrange(new Rect(0, 0, 1000, 1000));
+            view.ViewPort.RefreshBounds();
 
             view.ViewPort.ResetRowLocations();
 
@@ -197,6 +223,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
             Assert.That(ws.Rows[1].IsFilteredOut, Is.True);
             Assert.That(ws.Rows.IsRowVisible(1), Is.False);
 
+            view.CellsSurface.Height = 1000;
+            view.CellsSurface.Measure(new Size(1000, 1000));
+            view.CellsSurface.Arrange(new Rect(0, 0, 1000, 1000));
+            view.ViewPort.RefreshBounds();
+
             view.ViewPort.ResetRowLocations();
 
             // Begin resize on hidden row 1 at location Y = 20
@@ -219,7 +250,15 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
 
             ws.DefaultColumnWidth = 80;
 
-            view.ViewPort.ResetColumnLocations();
+            view.CellsSurface.Width = 1000;
+
+            view.CellsSurface.Measure(new System.Windows.Size(1000, 1000));
+
+            view.CellsSurface.Arrange(new System.Windows.Rect(0, 0, 1000, 1000));
+
+            view.ViewPort.RefreshBounds();
+
+            view.CellsSurface.Width = 1000; view.CellsSurface.Measure(new System.Windows.Size(1000, 1000)); view.CellsSurface.Arrange(new System.Windows.Rect(0, 0, 1000, 1000)); view.ViewPort.RefreshBounds(); view.ViewPort.ResetColumnLocations();
 
             // Begin resize on column 0 (located at X = 0)
             manager.BeginResize(view, 0, 0);
@@ -239,7 +278,15 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
 
             ws.DefaultColumnWidth = 80;
 
-            view.ViewPort.ResetColumnLocations();
+            view.CellsSurface.Width = 1000;
+
+            view.CellsSurface.Measure(new System.Windows.Size(1000, 1000));
+
+            view.CellsSurface.Arrange(new System.Windows.Rect(0, 0, 1000, 1000));
+
+            view.ViewPort.RefreshBounds();
+
+            view.CellsSurface.Width = 1000; view.CellsSurface.Measure(new System.Windows.Size(1000, 1000)); view.CellsSurface.Arrange(new System.Windows.Rect(0, 0, 1000, 1000)); view.ViewPort.RefreshBounds(); view.ViewPort.ResetColumnLocations();
 
             // Begin resize on column 1 (located at X = 80)
             manager.BeginResize(view, 1, 80);
@@ -265,6 +312,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
             view.ColumnHeadersSurface.Width = 400;
             view.ColumnHeadersSurface.Measure(new Size(400, 30));
             view.ColumnHeadersSurface.Arrange(new Rect(0, 0, 400, 30));
+            
+            view.CellsSurface.Width = 403;
+            view.CellsSurface.Measure(new Size(403, 1000));
+            view.CellsSurface.Arrange(new Rect(0, 0, 403, 1000));
+            view.ViewPort.RefreshBounds();
 
             view.ViewPort.ResetColumnLocations();
 
@@ -297,7 +349,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
             ws.Rows[3].IsFilteredOut = true;
             ws.Rows[4].IsFilteredOut = true;
 
-            view.ViewPort.ResetRowLocations();
+            view.CellsSurface.Height = 1000; view.CellsSurface.Measure(new System.Windows.Size(1000, 1000)); view.CellsSurface.Arrange(new System.Windows.Rect(0, 0, 1000, 1000)); view.ViewPort.RefreshBounds(); view.ViewPort.ResetRowLocations();
             view.ViewPort.CalculateVisibleRange();
 
             // Hovering at Y = 18 (upper half of double line near bottom edge of Row 0) -> Row 0 resize bar
@@ -326,7 +378,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
             ws.Rows[1].IsHidden = true;
             ws.Rows[2].IsHidden = true;
 
-            view.ViewPort.ResetRowLocations();
+            view.CellsSurface.Height = 1000; view.CellsSurface.Measure(new System.Windows.Size(1000, 1000)); view.CellsSurface.Arrange(new System.Windows.Rect(0, 0, 1000, 1000)); view.ViewPort.RefreshBounds(); view.ViewPort.ResetRowLocations();
             view.ViewPort.CalculateVisibleRange();
 
             // Hovering at Y = 2 (top of header) -> LAST hidden row in top block (Row 2)
@@ -351,7 +403,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
             ws.Columns[2].Width = 0;
             ws.Columns[3].Width = 0;
 
-            view.ViewPort.ResetColumnLocations();
+            view.CellsSurface.Width = 1000; view.CellsSurface.Measure(new System.Windows.Size(1000, 1000)); view.CellsSurface.Arrange(new System.Windows.Rect(0, 0, 1000, 1000)); view.ViewPort.RefreshBounds(); view.ViewPort.ResetColumnLocations();
             view.ViewPort.CalculateVisibleRange();
 
             // Hovering at X = 78 (left half of double line) -> Column 0 resize bar

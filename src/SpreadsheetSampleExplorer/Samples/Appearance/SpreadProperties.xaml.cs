@@ -91,5 +91,48 @@ namespace SpreadsheetSampleExplorer.Samples
                 case 2: spread.SelectionBorderBrush = Brushes.Orange; break;
             }
         }
+
+        private void OnCustomContextMenuChecked(object sender, RoutedEventArgs e)
+        {
+            if (spread == null) return;
+
+            var customMenu = new ContextMenu();
+            
+            var dict = new ResourceDictionary { Source = new System.Uri("pack://application:,,,/DevBrewLabs.WPF.Spreadsheet;component/Themes/ContextMenuStyle.xaml") };
+            var menuStyle = dict["SpreadContextMenuStyle"] as Style;
+            var menuItemStyle = dict["SpreadMenuItemStyle"] as Style;
+            var separatorStyle = dict["SpreadMenuSeparatorStyle"] as Style;
+
+            if (menuStyle != null) customMenu.Style = menuStyle;
+
+            var item1 = new MenuItem { Header = "Analyze Data", Style = menuItemStyle };
+            item1.Click += (s, args) => MessageBox.Show("Data analysis complete!");
+
+            var item2 = new MenuItem { Header = "Generate Chart", Style = menuItemStyle };
+            item2.Click += (s, args) => MessageBox.Show("Chart generated!");
+
+            var item3 = new MenuItem { Header = "Export to PDF", Style = menuItemStyle };
+            item3.Click += (s, args) => MessageBox.Show("Exported to PDF successfully!");
+
+            var sep = new Separator { Style = separatorStyle };
+
+            var item4 = new MenuItem { Header = "Clear Formatting", Style = menuItemStyle };
+            item4.Click += (s, args) => spread.ClearContents(); // Re-use existing Spread functionality
+
+            customMenu.Items.Add(item1);
+            customMenu.Items.Add(item2);
+            customMenu.Items.Add(item3);
+            customMenu.Items.Add(sep);
+            customMenu.Items.Add(item4);
+
+            spread.CellContextMenu = customMenu;
+        }
+
+        private void OnCustomContextMenuUnchecked(object sender, RoutedEventArgs e)
+        {
+            if (spread == null) return;
+            // Setting it to null allows the Spread control to fallback to its default context menu
+            spread.CellContextMenu = null;
+        }
     }
 }

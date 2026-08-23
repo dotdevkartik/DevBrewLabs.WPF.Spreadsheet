@@ -3,6 +3,8 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 
 namespace DevBrewLabs.WPF.Spreadsheet.Components
@@ -173,6 +175,34 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
             return null;
         }
 
+        private static T FindVisualParent<T>(DependencyObject child) where T : DependencyObject
+        {
+            while (child != null)
+            {
+                if (child is T parent)
+                    return parent;
+                child = VisualTreeHelper.GetParent(child);
+            }
+            return null;
+        }
+
+        private void OnSheetsListBoxPreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            var element = e.OriginalSource as DependencyObject;
+            var item = FindVisualParent<ListBoxItem>(element);
+            if (item != null)
+            {
+                var sheetView = item.DataContext as SheetView;
+                if (sheetView != null)
+                {
+                    _sheetsListBox.SelectedItem = sheetView;
+                    int index = _sheetsListBox.Items.IndexOf(sheetView);
+                    Spread?.ContextMenuManager?.ShowSheetTabContextMenu(sheetView, index, item);
+                    e.Handled = true;
+                }
+            }
+        }
+
         private void OnNextSheetClick(object sender, RoutedEventArgs e)
         {
             var scrollViewer = GetListBoxScrollViewer();
@@ -215,6 +245,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
             WeakEventManager<RepeatButton, RoutedEventArgs>.AddHandler(_nextButton, "Click", OnNextSheetClick);
             WeakEventManager<RepeatButton, RoutedEventArgs>.AddHandler(_previousButton, "Click", OnPreviousSheetClick);
             WeakEventManager<ListBox, SelectionChangedEventArgs>.AddHandler(_sheetsListBox, "SelectionChanged", OnSheetSelectionChanged);
+            if (_sheetsListBox != null)
+                _sheetsListBox.PreviewMouseRightButtonDown += OnSheetsListBoxPreviewMouseRightButtonDown;
 
             Dispatcher.BeginInvoke(new Action(() =>
             {
@@ -241,6 +273,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
             WeakEventManager<ListBox, SelectionChangedEventArgs>.RemoveHandler(_sheetsListBox, "SelectionChanged", OnSheetSelectionChanged);
             WeakEventManager<RepeatButton, RoutedEventArgs>.RemoveHandler(_nextButton, "Click", OnNextSheetClick);
             WeakEventManager<RepeatButton, RoutedEventArgs>.RemoveHandler(_previousButton, "Click", OnPreviousSheetClick);
+            if (_sheetsListBox != null)
+                _sheetsListBox.PreviewMouseRightButtonDown -= OnSheetsListBoxPreviewMouseRightButtonDown;
             _eventsRegistered = false;
         }
 

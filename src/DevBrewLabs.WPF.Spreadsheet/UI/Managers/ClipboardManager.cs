@@ -26,6 +26,74 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
         #region Public Methods
 
+        public void Cut(ISheetView sheetView)
+        {
+            if (sheetView == null)
+                throw new ArgumentNullException(nameof(sheetView));
+
+            Cut(sheetView, sheetView.Selection);
+        }
+
+        public void Cut(ISheetView sheetView, CellRange range)
+        {
+            if (sheetView == null || range == default || sheetView.WorkSheet == null)
+                return;
+
+            if (range.RowCount <= 0 || range.ColumnCount <= 0)
+                return;
+
+            var concreteSheetView = sheetView as SheetView;
+            if (concreteSheetView == null)
+                return;
+
+            // 1. Copy to clipboard
+            Copy(sheetView, range);
+
+            // 2. Clear cells and record undo action
+            _spread.SuspendUpdates = true;
+            try
+            {
+                var pasteAction = new ClipboardPasteAction { SheetView = concreteSheetView };
+                pasteAction.OldState.Value = concreteSheetView.WorkSheet.GetData(range.TopRow, range.LeftColumn, range.RowCount, range.ColumnCount);
+                pasteAction.OldState.Row = range.TopRow;
+                pasteAction.OldState.Column = range.LeftColumn;
+                pasteAction.OldState.Selection = concreteSheetView.Selection.Clone();
+
+                object[,] emptyData = new object[range.RowCount, range.ColumnCount];
+
+                for (int r = 0; r < range.RowCount; r++)
+                {
+                    for (int c = 0; c < range.ColumnCount; c++)
+                    {
+                        var ws = (Worksheet)concreteSheetView.WorkSheet;
+                        ws.SetValue(range.TopRow + r, range.LeftColumn + c, null);
+                        ws.SetFormula(range.TopRow + r, range.LeftColumn + c, null);
+                    }
+                }
+
+                pasteAction.NewState.Value = emptyData;
+                pasteAction.NewState.Row = range.TopRow;
+                pasteAction.NewState.Column = range.LeftColumn;
+                pasteAction.NewState.Selection = concreteSheetView.Selection.Clone();
+
+                _spread.UndoRedoManager.AddAction(pasteAction);
+            }
+            finally
+            {
+                _spread.SuspendUpdates = false;
+            }
+
+            if (concreteSheetView.AutoSizeRows)
+            {
+                for (int r = range.TopRow; r <= range.BottomRow; r++)
+                {
+                    concreteSheetView.AutoSizeRow(r);
+                }
+            }
+
+            _spread.Invalidate();
+        }
+
         public void Copy(ISheetView sheetView)
         {
             if (sheetView == null)
@@ -154,9 +222,14 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             }
         }
 
+        public bool CanCut(ISheetView sheetView)
+        {
+            return sheetView != null && sheetView.Selection.RowCount > 0 && sheetView.Selection.ColumnCount > 0;
+        }
+
         public bool CanCopy(ISheetView sheetView)
         {
-            return sheetView.Selection.RowCount > 0 && sheetView.Selection.ColumnCount > 0;
+            return sheetView != null && sheetView.Selection.RowCount > 0 && sheetView.Selection.ColumnCount > 0;
         }
 
         public bool CanPaste(ISheetView sheetView)

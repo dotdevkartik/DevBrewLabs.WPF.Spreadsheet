@@ -41,6 +41,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             }
 
             var sheetView = (SheetView)_spread.Sheets.GetSheetView(args.Worksheet);
+            if(sheetView == null)
+            {
+                return;
+            }
             sheetView.ViewPort.CalculateVisibleRange();
             _spread.SheetTabControl.UpdateScrollbars();
             Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => _spread.Invalidate()));
