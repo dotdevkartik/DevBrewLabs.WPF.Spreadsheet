@@ -40,13 +40,15 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 return;
             }
 
+            var sheetView = (SheetView)_spread.Sheets.GetSheetView(args.Worksheet);
+            sheetView.ViewPort.CalculateVisibleRange();
             _spread.SheetTabControl.UpdateScrollbars();
             Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => _spread.Invalidate()));
         }
 
         public void CellChanged(CellChangedEventArgs args)
         {
-            var sheetView = (SheetView)_spread.SheetViews.GetSheetView(args.Worksheet);
+            var sheetView = (SheetView)_spread.Sheets.GetSheetView(args.Worksheet);
 
             if (!sheetView.ViewPort.ViewRange.ContainsCell(args.Row, args.Column))
                 return;
@@ -68,7 +70,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
         public void RangeChanged(RangeChangedEventArgs args)
         {
-            var sheetView = (SheetView)_spread.SheetViews.GetSheetView(args.Worksheet);
+            var sheetView = (SheetView)_spread.Sheets.GetSheetView(args.Worksheet);
 
             if (!sheetView.ViewPort.ViewRange.Intersects(args.Range))
             {
@@ -85,7 +87,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
         public void ColumnChanged(ColumnChangedEventArgs args)
         {
-            var sheetView = (SheetView)_spread.SheetViews.GetSheetView(args.Worksheet);
+            var sheetView = (SheetView)_spread.Sheets.GetSheetView(args.Worksheet);
 
             switch (args.Region)
             {
@@ -130,7 +132,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
         public void RowChanged(RowChangedEventArgs args)
         {
-            var sheetView = (SheetView)_spread.SheetViews.GetSheetView(args.Worksheet);
+            var sheetView = (SheetView)_spread.Sheets.GetSheetView(args.Worksheet);
 
             switch (args.Region)
             {
@@ -179,7 +181,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
         public void OnFilterChanged(FilterChangedEventArgs args)
         {
-            var sheetView = (SheetView)_spread.SheetViews.GetSheetView(args.Worksheet);
+            var sheetView = (SheetView)_spread.Sheets.GetSheetView(args.Worksheet);
             if (sheetView == null) return;
             
             sheetView.ViewPort.ResetRowLocations();

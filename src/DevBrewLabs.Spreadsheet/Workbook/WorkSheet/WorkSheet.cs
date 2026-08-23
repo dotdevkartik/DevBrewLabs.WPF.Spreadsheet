@@ -183,6 +183,7 @@ namespace DevBrewLabs.Spreadsheet
                 InitializeDataStore(value);
             }
         }
+        public bool IsBound => _dataStore != null && _dataStore.IsBound;
         public bool HasSpans => _spanManager.HasSpans;
         public IRows Rows => _rows;
         public IColumns Columns => _columns;
@@ -205,14 +206,15 @@ namespace DevBrewLabs.Spreadsheet
             _columnHeaders = new ColumnHeaders(this);
             _cells = new Cells(this);
             RowCount = ColumnCount = 500;
-            _dataStore = new WorkSheetDataStore(this);
             _spanManager = new SpanManager();
+            InitializeDataStore(null);
         }
 
         public IDataMap GetDataMap(int row, int column)
         {
+            int dataRow = _dataStore.GetDataRowIndex(row);
             var colData = _dataStore.GetColumnData(column, false);
-            return colData?.GetDataMap(row);
+            return colData?.GetDataMap(dataRow);
         }
 
         public void SetDataMap(int row, int column, IDataMap dataMap)
@@ -222,14 +224,16 @@ namespace DevBrewLabs.Spreadsheet
             {
                 return;
             }
+            int dataRow = _dataStore.GetDataRowIndex(row);
             var colData = _dataStore.GetColumnData(column, true);
-            colData.SetDataMap(row, dataMap);
+            colData.SetDataMap(dataRow, dataMap);
         }
 
         public IStyle GetStyle(int row, int column)
         {
+            int dataRow = _dataStore.GetDataRowIndex(row);
             var colData = _dataStore.GetColumnData(column, false);
-            ushort? styleId = colData?.GetStyleId(row);
+            ushort? styleId = colData?.GetStyleId(dataRow);
 
             if (!styleId.HasValue)
             {
@@ -248,9 +252,9 @@ namespace DevBrewLabs.Spreadsheet
             }
 
             ushort styleId = _workBook.StylePalette.GetOrAdd(style);
-
+            int dataRow = _dataStore.GetDataRowIndex(row);
             var colData = _dataStore.GetColumnData(column, true);
-            colData.SetStyleId(row, styleId);
+            colData.SetStyleId(dataRow, styleId);
 
             OnCellChanged(new CellChangedEventArgs(
                     SheetRegion.Cells,
@@ -264,8 +268,9 @@ namespace DevBrewLabs.Spreadsheet
 
         public string GetStyleName(int row, int column)
         {
+            int dataRow = _dataStore.GetDataRowIndex(row);
             var colData = _dataStore.GetColumnData(column, false);
-            return colData?.GetStyleName(row);
+            return colData?.GetStyleName(dataRow);
         }
 
         public void SetStyleName(int row, int column, string styleName)
@@ -277,8 +282,9 @@ namespace DevBrewLabs.Spreadsheet
                 return;
             }
 
+            int dataRow = _dataStore.GetDataRowIndex(row);
             var colData = _dataStore.GetColumnData(column, true);
-            colData.SetStyleName(row, styleName);
+            colData.SetStyleName(dataRow, styleName);
 
             OnCellChanged(new CellChangedEventArgs(
                     SheetRegion.Cells,
@@ -332,22 +338,24 @@ namespace DevBrewLabs.Spreadsheet
 
         public string GetFormula(int row, int column)
         {
+            int dataRow = _dataStore.GetDataRowIndex(row);
             var colData = _dataStore.GetColumnData(column, false);
-            return colData?.GetFormula(row);
+            return colData?.GetFormula(dataRow);
         }
 
         public void SetFormula(int row, int column, string formula)
         {
+            int dataRow = _dataStore.GetDataRowIndex(row);
             var colData = _dataStore.GetColumnData(column, true);
-            var existingFormula = colData.GetFormula(row);
+            var existingFormula = colData.GetFormula(dataRow);
 
             if (existingFormula == formula)
             {
                 return;
             }
 
-            colData.SetFormula(row, formula);
-            colData.SetValue(row, null);
+            colData.SetFormula(dataRow, formula);
+            colData.SetValue(dataRow, null);
 
             _workBook.RaiseFormulaChanged(new FormulaChangedEventArgs()
             {
@@ -370,8 +378,9 @@ namespace DevBrewLabs.Spreadsheet
 
         public IFormatter GetFormatter(int row, int column)
         {
+            int dataRow = _dataStore.GetDataRowIndex(row);
             var colData = _dataStore.GetColumnData(column, false);
-            return colData?.GetFormatter(row);
+            return colData?.GetFormatter(dataRow);
         }
 
         public void SetFormatter(int row, int column, IFormatter formatter)
@@ -383,14 +392,16 @@ namespace DevBrewLabs.Spreadsheet
                 return;
             }
 
+            int dataRow = _dataStore.GetDataRowIndex(row);
             var colData = _dataStore.GetColumnData(column, true);
-            colData.SetFormatter(row, formatter);
+            colData.SetFormatter(dataRow, formatter);
         }
 
         public bool GetLocked(int row, int column)
         {
+            int dataRow = _dataStore.GetDataRowIndex(row);
             var colData = _dataStore.GetColumnData(column, false);
-            return colData?.GetLocked(row) ?? false;
+            return colData?.GetLocked(dataRow) ?? false;
         }
 
         public void SetLocked(int row, int column, bool locked)
@@ -401,14 +412,16 @@ namespace DevBrewLabs.Spreadsheet
                 return;
             }
 
+            int dataRow = _dataStore.GetDataRowIndex(row);
             var colData = _dataStore.GetColumnData(column, true);
-            colData.SetLocked(row, locked);
+            colData.SetLocked(dataRow, locked);
         }
 
         public ICellType GetCellType(int row, int column)
         {
+            int dataRow = _dataStore.GetDataRowIndex(row);
             var colData = _dataStore.GetColumnData(column, false);
-            return colData?.GetCellType(row);
+            return colData?.GetCellType(dataRow);
         }
 
         public void SetCellType(int row, int column, ICellType cellType)
@@ -418,14 +431,16 @@ namespace DevBrewLabs.Spreadsheet
             {
                 return;
             }
+            int dataRow = _dataStore.GetDataRowIndex(row);
             var colData = _dataStore.GetColumnData(column, true);
-            colData.SetCellType(row, cellType);
+            colData.SetCellType(dataRow, cellType);
         }
 
         public int GetRowSpan(int row, int column)
         {
+            int dataRow = _dataStore.GetDataRowIndex(row);
             var colData = _dataStore.GetColumnData(column, false);
-            return colData?.GetRowSpan(row) ?? 0;
+            return colData?.GetRowSpan(dataRow) ?? 0;
         }
 
         public void SetRowSpan(int row, int column, int rowSpan)
@@ -435,8 +450,9 @@ namespace DevBrewLabs.Spreadsheet
             {
                 return;
             }
+            int dataRow = _dataStore.GetDataRowIndex(row);
             var colData = _dataStore.GetColumnData(column, true);
-            colData.SetRowSpan(row, rowSpan);
+            colData.SetRowSpan(dataRow, rowSpan);
 
             if (rowSpan > 1)
             {
@@ -452,8 +468,9 @@ namespace DevBrewLabs.Spreadsheet
 
         public int GetColumnSpan(int row, int column)
         {
+            int dataRow = _dataStore.GetDataRowIndex(row);
             var colData = _dataStore.GetColumnData(column, false);
-            return colData?.GetColumnSpan(row) ?? 0;
+            return colData?.GetColumnSpan(dataRow) ?? 0;
         }
 
         public void SetColumnSpan(int row, int column, int columnSpan)
@@ -463,8 +480,9 @@ namespace DevBrewLabs.Spreadsheet
             {
                 return;
             }
+            int dataRow = _dataStore.GetDataRowIndex(row);
             var colData = _dataStore.GetColumnData(column, true);
-            colData.SetColumnSpan(row, columnSpan);
+            colData.SetColumnSpan(dataRow, columnSpan);
 
             if (columnSpan > 1)
             {
@@ -485,9 +503,10 @@ namespace DevBrewLabs.Spreadsheet
 
             _spanManager.AddSpan(row, column, rowCount, columnCount);
 
+            int dataRow = _dataStore.GetDataRowIndex(row);
             var colData = _dataStore.GetColumnData(column, true);
-            colData.SetRowSpan(row, rowCount);
-            colData.SetColumnSpan(row, columnCount);
+            colData.SetRowSpan(dataRow, rowCount);
+            colData.SetColumnSpan(dataRow, columnCount);
 
             ClearCoveredCells(row, column, rowCount, columnCount);
 
@@ -507,9 +526,10 @@ namespace DevBrewLabs.Spreadsheet
 
             _spanManager.RemoveSpan(row, column);
 
+            int dataRow = _dataStore.GetDataRowIndex(row);
             var colData = _dataStore.GetColumnData(column, true);
-            colData.SetRowSpan(row, 0);
-            colData.SetColumnSpan(row, 0);
+            colData.SetRowSpan(dataRow, 0);
+            colData.SetColumnSpan(dataRow, 0);
 
             OnRangeChanged(new RangeChangedEventArgs(
                      SheetRegion.Cells,
@@ -549,14 +569,16 @@ namespace DevBrewLabs.Spreadsheet
 
         public object GetMetadata(int row, int column)
         {
+            int dataRow = _dataStore.GetDataRowIndex(row);
             var colData = _dataStore.GetColumnData(column, false);
-            return colData?.GetMetaData(row);
+            return colData?.GetMetaData(dataRow);
         }
 
         public void SetMetadata(int row, int column, object metadata)
         {
+            int dataRow = _dataStore.GetDataRowIndex(row);
             var colData = _dataStore.GetColumnData(column, true);
-            colData.SetMetaData(row, metadata);
+            colData.SetMetaData(dataRow, metadata);
         }
 
         public void SortRange(CellRange range, SortOptions options)
@@ -675,93 +697,123 @@ namespace DevBrewLabs.Spreadsheet
             if (sortRowCount <= 1)
                 return;
 
-            int minCol = int.MaxValue;
-            int maxCol = int.MinValue;
-            foreach (var level in options.SortLevels)
+            bool isBound = IsBound;
+            if (isBound)
             {
-                if (level.ColumnIndex < minCol) minCol = level.ColumnIndex;
-                if (level.ColumnIndex > maxCol) maxCol = level.ColumnIndex;
-            }
-
-            if (minCol == int.MaxValue)
-            {
-                minCol = startCol;
-                maxCol = startCol;
-            }
-
-            int targetStartCol = options.SortColumnOnly ? minCol : startCol;
-            int targetEndCol = options.SortColumnOnly ? maxCol : (startCol + totalCols - 1);
-
-            List<RowSnapshot> snapshots = new List<RowSnapshot>(sortRowCount);
-
-            for (int r = sortStartRow; r < sortStartRow + sortRowCount; r++)
-            {
-                var snapshot = new RowSnapshot(r, null);
-
-                for (int c = targetStartCol; c <= targetEndCol; c++)
+                int maxBoundRow = _dataStore.CollectionCount - 1;
+                if (sortStartRow <= maxBoundRow && (sortStartRow + sortRowCount - 1) > maxBoundRow)
                 {
-                    var colData = _dataStore.GetColumnData(c, false);
-                    if (colData != null)
+                    sortRowCount = maxBoundRow - sortStartRow + 1;
+                    if (sortRowCount <= 1) return;
+                }
+
+                // Bound sorting always reorders entire rows to preserve object integrity
+                options.SortColumnOnly = false;
+            }
+
+            if (!options.SortColumnOnly)
+            {
+                int fullRowCount = RowCount;
+                int[] rowMap = _dataStore.GetRowMap();
+                if (rowMap == null || rowMap.Length != fullRowCount)
+                {
+                    rowMap = new int[fullRowCount];
+                    for (int i = 0; i < fullRowCount; i++) rowMap[i] = i;
+                }
+                else
+                {
+                    rowMap = (int[])rowMap.Clone();
+                }
+
+                int[] subIndices = new int[sortRowCount];
+                for (int i = 0; i < sortRowCount; i++)
+                {
+                    subIndices[i] = rowMap[sortStartRow + i];
+                }
+
+                Array.Sort(subIndices, new VirtualRowIndexComparer(options, this));
+
+                for (int i = 0; i < sortRowCount; i++)
+                {
+                    rowMap[sortStartRow + i] = subIndices[i];
+                }
+
+                _dataStore.SetRowMap(rowMap);
+
+                OnRangeChanged(new RangeChangedEventArgs(
+                    SheetRegion.Cells,
+                    this,
+                    new CellRange(sortStartRow, 0, sortRowCount, ColumnCount),
+                    null, null,
+                    RangeChangeType.Sort
+                ));
+            }
+            else
+            {
+                int targetStartCol = startCol;
+                int targetEndCol = startCol + totalCols - 1;
+
+                List<RowSnapshot> snapshots = new List<RowSnapshot>(sortRowCount);
+
+                for (int r = sortStartRow; r < sortStartRow + sortRowCount; r++)
+                {
+                    int dataRow = _dataStore.GetDataRowIndex(r);
+                    var snapshot = new RowSnapshot(r, null);
+
+                    for (int c = targetStartCol; c <= targetEndCol; c++)
                     {
-                        var cellData = colData.GetCellData(r);
-                        snapshot.Data[c] = cellData;
+                        var colData = _dataStore.GetColumnData(c, false);
+                        if (colData != null)
+                        {
+                            var cellData = colData.GetCellData(dataRow);
+                            snapshot.Data[c] = cellData;
+                        }
+                    }
+
+                    snapshots.Add(snapshot);
+                }
+
+                snapshots.Sort(new MultiLevelSnapshotComparer(options, this));
+
+                for (int i = 0; i < snapshots.Count; i++)
+                {
+                    int targetVisualRow = sortStartRow + i;
+                    int targetDataRow = _dataStore.GetDataRowIndex(targetVisualRow);
+                    var snapshot = snapshots[i];
+
+                    for (int c = targetStartCol; c <= targetEndCol; c++)
+                    {
+                        var colData = _dataStore.GetColumnData(c, true);
+                        if (snapshot.Data.TryGetValue(c, out var cellData))
+                        {
+                            colData.SetCellData(targetDataRow, cellData);
+                        }
+                        else
+                        {
+                            colData.ClearRow(targetDataRow);
+                        }
                     }
                 }
 
-                snapshots.Add(snapshot);
+                OnRangeChanged(new RangeChangedEventArgs(
+                     SheetRegion.Cells,
+                     this,
+                    new CellRange(sortStartRow, targetStartCol, sortRowCount, targetEndCol - targetStartCol + 1),
+                    null, null,
+                    RangeChangeType.Sort
+                ));
             }
-
-            snapshots.Sort(new MultiLevelSnapshotComparer(options, this));
-
-            for (int i = 0; i < snapshots.Count; i++)
-            {
-                int targetRow = sortStartRow + i;
-                var snapshot = snapshots[i];
-
-                for (int c = targetStartCol; c <= targetEndCol; c++)
-                {
-                    var colData = _dataStore.GetColumnData(c, true);
-                    if (snapshot.Data.TryGetValue(c, out var cellData))
-                    {
-                        colData.SetCellData(targetRow, cellData);
-
-                        if (DataSource != null)
-                            SetValue(targetRow, c, cellData.Value);
-                    }
-                    else
-                    {
-                        colData.ClearRow(targetRow);
-                        if (DataSource != null)
-                            SetValue(targetRow, c, null);
-                    }
-                }
-            }
-
-            OnRangeChanged(new RangeChangedEventArgs(
-                 SheetRegion.Cells,
-                 this,
-                new CellRange(sortStartRow, targetStartCol, sortRowCount, targetEndCol - targetStartCol + 1),
-                null, null,
-                RangeChangeType.Sort
-            ));
         }
 
         private void InitializeDataStore(object dataSource)
         {
-            if(dataSource == null && _dataStore != null)
-            {
-                _dataStore.Dispose();
-                _dataStore = null;
-                return;
-            }
-
             if(_dataStore != null)
             {
                 _dataStore.Dispose();
                 _dataStore = null;
             }
 
-            _dataStore = new WorkSheetDataStore(this, dataSource);          
+            _dataStore = dataSource != null ? new WorkSheetDataStore(this, dataSource) : new WorkSheetDataStore(this);      
         }
 
         public void Dispose()
@@ -863,9 +915,12 @@ namespace DevBrewLabs.Spreadsheet
             private Worksheet _workSheet;
             private DataCollection _collection;
             private Dictionary<int, ColumnData> _columnStore;
+            private int[] _rowMap;
 
             public object ActualDataSource { get; private set; }
             public bool IsValid { get; private set; }
+            public bool IsBound => IsValid && ActualDataSource != null && _collection?.DataSourceType != DataSourceType.NotSupported;
+            public int CollectionCount => _collection?.Count ?? 0;
 
             internal WorkSheetDataStore(Worksheet worksheet)
             {
@@ -883,11 +938,13 @@ namespace DevBrewLabs.Spreadsheet
             private void InitializeUnboundDataStore()
             {
                 IsValid = true;
+                _rowMap = null;
             }
 
             private void InitializeBoundDataStore(object dataSource)
             {
                 IsValid = false;
+                _rowMap = null;
                 _collection = new DataCollection(dataSource);
 
                 if (_collection.DataSourceType != DataSourceType.NotSupported)
@@ -900,6 +957,74 @@ namespace DevBrewLabs.Spreadsheet
                     ActualDataSource = dataSource;
             }
 
+            public int GetDataRowIndex(int visualRow)
+            {
+                if (_rowMap != null && visualRow >= 0 && visualRow < _rowMap.Length)
+                    return _rowMap[visualRow];
+
+                return visualRow;
+            }
+
+            public int GetVisualRowIndex(int dataRow)
+            {
+                if (_rowMap == null) return dataRow;
+                return Array.IndexOf(_rowMap, dataRow);
+            }
+
+            public int[] GetRowMap() => _rowMap;
+
+            public void SetRowMap(int[] rowMap)
+            {
+                _rowMap = rowMap;
+            }
+
+            public void ResetRowMap()
+            {
+                _rowMap = null;
+            }
+
+            /// <summary>
+            /// Gets the raw cell value for a given data row (for sorting evaluation).
+            /// </summary>
+            public object GetRawValueForDataRow(int dataRow, int column)
+            {
+                var colData = GetColumnData(column, false);
+                object value = colData?.GetValue(dataRow);
+
+                if (value != null)
+                {
+                    return DataTypeConverter.ConvertType(value);
+                }
+
+                if (colData?.GetFormula(dataRow) != null)
+                {
+                    int visualRow = GetVisualRowIndex(dataRow);
+                    var result = _workSheet.WorkBook.CalcEngine.GetValue(_workSheet.Name, visualRow, column) as CalcValue;
+                    return result?.Value;
+                }
+
+                if (IsValid && ActualDataSource != null && dataRow <= _collection.Count - 1)
+                {
+                    var sheetColumn = ((Columns)_workSheet.Columns).GetItem(column);
+                    var dataMap = colData?.GetDataMap(dataRow) ?? sheetColumn?.DataMap;
+                    if (dataMap != null && dataMap is PropertyDataMap propertyDataMap
+                        && !string.IsNullOrEmpty(propertyDataMap.PropertyName))
+                    {
+                        var item = _collection.GetItemAt(dataRow);
+                        var prop = _collection.GetPropertyInfo(propertyDataMap.PropertyName);
+                        return DataTypeConverter.ConvertType(prop?.GetValue(item));
+                    }
+                    else if (dataMap != null && dataMap is DataColumnDataMap dataColumnMap
+                        && !string.IsNullOrEmpty(dataColumnMap.ColumnName))
+                    {
+                        var item = _collection.GetItemAt(dataRow) as DataRow;
+                        return DataTypeConverter.ConvertType(item?[dataColumnMap.ColumnName]);
+                    }
+                }
+
+                return null;
+            }
+
             /// <summary>
             /// Gets the cell value. If the cell has a formula, it will return the calculated value.
             /// </summary>
@@ -908,8 +1033,9 @@ namespace DevBrewLabs.Spreadsheet
             /// <returns></returns>
             public object GetValue(int row, int column)
             {
+                int dataRow = GetDataRowIndex(row);
                 var colData = GetColumnData(column, false);
-                object value = colData?.GetValue(row);
+                object value = colData?.GetValue(dataRow);
 
                 if (value != null)
                 {
@@ -917,11 +1043,11 @@ namespace DevBrewLabs.Spreadsheet
                     return value;
                 }
 
-                if (colData?.GetFormula(row) != null)
+                if (colData?.GetFormula(dataRow) != null)
                 {
                     var result = _workSheet.WorkBook.CalcEngine.GetValue(_workSheet.Name, row, column) as CalcValue;
 
-                    if (result.Kind == CalcValueKind.Error)
+                    if (result != null && result.Kind == CalcValueKind.Error)
                     {
                         switch (((Error)result.Value).Code)
                         {
@@ -945,23 +1071,24 @@ namespace DevBrewLabs.Spreadsheet
                         }
                     }
 
-                    return result.Value;
+                    return result?.Value;
                 }
-                else if (IsValid && ActualDataSource != null && row <= _collection.Count - 1)
+                else if (IsValid && ActualDataSource != null && dataRow <= _collection.Count - 1)
                 {
                     var sheetColumn = ((Columns)_workSheet.Columns).GetItem(column);
-                    var dataMap = colData?.GetDataMap(row) ?? sheetColumn?.DataMap;
+                    var dataMap = colData?.GetDataMap(dataRow) ?? sheetColumn?.DataMap;
                     if (dataMap != null && dataMap is PropertyDataMap propertyDataMap
                         && !string.IsNullOrEmpty(propertyDataMap.PropertyName))
                     {
-                        var item = _collection.GetItemAt(row);
-                        return DataTypeConverter.ConvertType(_collection.GetPropertyInfo(propertyDataMap.PropertyName).GetValue(item));
+                        var item = _collection.GetItemAt(dataRow);
+                        var prop = _collection.GetPropertyInfo(propertyDataMap.PropertyName);
+                        return DataTypeConverter.ConvertType(prop?.GetValue(item));
                     }
                     else if (dataMap != null && dataMap is DataColumnDataMap dataColumnMap
                         && !string.IsNullOrEmpty(dataColumnMap.ColumnName))
                     {
-                        var item = _collection.GetItemAt(row) as DataRow;
-                        return DataTypeConverter.ConvertType(item[dataColumnMap.ColumnName]);
+                        var item = _collection.GetItemAt(dataRow) as DataRow;
+                        return DataTypeConverter.ConvertType(item?[dataColumnMap.ColumnName]);
                     }
                 }
 
@@ -976,24 +1103,25 @@ namespace DevBrewLabs.Spreadsheet
             /// <param name="value"></param>
             public void SetValue(int row, int column, object value)
             {
+                int dataRow = GetDataRowIndex(row);
                 var sheetColumn = _workSheet.Columns[column];
-                var dataMap = _workSheet.GetDataMap(row, column) ?? sheetColumn?.DataMap;
+                var colData = GetColumnData(column, true);
+                var dataMap = colData.GetDataMap(dataRow) ?? sheetColumn?.DataMap;
 
-                if (_collection != null && row >= _collection.Count)
+                if (_collection != null && dataRow >= _collection.Count)
                     dataMap = null;
 
                 if (dataMap != null)
                 {
                     if (dataMap is PropertyDataMap propertyDataMap)
-                        SetPropertyValue(row, column, propertyDataMap, value);
+                        SetPropertyValue(dataRow, column, propertyDataMap, value);
                     else if (dataMap is DataColumnDataMap dataColumnMap)
-                        SetDataTableCellValue(row, column, dataColumnMap, value);
+                        SetDataTableCellValue(dataRow, column, dataColumnMap, value);
                 }
                 else
                 {
-                    var colData = GetColumnData(column, true);
-                    colData.SetValue(row, value);
-                    colData.SetFormatter(row, null);
+                    colData.SetValue(dataRow, value);
+                    colData.SetFormatter(dataRow, null);
                 }
             }
 
@@ -1015,16 +1143,12 @@ namespace DevBrewLabs.Spreadsheet
             /// <summary>
             /// Sets the value of cell bound to an object
             /// </summary>
-            /// <param name="row"></param>
-            /// <param name="column"></param>
-            /// <param name="map"></param>
-            /// <param name="value"></param>
-            private void SetPropertyValue(int row, int column, PropertyDataMap map, object value)
+            private void SetPropertyValue(int dataRow, int column, PropertyDataMap map, object value)
             {
-                var item = _collection.GetItemAt(row);
+                var item = _collection.GetItemAt(dataRow);
                 var propertyInfo = _collection.GetPropertyInfo(map.PropertyName);
 
-                if(propertyInfo.SetMethod == null)
+                if (propertyInfo.SetMethod == null)
                 {
                     return;
                 }
@@ -1034,22 +1158,19 @@ namespace DevBrewLabs.Spreadsheet
                     value = TryConvertType(value, propertyInfo.PropertyType);
                     propertyInfo.SetValue(item, value);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
-                    _workSheet.OnCellValueSetFailed(new CellValueSetFailedEventArgs(row, column, value, ex));
+                    int visualRow = GetVisualRowIndex(dataRow);
+                    _workSheet.OnCellValueSetFailed(new CellValueSetFailedEventArgs(visualRow, column, value, ex));
                 }
             }
 
             /// <summary>
             /// Sets the value of cell bound to DataTable.
             /// </summary>
-            /// <param name="row"></param>
-            /// <param name="column"></param>
-            /// <param name="map"></param>
-            /// <param name="value"></param>
-            private void SetDataTableCellValue(int row, int column, DataColumnDataMap map, object value)
+            private void SetDataTableCellValue(int dataRow, int column, DataColumnDataMap map, object value)
             {
-                var item = _collection.GetItemAt(row) as DataRow;
+                var item = _collection.GetItemAt(dataRow) as DataRow;
                 var type = item.Table.Columns[map.ColumnName].DataType;
 
                 try
@@ -1059,15 +1180,17 @@ namespace DevBrewLabs.Spreadsheet
                     item[map.ColumnName] = value;
                     item.EndEdit();
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
-                    _workSheet.OnCellValueSetFailed(new CellValueSetFailedEventArgs(row, column, value, ex));
+                    int visualRow = GetVisualRowIndex(dataRow);
+                    _workSheet.OnCellValueSetFailed(new CellValueSetFailedEventArgs(visualRow, column, value, ex));
                 }
             }
 
             private object TryConvertType(object value, Type targetType)
             {
-                if(value.GetType() == targetType)
+                if (value == null) return null;
+                if (value.GetType() == targetType)
                 {
                     return value;
                 }
@@ -1081,11 +1204,59 @@ namespace DevBrewLabs.Spreadsheet
                 _collection = null;
                 ActualDataSource = null;
                 _columnStore = null;
+                _rowMap = null;
             }
         }
         #endregion
 
         #region private
+        private class VirtualRowIndexComparer : IComparer<int>
+        {
+            private readonly SortOptions _options;
+            private readonly NaturalSortComparer _defaultComparer;
+            private readonly Worksheet _sheet;
+
+            public VirtualRowIndexComparer(SortOptions options, Worksheet sheet)
+            {
+                _options = options;
+                _sheet = sheet;
+                _defaultComparer = new NaturalSortComparer(options.MatchCase);
+            }
+
+            public int Compare(int dataRowA, int dataRowB)
+            {
+                if (dataRowA == dataRowB) return 0;
+
+                foreach (var level in _options.SortLevels)
+                {
+                    object valA = _sheet._dataStore.GetRawValueForDataRow(dataRowA, level.ColumnIndex);
+                    object valB = _sheet._dataStore.GetRawValueForDataRow(dataRowB, level.ColumnIndex);
+
+                    int result;
+                    if (level.CustomComparer != null)
+                    {
+                        result = level.CustomComparer.Compare(valA, valB);
+                    }
+                    else
+                    {
+                        result = _defaultComparer.Compare(valA, valB);
+                    }
+
+                    if (result != 0)
+                    {
+                        if (NaturalSortComparer.IsBlank(valA) || NaturalSortComparer.IsBlank(valB))
+                        {
+                            return result;
+                        }
+
+                        return level.Ascending ? result : -result;
+                    }
+                }
+
+                return dataRowA.CompareTo(dataRowB);
+            }
+        }
+
         private struct RowSnapshot
         {
             public int OriginalRow { get; }
@@ -1132,6 +1303,11 @@ namespace DevBrewLabs.Spreadsheet
 
                     if (result != 0)
                     {
+                        if (NaturalSortComparer.IsBlank(valX) || NaturalSortComparer.IsBlank(valY))
+                        {
+                            return result;
+                        }
+
                         return level.Ascending ? result : -result;
                     }
                 }

@@ -48,7 +48,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             get => _zoomFactor;
             set
             {
-                if (Spread?.ZoomManager != null && Spread.SheetViews?.ActiveSheetView == this)
+                if (Spread?.ZoomManager != null && Spread.Sheets?.ActiveSheet == this)
                 {
                     Spread.ZoomManager.SetZoom(value);
                 }

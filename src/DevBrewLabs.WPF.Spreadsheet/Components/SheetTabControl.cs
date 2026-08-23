@@ -51,7 +51,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
             _nextButton = GetTemplateChild("_btnNext").As<RepeatButton>();
             _addButton = GetTemplateChild("_btnAddSheet").As<Button>();
             RegisterInternalEventHandlers();
-            _sheetsListBox.ItemsSource = Spread.SheetViews;
+            _sheetsListBox.ItemsSource = Spread.Sheets;
             _sheetsListBox.SelectedIndex = 0;
         }
 
@@ -249,7 +249,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
         /// </summary>
         internal void UpdateScrollbars()
         {
-            var sheetView = (SheetView)Spread.SheetViews.ActiveSheetView;
+            var sheetView = (SheetView)Spread.Sheets.ActiveSheet;
             var sheet = sheetView.WorkSheet;
             var columns = (Columns)sheet.Columns;
             var rows = (Rows)sheet.Rows;
@@ -313,7 +313,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
             if (_vScrollBar.Track.Thumb.IsDragging && Spread.ScrollMode == SheetScrollMode.Deferred)
                 return;
 
-            Spread.SheetViews.ActiveSheetView.ScrollToVerticalOffset(e.NewValue);
+            Spread.Sheets.ActiveSheet.ScrollToVerticalOffset(e.NewValue);
         }
 
         private void OnHorizontalScrollBarValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -321,14 +321,14 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
             if (_hScrollBar.Track.Thumb.IsDragging && Spread.ScrollMode == SheetScrollMode.Deferred)
                 return;
 
-            Spread.SheetViews.ActiveSheetView.ScrollToHorizontalOffset(e.NewValue);
+            Spread.Sheets.ActiveSheet.ScrollToHorizontalOffset(e.NewValue);
         }
 
         private void OnHorizontalScrollDragCompleted(object sender, DragCompletedEventArgs e)
         {
             if (Spread.ScrollMode == SheetScrollMode.Deferred)
             {
-                Spread.SheetViews.ActiveSheetView.ScrollToHorizontalOffset(_hScrollBar.Value);
+                Spread.Sheets.ActiveSheet.ScrollToHorizontalOffset(_hScrollBar.Value);
             }
         }
 
@@ -336,7 +336,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
         {
             if (Spread.ScrollMode == SheetScrollMode.Deferred)
             {
-                Spread.SheetViews.ActiveSheetView.ScrollToVerticalOffset(_vScrollBar.Value);
+                Spread.Sheets.ActiveSheet.ScrollToVerticalOffset(_vScrollBar.Value);
             }
         }
         #endregion

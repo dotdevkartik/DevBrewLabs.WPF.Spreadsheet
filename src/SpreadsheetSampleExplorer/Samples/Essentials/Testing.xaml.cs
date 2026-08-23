@@ -13,7 +13,7 @@ namespace SpreadsheetSampleExplorer
         {
             InitializeComponent();
             spread.MouseDoubleClick += Spread_MouseDoubleClick;
-            var worksheet = spread.SheetViews.ActiveSheetView.WorkSheet;
+            var worksheet = spread.Sheets.ActiveSheet.WorkSheet;
             spread.ScrollMode = SheetScrollMode.Pixel;
         }
 
@@ -22,7 +22,7 @@ namespace SpreadsheetSampleExplorer
             var hitTest = spread.HitTest(e.GetPosition(spread));
             if (hitTest != null && hitTest.Element == VisualElement.ColumnHeader)
             {
-                spread.SheetViews.ActiveSheetView.AutoSizeColumn(hitTest.Column);
+                spread.Sheets.ActiveSheet.AutoSizeColumn(hitTest.Column);
             }
         }
 

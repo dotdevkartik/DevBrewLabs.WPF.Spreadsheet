@@ -89,6 +89,10 @@ namespace DevBrewLabs.Spreadsheet
         /// </summary>
         object DataSource { get; set; }
         /// <summary>
+        /// Gets whether the worksheet is currently bound to a data source.
+        /// </summary>
+        bool IsBound { get; }
+        /// <summary>
         /// Gets the range data.
         /// </summary>
         /// <param name="range"></param>

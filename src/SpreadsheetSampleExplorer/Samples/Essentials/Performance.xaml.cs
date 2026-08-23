@@ -49,7 +49,7 @@ namespace SpreadsheetSampleExplorer.Samples
 
             // 1. Data Preparation
             var swPrep = Stopwatch.StartNew();
-            var worksheet = spread.SheetViews.ActiveSheetView.WorkSheet;
+            var worksheet = spread.Sheets.ActiveSheet.WorkSheet;
             worksheet.RowCount = rowCount;
             worksheet.ColumnCount = colCount;
 

@@ -65,7 +65,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         {
             var spread = new Spread();
             var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
-            var view = (SheetView)spread.SheetViews.ActiveSheetView;
+            var view = (SheetView)spread.Sheets.ActiveSheet;
             var viewPort = (ViewPort)view.ViewPort;
 
             ws.DefaultRowHeight = 20;
@@ -91,7 +91,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         {
             var spread = new Spread();
             var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
-            var view = (SheetView)spread.SheetViews.ActiveSheetView;
+            var view = (SheetView)spread.Sheets.ActiveSheet;
             var manager = (RowResizeManager)spread.RowResizeManager;
 
             ws.DefaultRowHeight = 20;
@@ -111,7 +111,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         {
             var spread = new Spread();
             var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
-            var view = (SheetView)spread.SheetViews.ActiveSheetView;
+            var view = (SheetView)spread.Sheets.ActiveSheet;
             var manager = (RowResizeManager)spread.RowResizeManager;
 
             ws.DefaultRowHeight = 20;
@@ -135,7 +135,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         {
             var spread = new Spread();
             var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
-            var view = (SheetView)spread.SheetViews.ActiveSheetView;
+            var view = (SheetView)spread.Sheets.ActiveSheet;
             var manager = (RowResizeManager)spread.RowResizeManager;
 
             ws.DefaultRowHeight = 20;
@@ -162,7 +162,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         {
             var spread = new Spread();
             var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
-            var view = (SheetView)spread.SheetViews.ActiveSheetView;
+            var view = (SheetView)spread.Sheets.ActiveSheet;
             var manager = (RowResizeManager)spread.RowResizeManager;
 
             ws.DefaultRowHeight = 20;
@@ -188,7 +188,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         {
             var spread = new Spread();
             var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
-            var view = (SheetView)spread.SheetViews.ActiveSheetView;
+            var view = (SheetView)spread.Sheets.ActiveSheet;
             var manager = (RowResizeManager)spread.RowResizeManager;
 
             ws.DefaultRowHeight = 20;
@@ -214,7 +214,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         {
             var spread = new Spread();
             var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
-            var view = (SheetView)spread.SheetViews.ActiveSheetView;
+            var view = (SheetView)spread.Sheets.ActiveSheet;
             var manager = (ColumnResizeManager)spread.ColumnResizeManager;
 
             ws.DefaultColumnWidth = 80;
@@ -234,7 +234,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         {
             var spread = new Spread();
             var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
-            var view = (SheetView)spread.SheetViews.ActiveSheetView;
+            var view = (SheetView)spread.Sheets.ActiveSheet;
             var manager = (ColumnResizeManager)spread.ColumnResizeManager;
 
             ws.DefaultColumnWidth = 80;
@@ -258,7 +258,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         {
             var spread = new Spread();
             var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
-            var view = (SheetView)spread.SheetViews.ActiveSheetView;
+            var view = (SheetView)spread.Sheets.ActiveSheet;
             var manager = (ColumnResizeManager)spread.ColumnResizeManager;
 
             ws.DefaultColumnWidth = 80;
@@ -285,7 +285,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         {
             var spread = new Spread();
             var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
-            var view = (SheetView)spread.SheetViews.ActiveSheetView;
+            var view = (SheetView)spread.Sheets.ActiveSheet;
             var surface = new RowHeadersSurface(view);
 
             ws.DefaultRowHeight = 20;
@@ -316,7 +316,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         {
             var spread = new Spread();
             var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
-            var view = (SheetView)spread.SheetViews.ActiveSheetView;
+            var view = (SheetView)spread.Sheets.ActiveSheet;
             var surface = new RowHeadersSurface(view);
 
             ws.DefaultRowHeight = 20;
@@ -340,7 +340,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         {
             var spread = new Spread();
             var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
-            var view = (SheetView)spread.SheetViews.ActiveSheetView;
+            var view = (SheetView)spread.Sheets.ActiveSheet;
             var surface = new ColumnHeadersSurface(view);
 
             ws.DefaultColumnWidth = 80;

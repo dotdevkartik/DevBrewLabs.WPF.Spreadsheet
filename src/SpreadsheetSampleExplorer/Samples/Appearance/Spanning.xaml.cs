@@ -102,7 +102,7 @@ namespace SpreadsheetSampleExplorer.Samples
 
         private void btnMerge_Click(object sender, RoutedEventArgs e)
         {
-            var sheetView = spreadMain.SheetViews.ActiveSheetView;
+            var sheetView = spreadMain.Sheets.ActiveSheet;
             var selection = sheetView.Selection;
             if (selection.RowCount > 1 || selection.ColumnCount > 1)
             {
@@ -120,7 +120,7 @@ namespace SpreadsheetSampleExplorer.Samples
 
         private void btnUnmerge_Click(object sender, RoutedEventArgs e)
         {
-            var sheetView = spreadMain.SheetViews.ActiveSheetView;
+            var sheetView = spreadMain.Sheets.ActiveSheet;
             sheetView.UnmergeRange(sheetView.Selection);
             spreadMain.Invalidate();
         }

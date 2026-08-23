@@ -14,8 +14,8 @@ namespace SpreadsheetSampleExplorer.Samples
         public DataBinding()
         {
             InitializeComponent();
-            SetupListBinding(spread.SheetViews.ActiveSheetView);
-            SetuDataTableBinding(spread2.SheetViews.ActiveSheetView);
+            SetupListBinding(spread.Sheets.ActiveSheet);
+            SetuDataTableBinding(spread2.Sheets.ActiveSheet);
         }
 
         private void SetuDataTableBinding(ISheetView sheetView)

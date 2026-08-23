@@ -382,7 +382,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         /// <summary>
         /// Gets the sheetview collection.
         /// </summary>
-        public SheetViewCollection SheetViews { get; }
+        public SheetViewCollection Sheets { get; }
 
         /// <summary>
         /// Suspend UI updates
@@ -407,7 +407,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             _changeListener = new WorksheetChangeListener(this);
             _workBook = new Workbook("Book1", _changeListener);
             _undoRedoManager = new UndoRedoManager(this);
-            SheetViews = new SheetViewCollection(this);
+            Sheets = new SheetViewCollection(this);
             _renderEngine = new RenderEngine();
             _sheetViewHost = new SheetViewHost(this);
             ScrollMode = SheetScrollMode.Item;
@@ -439,9 +439,9 @@ namespace DevBrewLabs.WPF.Spreadsheet
         /// <returns></returns>
         public SpreadHitTestResult HitTest(Point point)
         {
-            if (SheetViews.ActiveSheetView != null)
+            if (Sheets.ActiveSheet != null)
             {
-                var activeSheetView = SheetViews.ActiveSheetView.As<SheetView>();
+                var activeSheetView = Sheets.ActiveSheet.As<SheetView>();
                 double zoom = activeSheetView.ZoomFactor > 0 ? activeSheetView.ZoomFactor : 1.0;
                 var columnHeaderHeight = activeSheetView.GetColumnHeaderHeight() * zoom;
                 var rowHeaderWidth = activeSheetView.GetRowHeaderWidth() * zoom;
@@ -514,7 +514,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         /// <param name="column"></param>
         public void BeginEdit(int row, int column)
         {
-            _editingManager.BeginEdit((SheetView)SheetViews.ActiveSheetView, row, column);
+            _editingManager.BeginEdit((SheetView)Sheets.ActiveSheet, row, column);
         }
 
         /// <summary>
@@ -528,62 +528,62 @@ namespace DevBrewLabs.WPF.Spreadsheet
 
         public void SelectCell(int row, int col)
         {
-            SheetViews.ActiveSheetView.SelectCell(row, col);
+            Sheets.ActiveSheet.SelectCell(row, col);
         }
 
         public void SelectColumn(int column)
         {
-            SheetViews.ActiveSheetView.SelectColumn(column);
+            Sheets.ActiveSheet.SelectColumn(column);
         }
 
         public void SelectColumns(int column, int count)
         {
-            SheetViews.ActiveSheetView.SelectColumns(column, count);
+            Sheets.ActiveSheet.SelectColumns(column, count);
         }
 
         public void SelectRow(int row)
         {
-            SheetViews.ActiveSheetView.SelectRow(row);
+            Sheets.ActiveSheet.SelectRow(row);
         }
 
         public void SelectRows(int row, int count)
         {
-            SheetViews.ActiveSheetView.SelectRows(row, count);
+            Sheets.ActiveSheet.SelectRows(row, count);
         }
 
         public void SelectRange(CellRange range)
         {
-            SheetViews.ActiveSheetView.SelectRange(range);
+            Sheets.ActiveSheet.SelectRange(range);
         }
 
         public void SelectRange(int row, int column, int rowCount, int columnCount)
         {
-            SheetViews.ActiveSheetView.SelectRange(row, column, rowCount, columnCount);
+            Sheets.ActiveSheet.SelectRange(row, column, rowCount, columnCount);
         }
 
         public void Copy()
         {
-            SheetViews.ActiveSheetView.Copy();
+            Sheets.ActiveSheet.Copy();
         }
 
         public void Paste()
         {
-            SheetViews.ActiveSheetView.Paste();
+            Sheets.ActiveSheet.Paste();
         }
 
         public void CopyRange(CellRange range)
         {
-            SheetViews.ActiveSheetView.CopyRange(range);
+            Sheets.ActiveSheet.CopyRange(range);
         }
 
         public void MergeRange(CellRange range)
         {
-            SheetViews.ActiveSheetView.MergeRange(range);
+            Sheets.ActiveSheet.MergeRange(range);
         }
 
         public void UnmergeRange(CellRange range)
         {
-            SheetViews.ActiveSheetView.UnmergeRange(range);
+            Sheets.ActiveSheet.UnmergeRange(range);
         }
 
         public void ZoomIn()
@@ -699,7 +699,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             if (EditingManager != null && EditingManager.IsEditing)
                 return;
 
-            var activeSheetView = SheetViews.ActiveSheetView.As<SheetView>();
+            var activeSheetView = Sheets.ActiveSheet.As<SheetView>();
             if (Keyboard.Modifiers == ModifierKeys.Control)
             {
                 switch (e.Key)
@@ -734,7 +734,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             _filterManager?.HideFilterDropdown();
             _formulaSuggestionManager?.Hide();
 
-            var activeSheetView = SheetViews.ActiveSheetView.As<SheetView>();
+            var activeSheetView = Sheets.ActiveSheet.As<SheetView>();
 
             if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
             {
@@ -772,7 +772,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             _formulaSuggestionManager?.Hide();
 
             SheetTabControl.UpdateScrollbars();
-            var activeSheetView = SheetViews.ActiveSheetView;
+            var activeSheetView = Sheets.ActiveSheet;
             activeSheetView.ScrollToHorizontalOffset(activeSheetView.ScrollPosition.X);
             activeSheetView.ScrollToVerticalOffset(activeSheetView.ScrollPosition.Y);
         }

@@ -45,7 +45,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
         public void OnSpreadZoomFactorChanged(double oldZoom, double newZoom)
         {
-            var activeSheetView = Spread.SheetViews?.ActiveSheetView as SheetView;
+            var activeSheetView = Spread.Sheets?.ActiveSheet as SheetView;
             if (activeSheetView != null)
             {
                 if (Math.Abs(activeSheetView.ZoomFactor - newZoom) > 0.001)

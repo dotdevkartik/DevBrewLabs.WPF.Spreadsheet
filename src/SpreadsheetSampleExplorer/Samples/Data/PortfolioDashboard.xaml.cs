@@ -387,10 +387,10 @@ namespace SpreadsheetSampleExplorer.Samples
             spread.SuspendUpdates = true;
 
             var worksheet = spread.WorkBook.WorkSheets[0];
-            if (spread.SheetViews.ActiveSheetView != spread.SheetViews.GetSheetView(worksheet))
+            if (spread.Sheets.ActiveSheet != spread.Sheets.GetSheetView(worksheet))
                 return;
 
-            spread.SheetViews.ActiveSheetView.AutoSizeRows = false;
+            spread.Sheets.ActiveSheet.AutoSizeRows = false;
 
             worksheet.Cells[0, 4].Value = $"Ticks: {_tickCount}";
             worksheet.Cells[0, 6].Value = $"Last Update: {DateTime.Now:HH:mm:ss}";

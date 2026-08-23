@@ -14,7 +14,7 @@ namespace SpreadsheetSampleExplorer.Samples
         public CellTypes()
         {
             InitializeComponent();
-            SetupSheet(spread.SheetViews.ActiveSheetView);
+            SetupSheet(spread.Sheets.ActiveSheet);
         }
 
         private void SetupSheet(ISheetView sheetView)
