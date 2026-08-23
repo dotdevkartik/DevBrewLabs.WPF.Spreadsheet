@@ -202,41 +202,36 @@ namespace SpreadsheetSampleExplorer.Samples
             statusTextBlock.Text = $"IsBound: {worksheet.IsBound} | Rows: {worksheet.RowCount} | Cols: {worksheet.ColumnCount}";
         }
 
-        private CellRange GetTargetSortRange()
+        private CellRange GetTargetSortRange(out bool hasHeader)
         {
-            var selection = spread.Sheets.ActiveSheet.Selection;
             var worksheet = spread.Sheets.ActiveSheet.WorkSheet;
+            var selection = spread.Sheets.ActiveSheet.Selection;
 
             if (selection != default && selection.RowCount > 1)
             {
+                // In unbound mode, only treat row 0 as a header if the selection starts at row 0
+                hasHeader = !worksheet.IsBound && selection.TopRow == 0;
                 return selection;
             }
 
             if (worksheet.IsBound)
             {
+                hasHeader = false;
                 return new CellRange(0, 0, worksheet.RowCount, worksheet.ColumnCount);
             }
 
-            return new CellRange(1, 0, TotalRows, TotalCols);
-        }
-
-        private int GetTargetSortColumn()
-        {
-            var selection = spread.Sheets.ActiveSheet.Selection;
-            if (selection != default)
-            {
-                return selection.LeftColumn;
-            }
-            return 0;
+            // In unbound default, table starts at row 0 with headers, data on rows 1..TotalRows
+            hasHeader = true;
+            return new CellRange(0, 0, TotalRows + 1, TotalCols);
         }
 
         private void OnSortAscending(object sender, RoutedEventArgs e)
         {
             var worksheet = spread.Sheets.ActiveSheet.WorkSheet;
-            var range = GetTargetSortRange();
+            var range = GetTargetSortRange(out bool hasHeader);
             var options = new SortOptions
             {
-                HasHeader = !worksheet.IsBound,
+                HasHeader = hasHeader,
                 SortColumnOnly = !worksheet.IsBound
             };
             for (int col = range.LeftColumn; col < range.LeftColumn + range.ColumnCount; col++)
@@ -249,10 +244,10 @@ namespace SpreadsheetSampleExplorer.Samples
         private void OnSortDescending(object sender, RoutedEventArgs e)
         {
             var worksheet = spread.Sheets.ActiveSheet.WorkSheet;
-            var range = GetTargetSortRange();
+            var range = GetTargetSortRange(out bool hasHeader);
             var options = new SortOptions
             {
-                HasHeader = !worksheet.IsBound,
+                HasHeader = hasHeader,
                 SortColumnOnly = !worksheet.IsBound
             };
             for (int col = range.LeftColumn; col < range.LeftColumn + range.ColumnCount; col++)
@@ -265,11 +260,11 @@ namespace SpreadsheetSampleExplorer.Samples
         private void OnMultiLevelSort(object sender, RoutedEventArgs e)
         {
             var worksheet = spread.Sheets.ActiveSheet.WorkSheet;
-            var range = GetTargetSortRange();
-            
+            var range = GetTargetSortRange(out bool hasHeader);
+
             var options = new SortOptions
             {
-                HasHeader = !worksheet.IsBound,
+                HasHeader = hasHeader,
                 SortColumnOnly = !worksheet.IsBound
             };
 
@@ -302,11 +297,11 @@ namespace SpreadsheetSampleExplorer.Samples
         private void OnCustomSort(object sender, RoutedEventArgs e)
         {
             var worksheet = spread.Sheets.ActiveSheet.WorkSheet;
-            var range = GetTargetSortRange();
-            
+            var range = GetTargetSortRange(out bool hasHeader);
+
             var options = new SortOptions
             {
-                HasHeader = !worksheet.IsBound,
+                HasHeader = hasHeader,
                 SortColumnOnly = !worksheet.IsBound
             };
             for (int col = range.LeftColumn; col < range.LeftColumn + range.ColumnCount; col++)
