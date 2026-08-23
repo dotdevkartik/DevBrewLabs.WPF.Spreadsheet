@@ -15,6 +15,7 @@ namespace SpreadsheetSampleExplorer
             spread.MouseDoubleClick += Spread_MouseDoubleClick;
             var worksheet = spread.Sheets.ActiveSheet.WorkSheet;
             spread.ScrollMode = SheetScrollMode.Pixel;
+            spread.AllowFiltering = true;
         }
 
         private void Spread_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)

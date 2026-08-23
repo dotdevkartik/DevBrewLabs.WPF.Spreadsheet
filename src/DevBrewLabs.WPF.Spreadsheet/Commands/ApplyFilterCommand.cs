@@ -3,13 +3,13 @@ using System;
 
 namespace DevBrewLabs.WPF.Spreadsheet.Commands
 {
-    internal class ToggleFilterCommand : SpreadCommand
+    internal class ApplyFilterCommand : SpreadCommand
     {
-        public ToggleFilterCommand(Spread spread) : base(spread) { }
+        public ApplyFilterCommand(Spread spread) : base(spread) { }
 
         public override bool CanExecute(object parameter)
         {
-            return parameter is SheetView sheetView && sheetView.Selection.IsValid;
+            return Spread.AllowFiltering && parameter is SheetView sheetView && sheetView.Selection.IsValid;
         }
 
         public override void Execute(object parameter)

@@ -14,7 +14,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Menus
 
             Items.Add(CreateSeparator());
 
-            Items.Add(CreateMenuItem("Filter", null, "FilterIconGeometry", FilterBrush, new ToggleFilterCommand(Spread), sheetView));
+            Items.Add(CreateMenuItem("Filter", null, "FilterIconGeometry", FilterBrush, new ApplyFilterCommand(Spread), sheetView));
 
             Items.Add(CreateSeparator());
 
