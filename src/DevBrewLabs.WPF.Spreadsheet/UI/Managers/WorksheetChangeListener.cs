@@ -45,9 +45,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             {
                 return;
             }
-            sheetView.ViewPort.CalculateVisibleRange();
-            _spread.SheetTabControl.UpdateScrollbars();
-            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => _spread.Invalidate()));
+
+            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => _spread.Refresh()));
         }
 
         public void CellChanged(CellChangedEventArgs args)
@@ -118,8 +117,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
             }
 
-            sheetView.ViewPort.CalculateVisibleRange();
-
             if (args.ChangeType != ColumnChangeType.Visibility && !sheetView.ViewPort.ViewRange.ContainsColumn(args.Index))
             {
                 return;
@@ -130,8 +127,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 return;
             }
 
-            _spread.SheetTabControl.UpdateScrollbars();
-            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => _spread.Invalidate()));
+            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => _spread.Refresh()));
         }
 
         public void RowChanged(RowChangedEventArgs args)
@@ -163,7 +159,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
             }
 
-            sheetView.ViewPort.CalculateVisibleRange();
             if (args.ChangeType != RowChangeType.Visibility && !sheetView.ViewPort.ViewRange.ContainsRow(args.Index))
             {
                 return;
@@ -174,8 +169,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 return;
             }
 
-            _spread.SheetTabControl.UpdateScrollbars();
-            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => _spread.Invalidate()));
+            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => _spread.Refresh()));
         }
 
         private bool CanInvalidate()
@@ -187,14 +181,12 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
         {
             var sheetView = (SheetView)_spread.Sheets.GetSheetView(args.Worksheet);
             if (sheetView == null) return;
-            
+
             sheetView.ViewPort.ResetRowLocations();
-            sheetView.ViewPort.CalculateVisibleRange();
-            
+
             if (!CanInvalidate()) return;
-            
-            _spread.SheetTabControl.UpdateScrollbars();
-            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => _spread.Invalidate()));
+
+            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => _spread.Refresh()));
         }
     }
 }

@@ -20,37 +20,25 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
             TextMeasurer.Measure(text, availableWidth, scaledFontSize, metrics, context.PixelPerDip, out int fitCount, out double exactTotalWidth, out bool isTruncated);
 
             double finalExactWidth = exactTotalWidth;
-            bool applyEllipsis = isTruncated && characterEllipses;
+            bool needsEllipsisGlyph = isTruncated && characterEllipses;
 
-            if (applyEllipsis)
-            {
-                fitCount = EllipsisEngine.Truncate(text, fitCount, exactTotalWidth, availableWidth, scaledFontSize, metrics, context.PixelPerDip, out finalExactWidth);
-            }
-            else if (isTruncated)
-            {
-                // If truncated and not using character ellipses, just clamp exact width.
-                // Wait, if it's truncated, the measure step stops at fitCount. The exactTotalWidth is for fitCount characters.
-                // The prompt says "characterEllipses = false" means it might just draw the text that fits or we need to draw ellipsis anyway?
-                // The original code did: `if (isTruncated && !characterEllipses)` to add ellipsis. So `characterEllipses` in original meant "No ellipsis".
-                // Wait, the original code had:
-                // if (characterEllipses) formattedText.Trimming = TextTrimming.None;
-                // else formattedText.Trimming = TextTrimming.CharacterEllipsis;
-                // Wait, so if `characterEllipses` is TRUE, it does NOT draw ellipses!
-                // Ah! `characterEllipses` = true means NO ellipsis in original DrawText signature?! Wait:
-                // `if (characterEllipses) formattedText.Trimming = TextTrimming.None; else formattedText.Trimming = TextTrimming.CharacterEllipsis;`
-                // Let me double check that logic. If `!characterEllipses` we apply truncation with ellipsis.
-            }
-
-            // Correct logic based on original codebase:
-            // if (isTruncated && !characterEllipses) -> apply ellipsis.
-            bool needsEllipsisGlyph = isTruncated && !characterEllipses;
-            
             if (needsEllipsisGlyph)
             {
                 fitCount = EllipsisEngine.Truncate(text, fitCount, exactTotalWidth, availableWidth, scaledFontSize, metrics, context.PixelPerDip, out finalExactWidth);
             }
 
-            int finalGlyphCount = needsEllipsisGlyph ? (fitCount > 0 ? fitCount + 1 : 0) : fitCount;
+            int finalGlyphCount = fitCount;
+            if (needsEllipsisGlyph)
+            {
+                if (fitCount > 0 || (fitCount == 0 && finalExactWidth > 0))
+                {
+                    finalGlyphCount = fitCount + 1;
+                }
+                else
+                {
+                    finalGlyphCount = 0;
+                }
+            }
 
             if (finalGlyphCount == 0)
             {

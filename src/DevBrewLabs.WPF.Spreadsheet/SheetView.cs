@@ -4,7 +4,6 @@ using DevBrewLabs.WPF.Spreadsheet.Rendering;
 using DevBrewLabs.WPF.Spreadsheet.Rendering.Text;
 using DevBrewLabs.WPF.Spreadsheet.UI;
 using System;
-using System.Collections.Generic;
 using System.Windows;
 
 namespace DevBrewLabs.WPF.Spreadsheet
@@ -255,27 +254,25 @@ namespace DevBrewLabs.WPF.Spreadsheet
             Spread.SelectionManager.SelectRange(this, row, column, rowCount, columnCount);
         }
 
-        public void ScrollToHorizontalOffset(double offset)
+        private void SetHeadersVisibility()
+        {
+            Spread.UpdateHeadersSize();
+        }
+
+        internal void SetHorizontalScrollOffset(double offset)
         {
             double delta = offset - ScrollPosition.X;
             ScrollPosition = new Point(offset, ScrollPosition.Y);
-            _viewPort.CalculateLeftColumn(delta);
-            _viewPort.CalculateVisibleRange();
-            Spread.Invalidate(false, true, true);
+            ViewPort.CalculateLeftColumn(delta);
+            ViewPort.CalculateVisibleRange();
         }
 
-        public void ScrollToVerticalOffset(double offset)
+        internal void SetVerticalScrollOffset(double offset)
         {
             double delta = offset - ScrollPosition.Y;
             ScrollPosition = new Point(ScrollPosition.X, offset);
-            _viewPort.CalculateTopRow(delta);
-            _viewPort.CalculateVisibleRange();
-            Spread.Invalidate(true, false, true);
-        }
-
-        private void SetHeadersVisibility()
-        {
-            Spread.SheetViewHost.UpdateHeadersSize();
+            ViewPort.CalculateTopRow(delta);
+            ViewPort.CalculateVisibleRange();
         }
 
         internal void InternalSetZoomFactor(double zoomFactor)
@@ -411,9 +408,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
                 WorkSheet.Columns[column].Width = width;
             }
 
-            _viewPort.CalculateVisibleRange();
-            Spread.SheetTabControl.UpdateScrollbars();
-            Spread.Invalidate();
+            Spread.Refresh();
         }
 
         public void Dispose()

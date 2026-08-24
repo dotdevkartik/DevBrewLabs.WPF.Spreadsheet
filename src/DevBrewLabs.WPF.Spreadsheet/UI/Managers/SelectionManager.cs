@@ -148,8 +148,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 Selection = sheetView.Selection
             });
 
-            Spread.SheetViewHost.RefreshInteractionLayers();
-            Spread.SheetViewHost.Draw(rowHeaders: true, columnHeaders: true, cells: false, gridLines: false, topLeft: false);
+            Spread.RefreshInteractionLayers();
+            Spread.InvalidateSurfaces(rowHeaders: true, columnHeaders: true, cells: false, gridLines: false, topLeft: false);
         }
     }
 }

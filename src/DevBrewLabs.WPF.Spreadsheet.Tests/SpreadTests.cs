@@ -189,5 +189,47 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
             Assert.That(view.ActiveRow, Is.EqualTo(0));
             Assert.That(view.ActiveColumn, Is.EqualTo(0));
         }
+
+        [Test]
+        public void Spread_Refresh_CanBeCalledWithoutException()
+        {
+            var spread = new Spread();
+            Assert.DoesNotThrow(() => spread.Refresh());
+        }
+
+        [Test]
+        public void Spread_Invalidate_CanBeCalledWithoutException()
+        {
+            var spread = new Spread();
+            Assert.DoesNotThrow(() => spread.Invalidate());
+        }
+
+        [Test]
+        public void Spread_ZoomFactor_UpdatesWithoutException()
+        {
+            var spread = new Spread();
+            Assert.DoesNotThrow(() =>
+            {
+                spread.ZoomFactor = 1.5;
+                spread.Refresh();
+                spread.ZoomFactor = 0.62;
+                spread.Refresh();
+                spread.ZoomFactor = 0.5;
+                spread.Refresh();
+                spread.ZoomFactor = 1.0;
+                spread.Refresh();
+            });
+        }
+
+        [Test]
+        public void Spread_ZoomFactor_RowHeaderRenderingAtLowZoom_RendersWithoutException()
+        {
+            var spread = new Spread();
+            spread.ZoomFactor = 0.62;
+            Assert.DoesNotThrow(() =>
+            {
+                spread.Invalidate(rowHeaders: true, columnHeaders: true, cells: true, topLeft: true);
+            });
+        }
     }
 }

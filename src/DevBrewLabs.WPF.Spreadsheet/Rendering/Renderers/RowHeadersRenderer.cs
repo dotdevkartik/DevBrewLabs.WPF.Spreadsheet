@@ -75,7 +75,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                 if (headerWidth != context.RowHeaderColumns.GetColumnWidth(col))
                 {
                     context.RowHeaderColumns[col].Width = headerWidth;
-                    context.SheetView.Spread.SheetViewHost.UpdateHeadersSize();
+                    context.SheetView.Spread.UpdateHeadersSize();
                 }
             }
         }

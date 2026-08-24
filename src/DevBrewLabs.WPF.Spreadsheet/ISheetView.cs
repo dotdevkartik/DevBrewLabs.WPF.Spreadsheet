@@ -25,7 +25,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         /// </summary>
         double ZoomFactor { get; set; }
         /// <summary>
-        /// Gets the current scroll position.
+        /// Gets the scroll position
         /// </summary>
         Point ScrollPosition { get; }
         /// <summary>
@@ -85,16 +85,6 @@ namespace DevBrewLabs.WPF.Spreadsheet
         /// </summary>
         /// <param name="range"></param>
         void CopyRange(CellRange range);
-        /// <summary>
-        /// Horizontally scrolls the sheet.
-        /// </summary>
-        /// <param name="offset"></param>
-        void ScrollToHorizontalOffset(double offset);
-        /// <summary>
-        ///  Vertically scrolls the sheet.
-        /// </summary>
-        /// <param name="offset"></param>
-        void ScrollToVerticalOffset(double offset);
         /// <summary>
         /// Auto sizes the row height based on cell text content.
         /// </summary>

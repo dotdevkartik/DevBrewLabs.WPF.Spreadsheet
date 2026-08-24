@@ -108,17 +108,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
         {
             base.OnApplyTemplate();
 
-            if (_txtEditor != null)
-            {
-                _txtEditor.TextChanged -= OnTextChanged;
-                _txtEditor.KeyDown -= OnTextBoxKeyDown;
-            }
-
-            if (_btnExpand != null)
-            {
-                _btnExpand.Click -= OnExpandToggleClick;
-            }
-
             _txtEditor = GetTemplateChild("PART_Editor") as TextBox;
             _btnExpand = GetTemplateChild("PART_ExpandButton") as Button;
             _expandIcon = GetTemplateChild("PART_ExpandIcon") as Path;
@@ -258,7 +247,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
             var formula = workSheet.GetFormula(e.SheetView.ActiveRow, e.SheetView.ActiveColumn);
             if (!string.IsNullOrEmpty(formula))
             {
-                _txtEditor.Text = "=" + formula;
+                _txtEditor.Text = formula.StartsWith("=") ? formula : "=" + formula;
             }
             else
             {
