@@ -896,14 +896,15 @@ namespace DevBrewLabs.WPF.Spreadsheet
                 return;
             }
 
+            double zoom = activeSheetView.ZoomFactor > 0 ? activeSheetView.ZoomFactor : 1.0;
             switch (activeSheetView.MouseWheelScrollDirection)
             {
                 case MouseWheelScrollDirection.Vertical:
-                    _sheetTabControl?.ScrollVerticalBy(-e.Delta / 5.0);
+                    _sheetTabControl?.ScrollVerticalBy(-e.Delta / (5.0 * zoom));
                     break;
 
                 case MouseWheelScrollDirection.Horizontal:
-                    _sheetTabControl?.ScrollHorizontalBy(-e.Delta / 5.0);
+                    _sheetTabControl?.ScrollHorizontalBy(-e.Delta / (5.0 * zoom));
                     break;
             }
         }

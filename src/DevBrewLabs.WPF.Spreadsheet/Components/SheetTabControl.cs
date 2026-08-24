@@ -282,53 +282,59 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
         /// </summary>
         internal void UpdateScrollbars()
         {
-            if(_currentSheet == null || _hScrollBar == null || _vScrollBar == null)
+            if (_currentSheet == null || _hScrollBar == null || _vScrollBar == null)
                 return;
 
             var sheet = _currentSheet.WorkSheet;
             var columns = (Columns)sheet.Columns;
             var rows = (Rows)sheet.Rows;
-            
+
+            double zoom = _currentSheet.ZoomFactor > 0 ? _currentSheet.ZoomFactor : 1.0;
+
             var actualWidth = _currentSheet.CellsSurface.ActualWidth;
-            _hScrollBar.LargeChange = actualWidth;
-            
+            double viewportWidth = actualWidth > 0 ? actualWidth / zoom : 0;
+            _hScrollBar.SmallChange = sheet.DefaultColumnWidth;
+            _hScrollBar.LargeChange = Math.Max(sheet.DefaultColumnWidth, viewportWidth);
+
             if (sheet.ColumnCount > 0)
             {
                 var totalWidth = _currentSheet.ViewPort.GetColumnLocation(sheet.ColumnCount - 1) + columns.GetColumnWidth(sheet.ColumnCount - 1);
-                var maxScrollX = totalWidth - actualWidth + sheet.DefaultColumnWidth + 30;
+                var maxScrollX = totalWidth - viewportWidth + sheet.DefaultColumnWidth + 30;
                 _hScrollBar.Maximum = Math.Max(0, maxScrollX);
-
-                double minThumbSize = 20;
-                if (actualWidth > minThumbSize && _hScrollBar.Maximum > 0)
-                {
-                    double minViewportSize = (minThumbSize * _hScrollBar.Maximum) / (actualWidth - minThumbSize);
-                    _hScrollBar.ViewportSize = Math.Max(actualWidth, minViewportSize);
-                }
-                else
-                {
-                    _hScrollBar.ViewportSize = actualWidth;
-                }
+                _hScrollBar.ViewportSize = viewportWidth;
+            }
+            else
+            {
+                _hScrollBar.Maximum = 0;
+                _hScrollBar.ViewportSize = viewportWidth;
             }
 
             var actualHeight = _currentSheet.CellsSurface.ActualHeight;
-            _vScrollBar.LargeChange = actualHeight;
-            
+            double viewportHeight = actualHeight > 0 ? actualHeight / zoom : 0;
+            _vScrollBar.SmallChange = sheet.DefaultRowHeight;
+            _vScrollBar.LargeChange = Math.Max(sheet.DefaultRowHeight, viewportHeight);
+
             if (sheet.RowCount > 0)
             {
                 var totalHeight = _currentSheet.ViewPort.GetRowLocation(sheet.RowCount - 1) + rows.GetRowHeight(sheet.RowCount - 1);
-                var maxScrollY = totalHeight - actualHeight + sheet.DefaultRowHeight + 30;
+                var maxScrollY = totalHeight - viewportHeight + sheet.DefaultRowHeight + 30;
                 _vScrollBar.Maximum = Math.Max(0, maxScrollY);
+                _vScrollBar.ViewportSize = viewportHeight;
+            }
+            else
+            {
+                _vScrollBar.Maximum = 0;
+                _vScrollBar.ViewportSize = viewportHeight;
+            }
 
-                double minThumbSize = 20;
-                if (actualHeight > minThumbSize && _vScrollBar.Maximum > 0)
-                {
-                    double minViewportSize = (minThumbSize * _vScrollBar.Maximum) / (actualHeight - minThumbSize);
-                    _vScrollBar.ViewportSize = Math.Max(actualHeight, minViewportSize);
-                }
-                else
-                {
-                    _vScrollBar.ViewportSize = actualHeight;
-                }
+            if (_currentSheet.ScrollPosition.X > _hScrollBar.Maximum)
+            {
+                _currentSheet.SetHorizontalScrollOffset(_hScrollBar.Maximum);
+            }
+
+            if (_currentSheet.ScrollPosition.Y > _vScrollBar.Maximum)
+            {
+                _currentSheet.SetVerticalScrollOffset(_vScrollBar.Maximum);
             }
 
             if (_vScrollBar.Maximum == _vScrollBar.Minimum)

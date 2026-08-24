@@ -203,5 +203,20 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
             var spread = new Spread();
             Assert.DoesNotThrow(() => spread.Invalidate());
         }
+
+        [Test]
+        public void Spread_ZoomFactor_UpdatesWithoutException()
+        {
+            var spread = new Spread();
+            Assert.DoesNotThrow(() =>
+            {
+                spread.ZoomFactor = 1.5;
+                spread.Refresh();
+                spread.ZoomFactor = 0.5;
+                spread.Refresh();
+                spread.ZoomFactor = 1.0;
+                spread.Refresh();
+            });
+        }
     }
 }
