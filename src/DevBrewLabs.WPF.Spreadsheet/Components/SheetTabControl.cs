@@ -301,7 +301,17 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
                 var totalWidth = _currentSheet.ViewPort.GetColumnLocation(sheet.ColumnCount - 1) + columns.GetColumnWidth(sheet.ColumnCount - 1);
                 var maxScrollX = totalWidth - viewportWidth + sheet.DefaultColumnWidth + 30;
                 _hScrollBar.Maximum = Math.Max(0, maxScrollX);
-                _hScrollBar.ViewportSize = viewportWidth;
+
+                double minThumbSize = 20;
+                if (actualWidth > minThumbSize && _hScrollBar.Maximum > 0)
+                {
+                    double minViewportSize = (minThumbSize * _hScrollBar.Maximum) / (actualWidth - minThumbSize);
+                    _hScrollBar.ViewportSize = Math.Max(viewportWidth, minViewportSize);
+                }
+                else
+                {
+                    _hScrollBar.ViewportSize = viewportWidth;
+                }
             }
             else
             {
@@ -319,7 +329,17 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
                 var totalHeight = _currentSheet.ViewPort.GetRowLocation(sheet.RowCount - 1) + rows.GetRowHeight(sheet.RowCount - 1);
                 var maxScrollY = totalHeight - viewportHeight + sheet.DefaultRowHeight + 30;
                 _vScrollBar.Maximum = Math.Max(0, maxScrollY);
-                _vScrollBar.ViewportSize = viewportHeight;
+
+                double minThumbSize = 20;
+                if (actualHeight > minThumbSize && _vScrollBar.Maximum > 0)
+                {
+                    double minViewportSize = (minThumbSize * _vScrollBar.Maximum) / (actualHeight - minThumbSize);
+                    _vScrollBar.ViewportSize = Math.Max(viewportHeight, minViewportSize);
+                }
+                else
+                {
+                    _vScrollBar.ViewportSize = viewportHeight;
+                }
             }
             else
             {
