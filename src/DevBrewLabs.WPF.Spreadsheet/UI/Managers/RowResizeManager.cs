@@ -93,8 +93,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             {
                 ResizeLine.Visibility = Visibility.Collapsed;
             }
-            Spread.SheetTabControl?.UpdateScrollbars();
-            Spread.SheetViewHost?.RefreshInteractionLayers(true, false, true);
+            Spread.UpdateScrollbars();
+            Spread.RefreshInteractionLayers(true, false, true);
             Spread.SuspendUpdates = false;
         }
 
@@ -111,9 +111,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             {
                 ResizeLine.Visibility = Visibility.Collapsed;
             }
-            Spread.SheetTabControl?.UpdateScrollbars();
-            sheetView.ViewPort.CalculateVisibleRange();
-            Spread.SheetViewHost?.RefreshInteractionLayers(true, false, true);
+            Spread.Refresh();
             Spread.SuspendUpdates = false;
         }
     }

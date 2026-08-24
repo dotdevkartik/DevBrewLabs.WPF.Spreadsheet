@@ -71,7 +71,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             {
                 SheetView.Spread.ColumnResizeManager.EndResize(SheetView);
                 Children.Remove(SheetView.Spread.ColumnResizeManager.ResizeLine);
-                SheetView.Spread.SheetTabControl.UpdateScrollbars();
+                SheetView.Spread.UpdateScrollbars();
                 ReleaseMouseCapture();
             }
 

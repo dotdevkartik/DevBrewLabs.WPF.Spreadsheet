@@ -1,4 +1,5 @@
 using DevBrewLabs.Spreadsheet;
+using DevBrewLabs.WPF.Spreadsheet.UI;
 using System;
 using System.Windows;
 using System.Windows.Controls;
@@ -25,64 +26,62 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
         private Border _sheetViewPaneBorder;
         private Grid _root;
         private bool _eventsRegistered;
+        private Spread _spread;
+        private SheetView _currentSheet;
 
-        internal ScrollBar HScrollBar => _hScrollBar;
-        internal ScrollBar VScrollBar => _vScrollBar;
-        internal Border SheetViewPaneBorder => _sheetViewPaneBorder;
-        internal Spread Spread { get; private set; }
-
-        public SheetTabControl()
+        internal void SetVerticalScrollPosition(double value)
         {
-
+            if (_vScrollBar != null)
+            {
+                _vScrollBar.Value = value;
+            }
         }
 
-        public override void OnApplyTemplate()
+        internal void SetHorizontalScrollPosition(double value)
         {
-            base.OnApplyTemplate();
-            Spread = TemplatedParent.As<Spread>();
-            _root = GetTemplateChild("_root").As<Grid>();
-            _sheetViewPaneBorder = GetTemplateChild("_sheetViewPaneBorder").As<Border>();
-            _sheetViewPaneBorder.Child = Spread.SheetViewHost;
-            _sheetViewPaneBorder.BorderBrush = Spread.BorderBrush;
-            _sheetViewPaneBorder.BorderThickness = new Thickness(0);
-            _sheetViewPaneBorder.SizeChanged += (s, e) => Spread?.SheetViewHost?.UpdateZoomTransform();
-            _hScrollBar = GetTemplateChild("_hScrollBar").As<ScrollBar>();
-            _vScrollBar = GetTemplateChild("_vScrollBar").As<ScrollBar>();
-            _sheetsListBox = GetTemplateChild("_sheetsListBox").As<ListBox>();
-            _previousButton = GetTemplateChild("_btnPrevious").As<RepeatButton>();
-            _nextButton = GetTemplateChild("_btnNext").As<RepeatButton>();
-            _addButton = GetTemplateChild("_btnAddSheet").As<Button>();
-            RegisterInternalEventHandlers();
-            _sheetsListBox.ItemsSource = Spread.Sheets;
-            _sheetsListBox.SelectedIndex = 0;
+            if (_hScrollBar != null)
+            {
+                _hScrollBar.Value = value;
+            }
+        }
+
+        internal void ScrollVerticalBy(double delta)
+        {
+            if (_vScrollBar != null)
+            {
+                _vScrollBar.Value += delta;
+            }
+        }
+
+        internal void ScrollHorizontalBy(double delta)
+        {
+            if (_hScrollBar != null)
+            {
+                _hScrollBar.Value += delta;
+            }
         }
 
         private void DisplaySheet(SheetView sheetView)
         {
-            Spread.SheetViewHost.HostSheet(sheetView);
+            _currentSheet = sheetView;
+            _spread.HostSheet(_currentSheet);
 
-            double oldZoom = Spread.ZoomFactor;
-            if (oldZoom != sheetView.ZoomFactor)
+            double oldZoom = _spread.ZoomFactor;
+            if (oldZoom != _currentSheet.ZoomFactor)
             {
-                Spread.ZoomFactor = sheetView.ZoomFactor;
+                _spread.ZoomFactor = _currentSheet.ZoomFactor;
             }
             else
             {
-                Spread.SheetViewHost.UpdateZoomTransform();
-                Spread.Invalidate();
+                _spread.UpdateZoomTransform();
             }
 
-            UpdateScrollbars();
-            _hScrollBar.Value = sheetView.ScrollPosition.X;
-            _vScrollBar.Value = sheetView.ScrollPosition.Y;
-            sheetView.ScrollToHorizontalOffset(sheetView.ScrollPosition.X);
-            sheetView.ScrollToVerticalOffset(sheetView.ScrollPosition.Y);
-            Spread.SheetViewHost.RefreshInteractionLayers();
+            _spread.Refresh();
         }
 
         private void OnAddSheetClick(object sender, RoutedEventArgs e)
         {
-            Spread.WorkBook.WorkSheets.AddSheet($"Sheet{Spread.WorkBook.WorkSheets.Count + 1}");
+            _spread.WorkBook.WorkSheets.AddSheet($"Sheet{_spread.WorkBook.WorkSheets.Count + 1}");
             _sheetsListBox.SelectedIndex = _sheetsListBox.Items.Count - 1;
             ScrollSelectedSheetIntoView();
         }
@@ -92,11 +91,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
             if (_sheetsListBox.SelectedItem == null)
                 return;
 
-            if (Spread.EditingManager.IsEditing)
-                Spread.EditingManager.EndEdit(true);
+            if (_spread.EditingManager.IsEditing)
+                _spread.EditingManager.EndEdit(true);
 
             var sheetView = _sheetsListBox.SelectedItem.As<SheetView>();
-            Spread.WorkBook.WorkSheets.ActiveSheet = sheetView.WorkSheet;
+            _spread.WorkBook.WorkSheets.ActiveSheet = sheetView.WorkSheet;
             DisplaySheet(sheetView);
             ScrollSelectedSheetIntoView();
         }
@@ -197,7 +196,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
                 {
                     _sheetsListBox.SelectedItem = sheetView;
                     int index = _sheetsListBox.Items.IndexOf(sheetView);
-                    Spread?.ContextMenuManager?.ShowSheetTabContextMenu(sheetView, index, item);
+                    _spread?.ContextMenuManager?.ShowSheetTabContextMenu(sheetView, index, item);
                     e.Handled = true;
                 }
             }
@@ -283,17 +282,19 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
         /// </summary>
         internal void UpdateScrollbars()
         {
-            var sheetView = (SheetView)Spread.Sheets.ActiveSheet;
-            var sheet = sheetView.WorkSheet;
+            if(_currentSheet == null || _hScrollBar == null || _vScrollBar == null)
+                return;
+
+            var sheet = _currentSheet.WorkSheet;
             var columns = (Columns)sheet.Columns;
             var rows = (Rows)sheet.Rows;
             
-            var actualWidth = sheetView.CellsSurface.ActualWidth;
+            var actualWidth = _currentSheet.CellsSurface.ActualWidth;
             _hScrollBar.LargeChange = actualWidth;
             
             if (sheet.ColumnCount > 0)
             {
-                var totalWidth = sheetView.ViewPort.GetColumnLocation(sheet.ColumnCount - 1) + columns.GetColumnWidth(sheet.ColumnCount - 1);
+                var totalWidth = _currentSheet.ViewPort.GetColumnLocation(sheet.ColumnCount - 1) + columns.GetColumnWidth(sheet.ColumnCount - 1);
                 var maxScrollX = totalWidth - actualWidth + sheet.DefaultColumnWidth + 30;
                 _hScrollBar.Maximum = Math.Max(0, maxScrollX);
 
@@ -309,12 +310,12 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
                 }
             }
 
-            var actualHeight = sheetView.CellsSurface.ActualHeight;
+            var actualHeight = _currentSheet.CellsSurface.ActualHeight;
             _vScrollBar.LargeChange = actualHeight;
             
             if (sheet.RowCount > 0)
             {
-                var totalHeight = sheetView.ViewPort.GetRowLocation(sheet.RowCount - 1) + rows.GetRowHeight(sheet.RowCount - 1);
+                var totalHeight = _currentSheet.ViewPort.GetRowLocation(sheet.RowCount - 1) + rows.GetRowHeight(sheet.RowCount - 1);
                 var maxScrollY = totalHeight - actualHeight + sheet.DefaultRowHeight + 30;
                 _vScrollBar.Maximum = Math.Max(0, maxScrollY);
 
@@ -339,41 +340,69 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
                 _hScrollBar.Visibility = Visibility.Hidden;
             else
                 _hScrollBar.Visibility = Visibility.Visible;
+
+            _hScrollBar.Value = _currentSheet.ScrollPosition.X;
+            _vScrollBar.Value = _currentSheet.ScrollPosition.Y;
         }
 
         #region Scrolling
         private void OnVerticalScrollBarValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            if (_vScrollBar.Track.Thumb.IsDragging && Spread.ScrollMode == SheetScrollMode.Deferred)
+            if (_vScrollBar.Track.Thumb.IsDragging && _spread.ScrollMode == SheetScrollMode.Deferred)
                 return;
 
-            Spread.Sheets.ActiveSheet.ScrollToVerticalOffset(e.NewValue);
+            _currentSheet.SetVerticalScrollOffset(e.NewValue);
+             _spread.Invalidate(true, false, true, false);
         }
 
         private void OnHorizontalScrollBarValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            if (_hScrollBar.Track.Thumb.IsDragging && Spread.ScrollMode == SheetScrollMode.Deferred)
+            if (_hScrollBar.Track.Thumb.IsDragging && _spread.ScrollMode == SheetScrollMode.Deferred)
                 return;
 
-            Spread.Sheets.ActiveSheet.ScrollToHorizontalOffset(e.NewValue);
+            _currentSheet.SetHorizontalScrollOffset(e.NewValue);
+            _spread.Invalidate(false, true, true, false);
         }
 
         private void OnHorizontalScrollDragCompleted(object sender, DragCompletedEventArgs e)
         {
-            if (Spread.ScrollMode == SheetScrollMode.Deferred)
+            if (_spread.ScrollMode == SheetScrollMode.Deferred)
             {
-                Spread.Sheets.ActiveSheet.ScrollToHorizontalOffset(_hScrollBar.Value);
+                _currentSheet.SetHorizontalScrollOffset(_hScrollBar.Value);
+                _spread.Invalidate(false, true, true, false);
             }
         }
 
         private void OnVerticalScrollDragCompleted(object sender, DragCompletedEventArgs e)
         {
-            if (Spread.ScrollMode == SheetScrollMode.Deferred)
+            if (_spread.ScrollMode == SheetScrollMode.Deferred)
             {
-                Spread.Sheets.ActiveSheet.ScrollToVerticalOffset(_vScrollBar.Value);
+                _currentSheet.SetVerticalScrollOffset(_vScrollBar.Value);
+                _spread.Invalidate(true, false, true, false);
             }
         }
         #endregion
+
+        public override void OnApplyTemplate()
+        {
+            base.OnApplyTemplate();
+            _spread = TemplatedParent.As<Spread>();
+            _root = GetTemplateChild("_root").As<Grid>();
+            _sheetViewPaneBorder = GetTemplateChild("_sheetViewPaneBorder").As<Border>();
+            _sheetViewPaneBorder.Child = _spread.SheetViewHostElement;
+            _sheetViewPaneBorder.BorderBrush = _spread.BorderBrush;
+            _sheetViewPaneBorder.BorderThickness = new Thickness(0);
+            _sheetViewPaneBorder.SizeChanged += (s, e) => _spread?.UpdateZoomTransform();
+            _hScrollBar = GetTemplateChild("_hScrollBar").As<ScrollBar>();
+            _vScrollBar = GetTemplateChild("_vScrollBar").As<ScrollBar>();
+            _sheetsListBox = GetTemplateChild("_sheetsListBox").As<ListBox>();
+            _previousButton = GetTemplateChild("_btnPrevious").As<RepeatButton>();
+            _nextButton = GetTemplateChild("_btnNext").As<RepeatButton>();
+            _addButton = GetTemplateChild("_btnAddSheet").As<Button>();
+            RegisterInternalEventHandlers();
+            _sheetsListBox.ItemsSource = _spread.Sheets;
+            _sheetsListBox.SelectedIndex = 0;
+        }
 
         public void Dispose()
         {

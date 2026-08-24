@@ -23,9 +23,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Commands
             {
                 sheetView.WorkSheet.Columns[c].Width = 0;
             }
-            sheetView.ViewPort.CalculateVisibleRange();
-            Spread.SheetTabControl?.UpdateScrollbars();
-            Spread.Invalidate();
+            Spread.Refresh();
         }
     }
 }

@@ -91,7 +91,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 }
             }
 
-            _spread.Invalidate();
+            _spread.Refresh();
         }
 
         public void Copy(ISheetView sheetView)

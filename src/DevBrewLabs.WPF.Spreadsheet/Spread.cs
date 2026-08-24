@@ -2,8 +2,10 @@ using DevBrewLabs.Spreadsheet;
 using DevBrewLabs.WPF.Spreadsheet.Components;
 using DevBrewLabs.WPF.Spreadsheet.Rendering;
 using DevBrewLabs.WPF.Spreadsheet.Rendering.Text;
+using DevBrewLabs.WPF.Spreadsheet.UI;
 using DevBrewLabs.WPF.Spreadsheet.UI.Managers;
 using System;
+using System.Data.Common;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -84,7 +86,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
                 typeof(Brush),
                 typeof(Spread),
                 new PropertyMetadata(
-                    new SolidColorBrush(Color.FromRgb(225, 229, 235)),
+                    new SolidColorBrush(Color.FromArgb(35, 25, 25, 25)),
                     OnHeaderAppearanceChanged));
 
             SelectedHeaderForegroundProperty = DependencyProperty.Register(
@@ -532,18 +534,18 @@ namespace DevBrewLabs.WPF.Spreadsheet
                 var columnHeaderHeight = activeSheetView.GetColumnHeaderHeight() * zoom;
                 var rowHeaderWidth = activeSheetView.GetRowHeaderWidth() * zoom;
 
-                var panePoint = TranslatePoint(point, SheetViewHost);
+                var panePoint = TranslatePoint(point, _sheetViewHost);
 
                 // Row headers hit test
-                if (panePoint.X >= 0 && panePoint.X < rowHeaderWidth && panePoint.Y >= columnHeaderHeight && panePoint.Y < SheetViewHost.ActualHeight)
+                if (panePoint.X >= 0 && panePoint.X < rowHeaderWidth && panePoint.Y >= columnHeaderHeight && panePoint.Y < _sheetViewHost.ActualHeight)
                     return activeSheetView.RowHeadersSurface.HitTest(TranslatePoint(point, activeSheetView.RowHeadersSurface));
 
                 // Cells hit test
-                if (panePoint.X >= rowHeaderWidth && panePoint.Y >= columnHeaderHeight && panePoint.X < SheetViewHost.ActualWidth && panePoint.Y < SheetViewHost.ActualHeight)
+                if (panePoint.X >= rowHeaderWidth && panePoint.Y >= columnHeaderHeight && panePoint.X < _sheetViewHost.ActualWidth && panePoint.Y < _sheetViewHost.ActualHeight)
                     return activeSheetView.CellsSurface.HitTest(TranslatePoint(point, activeSheetView.CellsSurface));
 
                 // Column headers hit test
-                if (panePoint.X >= rowHeaderWidth && panePoint.Y >= 0 && panePoint.Y < columnHeaderHeight && panePoint.X < SheetViewHost.ActualWidth)
+                if (panePoint.X >= rowHeaderWidth && panePoint.Y >= 0 && panePoint.Y < columnHeaderHeight && panePoint.X < _sheetViewHost.ActualWidth)
                     return activeSheetView.ColumnHeadersSurface.HitTest(TranslatePoint(point, activeSheetView.ColumnHeadersSurface));
 
                 if (panePoint.X < rowHeaderWidth && panePoint.Y < columnHeaderHeight)
@@ -553,28 +555,6 @@ namespace DevBrewLabs.WPF.Spreadsheet
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Scrolls to specific row.
-        /// </summary>
-        /// <param name="sheetView"></param>
-        /// <param name="row"></param>
-        public void ScrollToRow(ISheetView sheetView, int row)
-        {
-            var workSheet = sheetView.WorkSheet;
-            SheetTabControl.VScrollBar.Value = ((SheetView)sheetView).ViewPort.GetRowLocation(row);
-        }
-
-        /// <summary>
-        /// Scrolls to specific column.
-        /// </summary>
-        /// <param name="sheetView"></param>
-        /// <param name="column"></param>
-        public void ScrollToColumn(ISheetView sheetView, int column)
-        {
-            var workSheet = sheetView.WorkSheet;
-            SheetTabControl.HScrollBar.Value = ((SheetView)sheetView).ViewPort.GetColumnLocation(column);
         }
 
         /// <summary>
@@ -698,6 +678,38 @@ namespace DevBrewLabs.WPF.Spreadsheet
         }
 
         /// <summary>
+        /// Performs a full refresh of the active sheet: updates header sizes, visible range,
+        /// scrollbars, active editor layout, and redraws all surfaces.
+        /// </summary>
+        public void Refresh()
+        {
+            var activeSheetView = Sheets.ActiveSheet as SheetView;
+            if (activeSheetView != null)
+            {
+                UpdateHeadersSize();
+                activeSheetView.ViewPort.CalculateVisibleRange();
+                UpdateScrollbars();
+                if (_editingManager != null && _editingManager.IsEditing)
+                {
+                    _editingManager.UpdateEditorLayout();
+                }
+            }
+            Invalidate();
+        }
+
+        public void ScrollToRow(int row)
+        {
+            SheetView sheetView = (SheetView)Sheets.ActiveSheet;
+            _sheetTabControl?.SetVerticalScrollPosition(sheetView.ViewPort.GetRowLocation(row));
+        }
+
+        public void ScrollToColumn(int column)
+        {
+            SheetView sheetView = (SheetView)Sheets.ActiveSheet;
+            _sheetTabControl?.SetHorizontalScrollPosition(sheetView.ViewPort.GetColumnLocation(column));
+        }
+
+        /// <summary>
         /// Invalidates the provided sheet region.
         /// </summary>
         /// <param name="rowHeaders"></param>
@@ -706,8 +718,8 @@ namespace DevBrewLabs.WPF.Spreadsheet
         /// <param name="topLeft"></param>
         public void Invalidate(bool rowHeaders = true, bool columnHeaders = true, bool cells = true, bool topLeft = true)
         {
-            SheetViewHost.Draw(rowHeaders, columnHeaders, cells, cells, topLeft);
-            SheetViewHost.RefreshInteractionLayers(rowHeaders, columnHeaders, cells);
+            _sheetViewHost?.Draw(rowHeaders, columnHeaders, cells, cells, topLeft);
+            _sheetViewHost?.RefreshInteractionLayers(rowHeaders, columnHeaders, cells);
         }
 
         /// <summary>
@@ -734,8 +746,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
-            SheetTabControl?.UpdateScrollbars();
-            Invalidate();
+            Refresh();
         }
 
         /// <summary>
@@ -745,8 +756,8 @@ namespace DevBrewLabs.WPF.Spreadsheet
         {
             Loaded -= OnLoaded;
             WorkBook.Dispose();
-            SheetTabControl.Dispose();
-            SheetViewHost.Dispose();
+            _sheetTabControl?.Dispose();
+            _sheetViewHost?.Dispose();
             RenderEngine.Dispose();
             _filterManager?.Dispose();
             _formulaSuggestionManager?.Dispose();
@@ -768,8 +779,6 @@ namespace DevBrewLabs.WPF.Spreadsheet
         internal ContextMenuManager ContextMenuManager => _contextMenuManager;
         internal ZoomManager ZoomManager => _zoomManager;
         internal RenderEngine RenderEngine => _renderEngine;
-        internal SheetViewHost SheetViewHost => _sheetViewHost;
-        internal SheetTabControl SheetTabControl => _sheetTabControl;
         internal UndoRedoManager UndoRedoManager => _undoRedoManager;
         internal RowResizeManager RowResizeManager => _rowResizeManager;
         internal ColumnResizeManager ColumnResizeManager => _columnResizeManager;
@@ -779,6 +788,38 @@ namespace DevBrewLabs.WPF.Spreadsheet
         internal FormulaTextBox FormulaTextBox { get; set; }
         internal Pen GridLinePen { get; private set; }
         internal Pen SelectionBorderPen { get; private set; }
+
+        internal UIElement SheetViewHostElement => _sheetViewHost;
+
+        internal void UpdateScrollbars()
+        {
+            _sheetTabControl?.UpdateScrollbars();
+        }
+
+        internal void UpdateHeadersSize()
+        {
+            _sheetViewHost?.UpdateHeadersSize();
+        }
+
+        internal void UpdateZoomTransform()
+        {
+            _sheetViewHost?.UpdateZoomTransform();
+        }
+
+        internal void RefreshInteractionLayers(bool rowHeaders = true, bool columnHeaders = true, bool cells = true)
+        {
+            _sheetViewHost?.RefreshInteractionLayers(rowHeaders, columnHeaders, cells);
+        }
+
+        internal void InvalidateSurfaces(bool rowHeaders = true, bool columnHeaders = true, bool cells = true, bool gridLines = true, bool topLeft = true)
+        {
+            _sheetViewHost?.Draw(rowHeaders, columnHeaders, cells, gridLines, topLeft);
+        }
+
+        internal void HostSheet(SheetView sheetView)
+        {
+            _sheetViewHost?.HostSheet(sheetView);
+        }
 
         internal void RaiseCellsSelectionChanged(CellsSelectionEventArgs args)
         {
@@ -858,17 +899,11 @@ namespace DevBrewLabs.WPF.Spreadsheet
             switch (activeSheetView.MouseWheelScrollDirection)
             {
                 case MouseWheelScrollDirection.Vertical:
-                    if (_sheetTabControl.VScrollBar == null)
-                        return;
-                    _sheetTabControl.VScrollBar.Value += -e.Delta / 5;
-                    Invalidate(true, false, true, false);
+                    _sheetTabControl?.ScrollVerticalBy(-e.Delta / 5.0);
                     break;
 
                 case MouseWheelScrollDirection.Horizontal:
-                    if (_sheetTabControl.HScrollBar == null)
-                        return;
-                    _sheetTabControl.HScrollBar.Value += -e.Delta / 5;
-                    Invalidate(false, true, true, false);
+                    _sheetTabControl?.ScrollHorizontalBy(-e.Delta / 5.0);
                     break;
             }
         }
@@ -883,10 +918,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             _filterManager?.HideFilterDropdown();
             _formulaSuggestionManager?.Hide();
 
-            SheetTabControl.UpdateScrollbars();
-            var activeSheetView = Sheets.ActiveSheet;
-            activeSheetView.ScrollToHorizontalOffset(activeSheetView.ScrollPosition.X);
-            activeSheetView.ScrollToVerticalOffset(activeSheetView.ScrollPosition.Y);
+            Refresh();
         }
 
         protected override void OnDpiChanged(DpiScale oldDpi, DpiScale newDpi)
@@ -894,7 +926,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             base.OnDpiChanged(oldDpi, newDpi);
             PixelPerDip = newDpi.PixelsPerDip;
             TextLayoutCache.Clear();
-            Invalidate();
+            Refresh();
         }
 
         public override void OnApplyTemplate()

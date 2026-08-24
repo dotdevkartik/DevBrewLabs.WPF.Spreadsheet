@@ -189,5 +189,19 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
             Assert.That(view.ActiveRow, Is.EqualTo(0));
             Assert.That(view.ActiveColumn, Is.EqualTo(0));
         }
+
+        [Test]
+        public void Spread_Refresh_CanBeCalledWithoutException()
+        {
+            var spread = new Spread();
+            Assert.DoesNotThrow(() => spread.Refresh());
+        }
+
+        [Test]
+        public void Spread_Invalidate_CanBeCalledWithoutException()
+        {
+            var spread = new Spread();
+            Assert.DoesNotThrow(() => spread.Invalidate());
+        }
     }
 }

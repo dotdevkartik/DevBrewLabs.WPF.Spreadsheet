@@ -56,11 +56,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 Spread.FilterManager?.HideFilterDropdown();
                 Spread.FormulaSuggestionManager?.Hide();
                 Spread.RaiseZoomChanged(oldZoom, newZoom);
-                Spread.SheetViewHost?.UpdateZoomTransform();
-                (activeSheetView.ViewPort as ViewPort)?.CalculateVisibleRange();
-                Spread.SheetTabControl?.UpdateScrollbars();
+                Spread.UpdateZoomTransform();
                 TextLayoutCache.Clear();
-                Spread.Invalidate();
+                Spread.Refresh();
             }
         }
     }

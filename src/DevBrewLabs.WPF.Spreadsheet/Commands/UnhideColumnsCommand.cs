@@ -26,9 +26,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Commands
                 var col = sheetView.WorkSheet.Columns[c];
                 if (col.Width == 0) col.Width = sheetView.WorkSheet.DefaultColumnWidth;
             }
-            sheetView.ViewPort.CalculateVisibleRange();
-            Spread.SheetTabControl?.UpdateScrollbars();
-            Spread.Invalidate();
+            Spread.Refresh();
         }
     }
 }

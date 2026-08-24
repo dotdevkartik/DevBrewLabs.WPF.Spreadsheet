@@ -23,9 +23,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Commands
             {
                 sheetView.WorkSheet.Rows[r].IsHidden = true;
             }
-            sheetView.ViewPort.CalculateVisibleRange();
-            Spread.SheetTabControl?.UpdateScrollbars();
-            Spread.Invalidate();
+            Spread.Refresh();
         }
     }
 }

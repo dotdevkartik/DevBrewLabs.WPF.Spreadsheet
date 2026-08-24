@@ -27,9 +27,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Commands
                 row.IsHidden = false;
                 if (row.Height == 0) row.Height = sheetView.WorkSheet.DefaultRowHeight;
             }
-            sheetView.ViewPort.CalculateVisibleRange();
-            Spread.SheetTabControl?.UpdateScrollbars();
-            Spread.Invalidate();
+            Spread.Refresh();
         }
     }
 }

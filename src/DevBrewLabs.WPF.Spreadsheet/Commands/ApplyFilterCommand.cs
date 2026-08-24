@@ -32,7 +32,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Commands
                 ws.AutoFilter?.SetRange(range);
             }
             
-            Spread.Invalidate();
+            Spread.Refresh();
         }
     }
 }

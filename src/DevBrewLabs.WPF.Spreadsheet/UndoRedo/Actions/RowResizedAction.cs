@@ -22,8 +22,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
                 SheetView.WorkSheet.Rows[kvp.Key].Height = kvp.Value;
             }
 
-            SheetView.ViewPort.As<ViewPort>().CalculateVisibleRange();
-            SheetView.Spread.Invalidate(true, false, false, false);
+            SheetView.Spread.Refresh();
         }
 
         public override void Redo()
@@ -33,8 +32,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
                 SheetView.WorkSheet.Rows[kvp.Key].Height = kvp.Value;
             }
 
-            SheetView.ViewPort.As<ViewPort>().CalculateVisibleRange();
-            SheetView.Spread.Invalidate(true, false, false, false);
+            SheetView.Spread.Refresh();
         }
     }
 }

@@ -15,7 +15,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 return;
 
             HoveredColumn = column;
-            Spread?.SheetViewHost?.Draw(rowHeaders: false, columnHeaders: true, cells: false, gridLines: false, topLeft: false);
+            Spread?.InvalidateSurfaces(rowHeaders: false, columnHeaders: true, cells: false, gridLines: false, topLeft: false);
         }
 
         public void SetHoveredRow(SheetView view, int row)
@@ -24,7 +24,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 return;
 
             HoveredRow = row;
-            Spread?.SheetViewHost?.Draw(rowHeaders: true, columnHeaders: false, cells: false, gridLines: false, topLeft: false);
+            Spread?.InvalidateSurfaces(rowHeaders: true, columnHeaders: false, cells: false, gridLines: false, topLeft: false);
         }
 
         public void ClearHoveredColumn(SheetView view)
@@ -32,7 +32,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             if (HoveredColumn != -1)
             {
                 HoveredColumn = -1;
-                Spread?.SheetViewHost?.Draw(rowHeaders: false, columnHeaders: true, cells: false, gridLines: false, topLeft: false);
+                Spread?.InvalidateSurfaces(rowHeaders: false, columnHeaders: true, cells: false, gridLines: false, topLeft: false);
             }
         }
 
@@ -41,7 +41,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             if (HoveredRow != -1)
             {
                 HoveredRow = -1;
-                Spread?.SheetViewHost?.Draw(rowHeaders: true, columnHeaders: false, cells: false, gridLines: false, topLeft: false);
+                Spread?.InvalidateSurfaces(rowHeaders: true, columnHeaders: false, cells: false, gridLines: false, topLeft: false);
             }
         }
 
@@ -54,7 +54,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
             if (colChanged || rowChanged)
             {
-                Spread?.SheetViewHost?.Draw(rowHeaders: rowChanged, columnHeaders: colChanged, cells: false, gridLines: false, topLeft: false);
+                Spread?.InvalidateSurfaces(rowHeaders: rowChanged, columnHeaders: colChanged, cells: false, gridLines: false, topLeft: false);
             }
         }
     }

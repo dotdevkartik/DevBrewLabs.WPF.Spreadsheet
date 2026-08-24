@@ -174,7 +174,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
                 if (renderedRowHeight < rowRect.Height)
                 {
-                    SheetView.Spread.ScrollToRow(SheetView, SheetView.ViewPort.ViewRange.TopRow + rowSpan);
+                    SheetView.Spread.ScrollToRow(SheetView.ViewPort.ViewRange.TopRow + rowSpan);
                 }
             }
 
@@ -197,7 +197,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
                 if (renderedRowHeight < rowRect.Height)
                 {
-                    SheetView.Spread.ScrollToRow(SheetView, SheetView.ViewPort.ViewRange.TopRow - 1);
+                    SheetView.Spread.ScrollToRow(SheetView.ViewPort.ViewRange.TopRow - 1);
                 }
             }
 
@@ -222,7 +222,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
                 if (renderedColumnWidth < colRect.Width)
                 {
-                    SheetView.Spread.ScrollToColumn(SheetView, SheetView.ViewPort.ViewRange.LeftColumn + colSpan);
+                    SheetView.Spread.ScrollToColumn(SheetView.ViewPort.ViewRange.LeftColumn + colSpan);
                 }
             }
 
@@ -245,7 +245,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
                 if (renderedColumnWidth < colRect.Width)
                 {
-                    SheetView.Spread.ScrollToColumn(SheetView, SheetView.ViewPort.ViewRange.LeftColumn - 1);
+                    SheetView.Spread.ScrollToColumn(SheetView.ViewPort.ViewRange.LeftColumn - 1);
                 }
             }
 
@@ -444,37 +444,37 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 if (down && right)
                 {
                     hitTest = HitTest(new Point(SheetView.ViewPort.ActualBounds.Width - 5, SheetView.ViewPort.ActualBounds.Height - 5));
-                    SheetView.Spread.ScrollToRow(SheetView, SheetView.ViewPort.ViewRange.TopRow + 1 * ySpeed);
-                    SheetView.Spread.ScrollToColumn(SheetView, SheetView.ViewPort.ViewRange.LeftColumn + 1 * xSpeed);
+                    SheetView.Spread.ScrollToRow(SheetView.ViewPort.ViewRange.TopRow + 1 * ySpeed);
+                    SheetView.Spread.ScrollToColumn(SheetView.ViewPort.ViewRange.LeftColumn + 1 * xSpeed);
                 }
                 else if (up && right)
                 {
                     hitTest = HitTest(new Point(SheetView.ViewPort.ActualBounds.Width - 5, 0));
-                    SheetView.Spread.ScrollToRow(SheetView, SheetView.ViewPort.ViewRange.TopRow - 1 * ySpeed);
-                    SheetView.Spread.ScrollToColumn(SheetView, SheetView.ViewPort.ViewRange.LeftColumn + 1 * xSpeed);
+                    SheetView.Spread.ScrollToRow(SheetView.ViewPort.ViewRange.TopRow - 1 * ySpeed);
+                    SheetView.Spread.ScrollToColumn(SheetView.ViewPort.ViewRange.LeftColumn + 1 * xSpeed);
                 }
                 else if (left && up)
                 {
                     hitTest = HitTest(new Point(SheetView.GetRowHeaderWidth() + 5, SheetView.GetColumnHeaderHeight() + 5));
-                    SheetView.Spread.ScrollToRow(SheetView, SheetView.ViewPort.ViewRange.TopRow - 1 * ySpeed);
-                    SheetView.Spread.ScrollToColumn(SheetView, SheetView.ViewPort.ViewRange.LeftColumn - 1 * xSpeed);
+                    SheetView.Spread.ScrollToRow(SheetView.ViewPort.ViewRange.TopRow - 1 * ySpeed);
+                    SheetView.Spread.ScrollToColumn(SheetView.ViewPort.ViewRange.LeftColumn - 1 * xSpeed);
                 }
                 else if (left && down)
                 {
                     hitTest = HitTest(new Point(0, SheetView.ViewPort.ActualBounds.Height - 5));
-                    SheetView.Spread.ScrollToRow(SheetView, SheetView.ViewPort.ViewRange.TopRow + 1 * ySpeed);
-                    SheetView.Spread.ScrollToColumn(SheetView, SheetView.ViewPort.ViewRange.LeftColumn - 1 * xSpeed);
+                    SheetView.Spread.ScrollToRow(SheetView.ViewPort.ViewRange.TopRow + 1 * ySpeed);
+                    SheetView.Spread.ScrollToColumn(SheetView.ViewPort.ViewRange.LeftColumn - 1 * xSpeed);
                 }
                 else if (up)
                 {
                     hitTest = HitTest(new Point(position.X, 0));
-                    SheetView.Spread.ScrollToRow(SheetView, SheetView.ViewPort.ViewRange.TopRow - 1 * ySpeed);
+                    SheetView.Spread.ScrollToRow(SheetView.ViewPort.ViewRange.TopRow - 1 * ySpeed);
                 }
                 else if (down)
                 {
                     var workSheet = SheetView.WorkSheet;
                     hitTest = HitTest(new Point(position.X, SheetView.ViewPort.ActualBounds.Height - 5));
-                    SheetView.Spread.ScrollToRow(SheetView, SheetView.ViewPort.ViewRange.TopRow + 1 * ySpeed);
+                    SheetView.Spread.ScrollToRow(SheetView.ViewPort.ViewRange.TopRow + 1 * ySpeed);
                     var bottomRow = SheetView.ViewPort.ViewRange.BottomRow;
                     var renderedHeight = SheetView.GetRowRenderedHeight(bottomRow);
                     var actualHeight = workSheet.Rows.GetRowHeight(bottomRow);
@@ -483,12 +483,12 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 else if (left)
                 {
                     hitTest = HitTest(new Point(0, position.Y));
-                    SheetView.Spread.ScrollToColumn(SheetView, SheetView.ViewPort.ViewRange.LeftColumn - 1 * xSpeed);
+                    SheetView.Spread.ScrollToColumn(SheetView.ViewPort.ViewRange.LeftColumn - 1 * xSpeed);
                 }
                 else if (right)
                 {
                     hitTest = HitTest(new Point(SheetView.ViewPort.ActualBounds.Width - 5, position.Y));
-                    SheetView.Spread.ScrollToColumn(SheetView, SheetView.ViewPort.ViewRange.LeftColumn + 1 * xSpeed);
+                    SheetView.Spread.ScrollToColumn(SheetView.ViewPort.ViewRange.LeftColumn + 1 * xSpeed);
                 }
                 else
                 {

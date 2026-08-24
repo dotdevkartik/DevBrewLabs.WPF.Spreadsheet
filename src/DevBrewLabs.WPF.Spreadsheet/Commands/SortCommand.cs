@@ -28,7 +28,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Commands
             {
                 sheetView.WorkSheet.Sort(new SortOptions { HasHeader = false, SortLevels = new List<SortInfo> { new SortInfo(sheetView.ActiveColumn, ascending) } });
             }
-            Spread.Invalidate();
+            Spread.Refresh();
         }
     }
 }

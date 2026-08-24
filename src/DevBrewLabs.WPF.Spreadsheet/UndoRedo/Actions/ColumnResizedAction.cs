@@ -22,8 +22,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
                 SheetView.WorkSheet.Columns[kvp.Key].Width = kvp.Value;
             }
 
-            SheetView.ViewPort.As<ViewPort>().CalculateVisibleRange();
-            SheetView.Spread.Invalidate(false, true, false, false);
+            SheetView.Spread.Refresh();
         }
 
         public override void Redo()
@@ -33,8 +32,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
                 SheetView.WorkSheet.Columns[kvp.Key].Width = kvp.Value;
             }
 
-            SheetView.ViewPort.As<ViewPort>().CalculateVisibleRange();
-            SheetView.Spread.Invalidate(false, true, false, false);
+            SheetView.Spread.Refresh();
         }
     }
 }
