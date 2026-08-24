@@ -212,10 +212,23 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
             {
                 spread.ZoomFactor = 1.5;
                 spread.Refresh();
+                spread.ZoomFactor = 0.62;
+                spread.Refresh();
                 spread.ZoomFactor = 0.5;
                 spread.Refresh();
                 spread.ZoomFactor = 1.0;
                 spread.Refresh();
+            });
+        }
+
+        [Test]
+        public void Spread_ZoomFactor_RowHeaderRenderingAtLowZoom_RendersWithoutException()
+        {
+            var spread = new Spread();
+            spread.ZoomFactor = 0.62;
+            Assert.DoesNotThrow(() =>
+            {
+                spread.Invalidate(rowHeaders: true, columnHeaders: true, cells: true, topLeft: true);
             });
         }
     }

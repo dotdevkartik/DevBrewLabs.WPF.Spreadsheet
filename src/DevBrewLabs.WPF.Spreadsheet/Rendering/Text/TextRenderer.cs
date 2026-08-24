@@ -29,7 +29,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
                 text = TextUtils.NormalizeToSingleLine(text);
             }
 
-            double availableWidth = bounds.Width - (2 * renderContext.TextPadding);
+            double textPadding = renderContext.TextPadding * renderContext.Zoom;
+            double availableWidth = bounds.Width - (2 * textPadding);
             if (availableWidth <= 0)
                 return;
 
@@ -80,7 +81,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
             switch (verticalAlignment)
             {
                 case CellVerticalAlignment.Top:
-                    startY = bounds.Top + renderContext.TextPadding;
+                    startY = bounds.Top + textPadding;
                     break;
                 case CellVerticalAlignment.Center:
                     startY = bounds.Top + (bounds.Height - totalHeight) / 2;
@@ -88,7 +89,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
                         startY = bounds.Top;
                     break;
                 default: // Bottom
-                    startY = bounds.Bottom - renderContext.TextPadding - totalHeight;
+                    startY = bounds.Bottom - textPadding - totalHeight;
                     if (startY < bounds.Top)
                         startY = bounds.Top;
                     break;
@@ -110,15 +111,15 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
                             x = bounds.Left + (bounds.Width - layout.Width) / 2;
                             break;
                         case CellHorizontalAlignment.Right:
-                            x = bounds.Right - renderContext.TextPadding - layout.Width;
+                            x = bounds.Right - textPadding - layout.Width;
                             break;
                         default: // Left
-                            x = bounds.Left + renderContext.TextPadding;
+                            x = bounds.Left + textPadding;
                             break;
                     }
 
-                    if (x < bounds.Left + renderContext.TextPadding)
-                        x = bounds.Left + renderContext.TextPadding;
+                    if (x < bounds.Left + textPadding)
+                        x = bounds.Left + textPadding;
 
                     x = PixelSnapper.Snap(x, renderContext.PixelPerDip);
 
