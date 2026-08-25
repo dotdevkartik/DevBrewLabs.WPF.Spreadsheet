@@ -1,7 +1,9 @@
-﻿namespace DevBrewLabs.Spreadsheet
+﻿using DevBrewLabs.Spreadsheet.Formatters;
+
+namespace DevBrewLabs.Spreadsheet
 {
     public interface ICellType
     {
-        
+
     }
 }

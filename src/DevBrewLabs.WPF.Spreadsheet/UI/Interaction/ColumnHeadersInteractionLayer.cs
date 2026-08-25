@@ -16,7 +16,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             base.OnMouseLeftButtonDown(e);
             var hitTest = HitTest();
 
-            if (hitTest.Element == VisualElement.ColumnHeaderResizeBar && SheetView.Spread.AllowColumnResize)
+            if (hitTest.Element == SheetElement.ColumnHeaderResizeBar && SheetView.Spread.AllowColumnResize)
             {
                 CaptureMouse();
                 SheetView.Spread.ColumnResizeManager.BeginResize(SheetView, hitTest.Column, (int)hitTest.Position.X);
@@ -55,7 +55,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
         {
             base.OnMouseRightButtonUp(e);
             var hitTest = HitTest();
-            if (hitTest != null && (hitTest.Element == VisualElement.ColumnHeader || hitTest.Element == VisualElement.ColumnHeaderResizeBar))
+            if (hitTest != null && (hitTest.Element == SheetElement.ColumnHeader || hitTest.Element == SheetElement.ColumnHeaderResizeBar))
             {
                 SheetView.Spread?.ContextMenuManager?.ShowContextMenu(SheetView, hitTest, this);
             }
@@ -75,7 +75,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 ReleaseMouseCapture();
             }
 
-            if (hitTest != null && hitTest.Element != VisualElement.ColumnHeaderResizeBar)
+            if (hitTest != null && hitTest.Element != SheetElement.ColumnHeaderResizeBar)
                 Cursor = SheetUtils.ColumnHeaderCursor;
         }
 
@@ -98,7 +98,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 return;
             }
 
-            if (hitTest.Element == VisualElement.ColumnHeaderResizeBar && SheetView.Spread.AllowColumnResize)
+            if (hitTest.Element == SheetElement.ColumnHeaderResizeBar && SheetView.Spread.AllowColumnResize)
             {
                 Cursor = SheetUtils.ColumnResizeCursor;
             }
@@ -107,7 +107,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 Cursor = SheetUtils.ColumnHeaderCursor;
             }
 
-            int newHover = (hitTest.Element == VisualElement.ColumnHeader) ? hitTest.Column : -1;
+            int newHover = (hitTest.Element == SheetElement.ColumnHeader) ? hitTest.Column : -1;
             SheetView?.Spread?.HeaderHoverManager?.SetHoveredColumn(SheetView, newHover);
 
             if (e.LeftButton != MouseButtonState.Pressed)

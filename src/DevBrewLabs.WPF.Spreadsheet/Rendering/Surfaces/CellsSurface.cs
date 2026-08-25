@@ -34,7 +34,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             var workSheet = (Worksheet)base.SheetView.WorkSheet;
             var viewPort = base.SheetView.ViewPort;
 
-            var hitTestInfo = new SpreadHitTestResult() { Element = VisualElement.Cell, Row = -1, Column = -1, Sheet = SheetView };
+            var hitTestInfo = new SpreadHitTestResult() { Element = SheetElement.Cell, Row = -1, Column = -1, Sheet = SheetView };
             hitTestInfo.ActualHitTestPoint = hitPoint;
             var rows = workSheet.Rows.As<Rows>();
             var columns = workSheet.Columns.As<Columns>();
@@ -51,7 +51,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                 if (Math.Abs(point.X - brCellRect.BottomRight.X) <= _dragFillOffset &&
                     Math.Abs(point.Y - brCellRect.BottomRight.Y) <= _dragFillOffset)
                 {
-                    hitTestInfo.Element = VisualElement.DragFill;
+                    hitTestInfo.Element = SheetElement.DragFill;
                     hitTestInfo.Row = SheetView.Selection.BottomRow;
                     hitTestInfo.Column = SheetView.Selection.RightColumn;
                     hitTestInfo.Position = new Point(brCellRect.X - viewPort.LeftColumnLocation, 
@@ -98,14 +98,20 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                                 rowHeight = cellRect.Height;
                             }
 
-                            if (SheetView.Spread.AllowFiltering && 
-                                workSheet.AutoFilter != null && workSheet.AutoFilter.IsFilterHeaderCell(hitTestInfo.Row, hitTestInfo.Column) &&
-                                (columns.GetItem(hitTestInfo.Column) == null || columns.GetItem(hitTestInfo.Column).AllowFiltering))
+                            var scaledCellRect = new Rect(
+                                (x - viewPort.LeftColumnLocation) * zoom,
+                                (y - viewPort.TopRowLocation) * zoom,
+                                columnWidth * zoom,
+                                rowHeight * zoom);
+
+                            foreach (var element in SheetView.Spread.CellInteractionManager.GetCellElements(SheetView, hitTestInfo.Row, hitTestInfo.Column))
                             {
-                                double filterButtonWidth = 16;
-                                if (point.X >= x + columnWidth - filterButtonWidth)
+                                var elementBounds = element.GetBounds(scaledCellRect, zoom);
+                                if (elementBounds.Contains(hitPoint))
                                 {
-                                    hitTestInfo.Element = VisualElement.CellFilterButton;
+                                    hitTestInfo.Element = SheetElement.CellElement;
+                                    hitTestInfo.CellElement = element;
+                                    break;
                                 }
                             }
 

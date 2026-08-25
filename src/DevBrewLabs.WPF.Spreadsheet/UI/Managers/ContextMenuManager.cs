@@ -152,15 +152,15 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
             switch (hitTest.Element)
             {
-                case VisualElement.RowHeader:
-                case VisualElement.RowHeaderResizeBar:
+                case SheetElement.RowHeader:
+                case SheetElement.RowHeaderResizeBar:
                     return SpreadContextMenuRegion.RowHeader;
 
-                case VisualElement.ColumnHeader:
-                case VisualElement.ColumnHeaderResizeBar:
+                case SheetElement.ColumnHeader:
+                case SheetElement.ColumnHeaderResizeBar:
                     return SpreadContextMenuRegion.ColumnHeader;
 
-                case VisualElement.TopLeft:
+                case SheetElement.TopLeft:
                     return SpreadContextMenuRegion.CornerHeader;
 
                 default:

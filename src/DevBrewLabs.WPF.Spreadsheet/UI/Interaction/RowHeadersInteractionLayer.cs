@@ -16,7 +16,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             base.OnMouseLeftButtonDown(e);
             var hitTest = HitTest();
 
-            if (hitTest.Element == VisualElement.RowHeaderResizeBar && SheetView.Spread.AllowRowResize)
+            if (hitTest.Element == SheetElement.RowHeaderResizeBar && SheetView.Spread.AllowRowResize)
             {
                 CaptureMouse();
                 SheetView.Spread.RowResizeManager.BeginResize(SheetView, hitTest.Row, (int)hitTest.Position.Y);
@@ -56,7 +56,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
         {
             base.OnMouseRightButtonUp(e);
             var hitTest = HitTest();
-            if (hitTest != null && (hitTest.Element == VisualElement.RowHeader || hitTest.Element == VisualElement.RowHeaderResizeBar))
+            if (hitTest != null && (hitTest.Element == SheetElement.RowHeader || hitTest.Element == SheetElement.RowHeaderResizeBar))
             {
                 SheetView.Spread?.ContextMenuManager?.ShowContextMenu(SheetView, hitTest, this);
             }
@@ -74,7 +74,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 ReleaseMouseCapture();
             }
 
-            if (hitTest != null && hitTest.Element != VisualElement.RowHeaderResizeBar)
+            if (hitTest != null && hitTest.Element != SheetElement.RowHeaderResizeBar)
                 Cursor = SheetUtils.RowHeaderCursor;
         }
 
@@ -97,7 +97,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 return;
             }
 
-            if (hitTest.Element == VisualElement.RowHeaderResizeBar && SheetView.Spread.AllowRowResize)
+            if (hitTest.Element == SheetElement.RowHeaderResizeBar && SheetView.Spread.AllowRowResize)
             {
                 Cursor = SheetUtils.RowResizeCursor;
             }
@@ -106,7 +106,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 Cursor = SheetUtils.RowHeaderCursor;
             }
 
-            int newHover = (hitTest.Element == VisualElement.RowHeader) ? hitTest.Row : -1;
+            int newHover = (hitTest.Element == SheetElement.RowHeader) ? hitTest.Row : -1;
             SheetView?.Spread?.HeaderHoverManager?.SetHoveredRow(SheetView, newHover);
 
             if (e.LeftButton != MouseButtonState.Pressed)

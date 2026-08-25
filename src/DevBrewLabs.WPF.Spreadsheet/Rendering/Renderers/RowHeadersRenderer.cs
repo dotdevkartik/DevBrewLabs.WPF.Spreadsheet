@@ -75,7 +75,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                 if (headerWidth != context.RowHeaderColumns.GetColumnWidth(col))
                 {
                     context.RowHeaderColumns[col].Width = headerWidth;
-                    context.SheetView.Spread.UpdateHeadersSize();
+                    context.View.Spread.UpdateHeadersSize();
                 }
             }
         }
@@ -114,8 +114,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
             if (context.HeaderHoverManager.HoveredRow == row)
             {
-                var hoverBrush = context.SheetView.Spread?.HeaderHoverManager?.HoveredRow == row
-                    ? context.SheetView.Spread?.MouseHoverHeaderBackground
+                var hoverBrush = context.View.Spread?.HeaderHoverManager?.HoveredRow == row
+                    ? context.View.Spread?.MouseHoverHeaderBackground
                     : null;
 
                 if (hoverBrush != null)
@@ -127,8 +127,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             context.DrawRectangle(backGroundBrush, null, cellRect);
 
             string text = cellValue != null ? cellValue.ToString() : (row + 1).ToString();
-            TextRenderer.DrawText(
-                context,
+            context.DrawText(
                 text,
                 cellRect,
                 style.FontFamily,

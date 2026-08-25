@@ -80,7 +80,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
             if (context.HeaderHoverManager.HoveredColumn == column)
             {
-                var hoverBrush = context.SheetView.Spread?.MouseHoverHeaderBackground;
+                var hoverBrush = context.View.Spread?.MouseHoverHeaderBackground;
                 if (hoverBrush != null)
                 {
                     backGroundBrush = hoverBrush;
@@ -90,8 +90,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             context.DrawRectangle(backGroundBrush, null, cellRect);
 
             string text = cellValue != null ? cellValue.ToString() : RenderingExtensions.GetColumnHeader(column);
-            TextRenderer.DrawText(
-                context,
+            context.DrawText(
                 text,
                 cellRect,
                 style.FontFamily,

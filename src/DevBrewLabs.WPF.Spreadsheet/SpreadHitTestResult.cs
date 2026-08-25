@@ -1,4 +1,5 @@
-﻿using System.Windows;
+using DevBrewLabs.WPF.Spreadsheet.Elements;
+using System.Windows;
 
 namespace DevBrewLabs.WPF.Spreadsheet
 {
@@ -15,6 +16,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         /// Actual hit test position
         /// </summary>
         internal Point ActualHitTestPoint { get; set; }
-        public VisualElement Element { get; internal set; }
+        public SheetElement Element { get; internal set; }
+        public CellElement CellElement { get; internal set; }
     }
 }

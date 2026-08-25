@@ -30,7 +30,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
             IsThreeState = false;
         }
 
-        internal override void DrawCell(RenderContext renderContext, object value, IStyle style, IFormatter formatter, Rect cellRect)
+        public override void DrawCell(IRenderContext renderContext, object value, IStyle style, IFormatter formatter, Rect cellRect)
         {
             var scaledCheckBoxSize = new Size(CheckBoxSize.Width * renderContext.Zoom, CheckBoxSize.Height * renderContext.Zoom);
             var checkBoxRect = cellRect.ToCellCheckBoxRect(scaledCheckBoxSize);
@@ -55,7 +55,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
         /// <param name="ctx"></param>
         /// <param name="checkBoxRect"></param>
         /// <param name="value"></param>
-        private void DrawMark(RenderContext renderContext, Rect checkBoxRect, object value)
+        private void DrawMark(IRenderContext renderContext, Rect checkBoxRect, object value)
         {
             if(IsThreeState && value == null)
             {

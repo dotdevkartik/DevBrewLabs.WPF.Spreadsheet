@@ -33,7 +33,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             var workSheet = (Worksheet)SheetView.WorkSheet;
             var viewPort = SheetView.ViewPort;
 
-            var hitTestInfo = new SpreadHitTestResult() { Element = VisualElement.RowHeader, Sheet = SheetView, ActualHitTestPoint = hitPoint };
+            var hitTestInfo = new SpreadHitTestResult() { Element = SheetElement.RowHeader, Sheet = SheetView, ActualHitTestPoint = hitPoint };
             var rows = workSheet.Rows.As<Rows>();
             var columns = workSheet.RowHeaders.Columns.As<RowHeaderColumns>();
             var viewRange = SheetView.ViewPort.ViewRange;
@@ -55,7 +55,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                         lastHiddenRow++;
                     }
 
-                    hitTestInfo.Element = VisualElement.RowHeaderResizeBar;
+                    hitTestInfo.Element = SheetElement.RowHeaderResizeBar;
                     hitTestInfo.Row = lastHiddenRow;
                     y = 0;
                     hitTestInfo.Position = new Point(x - viewPort.LeftColumnLocation,
@@ -90,7 +90,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                     // Upper half of double-line indicator -> resizes the visible row above
                     if (point.Y >= bottomEdge - _resizeDelta && point.Y <= bottomEdge - 0.5)
                     {
-                        hitTestInfo.Element = VisualElement.RowHeaderResizeBar;
+                        hitTestInfo.Element = SheetElement.RowHeaderResizeBar;
                         hitTestInfo.Row = row;
                         y = rowLocation;
                         hitTestInfo.Position = new Point(x - viewPort.LeftColumnLocation,
@@ -100,7 +100,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                     // Lower half of double-line indicator -> unhides/expands the last hidden/filtered row
                     if (point.Y > bottomEdge - 0.5 && point.Y <= bottomEdge + _resizeDelta)
                     {
-                        hitTestInfo.Element = VisualElement.RowHeaderResizeBar;
+                        hitTestInfo.Element = SheetElement.RowHeaderResizeBar;
                         hitTestInfo.Row = lastHiddenRow;
                         y = bottomEdge;
                         hitTestInfo.Position = new Point(x - viewPort.LeftColumnLocation,
@@ -113,7 +113,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                     // Standard single border between visible rows
                     if (point.Y >= bottomEdge - _resizeDelta && point.Y <= bottomEdge + _resizeDelta)
                     {
-                        hitTestInfo.Element = VisualElement.RowHeaderResizeBar;
+                        hitTestInfo.Element = SheetElement.RowHeaderResizeBar;
                         hitTestInfo.Row = row;
                         y = rowLocation;
                         hitTestInfo.Position = new Point(x - viewPort.LeftColumnLocation,

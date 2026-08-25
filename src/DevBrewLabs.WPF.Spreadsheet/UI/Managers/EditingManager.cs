@@ -106,22 +106,33 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 var sheetColumn = ((Columns)workSheet.Columns).GetItem(editor.Column);
                 var sheetRow = ((Rows)workSheet.Rows).GetItem(editor.Row);
                 var style = workSheet.GetCellStyle(editor.Row, editor.Column, sheetRow, sheetColumn);
+
+                var scaledCellRect = new Rect(
+                    cellRect.X * zoom,
+                    cellRect.Y * zoom,
+                    cellRect.Width * zoom,
+                    cellRect.Height * zoom);
+
+                var cellType = (workSheet.GetCellType(editor.Row, editor.Column) ?? sheetColumn?.CellType) as BaseCellType ?? TextCellType.Default;
+                var contentRect = cellType.GetContentRect(sheetView, editor.Row, editor.Column, scaledCellRect, zoom);
+
                 editor.FontSize = (style?.FontSize ?? 14) * zoom;
-                editor.MinWidth = System.Math.Max(0, cellRect.Width * zoom - 3);
+                double availableWidth = System.Math.Max(0, contentRect.Width - 3);
+                editor.MinWidth = availableWidth;
 
                 int initialLineCount = TextUtils.GetLineCount(editor.Text);
                 if (style.AllowMultiLineText && initialLineCount > 1)
                 {
                     double initialLineHeight = editor.FontSize * 1.3;
-                    editor.Height = System.Math.Max(cellRect.Height * zoom - 3, initialLineCount * initialLineHeight + 6);
+                    editor.Height = System.Math.Max(contentRect.Height - 3, initialLineCount * initialLineHeight + 6);
                 }
                 else
                 {
-                    editor.Height = System.Math.Max(0, cellRect.Height * zoom - 3);
+                    editor.Height = System.Math.Max(0, contentRect.Height - 3);
                 }
 
-                Canvas.SetLeft(ActiveEditor, cellRect.X * zoom + 1);
-                Canvas.SetTop(ActiveEditor, cellRect.Y * zoom + 1);
+                Canvas.SetLeft(ActiveEditor, contentRect.X + 1);
+                Canvas.SetTop(ActiveEditor, contentRect.Y + 1);
             }
         }
 

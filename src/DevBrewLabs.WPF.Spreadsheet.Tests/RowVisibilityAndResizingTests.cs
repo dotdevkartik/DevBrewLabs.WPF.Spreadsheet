@@ -354,12 +354,12 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
 
             // Hovering at Y = 18 (upper half of double line near bottom edge of Row 0) -> Row 0 resize bar
             var hitRow0 = surface.HitTest(new Point(10, 18));
-            Assert.That(hitRow0.Element, Is.EqualTo(VisualElement.RowHeaderResizeBar));
+            Assert.That(hitRow0.Element, Is.EqualTo(SheetElement.RowHeaderResizeBar));
             Assert.That(hitRow0.Row, Is.EqualTo(0));
 
             // Hovering at Y = 22 (lower half of double line) -> LAST hidden row in the block (Row 4)
             var hitLastHidden = surface.HitTest(new Point(10, 22));
-            Assert.That(hitLastHidden.Element, Is.EqualTo(VisualElement.RowHeaderResizeBar));
+            Assert.That(hitLastHidden.Element, Is.EqualTo(SheetElement.RowHeaderResizeBar));
             Assert.That(hitLastHidden.Row, Is.EqualTo(4), "Should unhide the last consecutive hidden row first (Row 4)");
         }
 
@@ -383,7 +383,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
 
             // Hovering at Y = 2 (top of header) -> LAST hidden row in top block (Row 2)
             var hitTopBlock = surface.HitTest(new Point(10, 2));
-            Assert.That(hitTopBlock.Element, Is.EqualTo(VisualElement.RowHeaderResizeBar));
+            Assert.That(hitTopBlock.Element, Is.EqualTo(SheetElement.RowHeaderResizeBar));
             Assert.That(hitTopBlock.Row, Is.EqualTo(2), "Should unhide the last hidden row in the top block first (Row 2)");
         }
 
@@ -408,12 +408,12 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
 
             // Hovering at X = 78 (left half of double line) -> Column 0 resize bar
             var hitCol0 = surface.HitTest(new Point(78, 10));
-            Assert.That(hitCol0.Element, Is.EqualTo(VisualElement.ColumnHeaderResizeBar));
+            Assert.That(hitCol0.Element, Is.EqualTo(SheetElement.ColumnHeaderResizeBar));
             Assert.That(hitCol0.Column, Is.EqualTo(0));
 
             // Hovering at X = 82 (right half of double line) -> LAST hidden column in the block (Column 3)
             var hitLastHidden = surface.HitTest(new Point(82, 10));
-            Assert.That(hitLastHidden.Element, Is.EqualTo(VisualElement.ColumnHeaderResizeBar));
+            Assert.That(hitLastHidden.Element, Is.EqualTo(SheetElement.ColumnHeaderResizeBar));
             Assert.That(hitLastHidden.Column, Is.EqualTo(3), "Should unhide the last consecutive hidden column first (Column 3)");
         }
 

@@ -167,7 +167,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
                 Sheet = sheetView,
                 Row = 1,
                 Column = 1,
-                Element = VisualElement.Cell
+                Element = SheetElement.Cell
             };
 
             spread.ContextMenuManager.ShowContextMenu(sheetView, hitTest, spread);
@@ -193,7 +193,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
                 Sheet = sheetView,
                 Row = 0,
                 Column = 0,
-                Element = VisualElement.Cell
+                Element = SheetElement.Cell
             };
 
             spread.ContextMenuManager.ShowContextMenu(sheetView, hitTest, spread);

@@ -30,7 +30,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                 {
                     ActualHitTestPoint = point,
                     Position = new Point(0, 0),
-                    Element = VisualElement.TopLeft,
+                    Element = SheetElement.TopLeft,
                     Row = -1,
                     Column = -1,
                     Sheet = SheetView
