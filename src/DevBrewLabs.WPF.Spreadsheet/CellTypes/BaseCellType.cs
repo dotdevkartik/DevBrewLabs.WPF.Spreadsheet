@@ -14,7 +14,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
 {
     public abstract class BaseCellType : ICellType
     {
-        internal virtual void DrawCell(RenderContext renderContext, object value, IStyle style, IFormatter formatter, Rect cellRect)
+        public virtual void DrawCell(IRenderContext renderContext, object value, IStyle style, IFormatter formatter, Rect cellRect)
         {
             if (style.BackColor != DrawingColor.Transparent)
             {

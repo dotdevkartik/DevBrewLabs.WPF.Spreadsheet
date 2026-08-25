@@ -1,3 +1,4 @@
+using DevBrewLabs.WPF.Spreadsheet.Rendering;
 using System;
 using System.Windows;
 using System.Windows.Media;
@@ -51,9 +52,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.Elements
             return new Rect(cellRect.Right - filterButtonWidth, y, filterButtonWidth, filterButtonHeight);
         }
 
-        public override void Draw(DrawingContext dc, Rect bounds, CellElementState state, ISheetView view, int row, int col)
+        public override void Draw(IRenderContext context, Rect bounds, CellElementState state, int row, int col)
         {
-            var spread = view?.Spread;
+            var spread = context.SheetView?.Spread;
             if (spread == null) return;
 
             bool isHovered = (state == CellElementState.Hover || state == CellElementState.Pressed);
@@ -61,15 +62,14 @@ namespace DevBrewLabs.WPF.Spreadsheet.Elements
             if (isHovered && spread.HoverFilterButtonBackground != null)
             {
                 var hoverBgRect = new Rect(bounds.X + 1, bounds.Y + 2, Math.Max(0, bounds.Width - 2), Math.Max(0, bounds.Height - 4));
-                dc.DrawRoundedRectangle(spread.HoverFilterButtonBackground, null, hoverBgRect, 2, 2);
+                context.DrawRoundedRectangle(spread.HoverFilterButtonBackground, null, hoverBgRect, 2, 2);
             }
 
-            double zoom = view.ZoomFactor > 0 ? view.ZoomFactor : 1.0;
-            double iconSize = 8 * zoom;
+            double iconSize = 8 * context.Zoom;
             double x = bounds.X + (bounds.Width - iconSize) / 2;
             double y = bounds.Y + (bounds.Height - iconSize) / 2;
 
-            bool isActive = view.WorkSheet?.AutoFilter?.IsColumnFiltered(col) == true;
+            bool isActive = context.SheetView.WorkSheet?.AutoFilter?.IsColumnFiltered(col) == true;
 
             Brush brush;
             if (isHovered)
@@ -84,9 +84,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.Elements
             if (brush != null)
             {
                 double scale = iconSize / 10.0;
-                dc.PushTransform(new MatrixTransform(scale, 0, 0, scale, x, y));
-                dc.DrawGeometry(brush, null, isActive ? _activeFilterGeometry : _inactiveFilterGeometry);
-                dc.Pop();
+                context.PushTransform(new MatrixTransform(scale, 0, 0, scale, x, y));
+                context.DrawGeometry(brush, null, isActive ? _activeFilterGeometry : _inactiveFilterGeometry);
+                context.Pop();
             }
         }
 

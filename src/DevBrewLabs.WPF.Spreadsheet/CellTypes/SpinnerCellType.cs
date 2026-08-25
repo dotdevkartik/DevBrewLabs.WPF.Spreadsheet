@@ -1,4 +1,3 @@
-using DevBrewLabs.Spreadsheet;
 using DevBrewLabs.WPF.Spreadsheet.Elements;
 using System.Collections.Generic;
 using System.Windows;

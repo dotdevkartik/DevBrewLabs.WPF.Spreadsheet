@@ -11,12 +11,39 @@ using System.Windows.Media;
 
 namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 {
-    internal class RenderContext : IDisposable
+    public interface IRenderContext
+    {
+        double Zoom { get; }
+        ISheetView SheetView { get; }
+
+        void DrawGeometry(DrawingColor? color, DrawingPen? pen, Geometry geometry);
+        void DrawGeometry(Brush brush, Pen pen, Geometry geometry);
+        void DrawGlyphRun(DrawingColor color, GlyphRun glyphRun);
+        void DrawGlyphRun(Brush brush, GlyphRun glyphRun);
+        void DrawLine(DrawingPen pen, Point point0, Point point1);
+        void DrawLine(Pen gridLinePen, Point point1, Point point2);
+        void DrawRectangle(DrawingColor? color, DrawingPen? pen, Rect rect);
+        void DrawRectangle(Brush color, Pen pen, Rect rect);
+        void DrawRoundedRectangle(Brush brush, Pen pen, Rect rect, int radiusX, int radiusY);
+        void DrawText(string text, Rect bounds, DrawingFontFamily fontFamily, double fontSize, DrawingFontWeight fontWeight, DrawingFontStyle fontStyle, DrawingColor foreColor, CellHorizontalAlignment horizontalAlignment = CellHorizontalAlignment.Left, CellVerticalAlignment verticalAlignment = CellVerticalAlignment.Bottom, CellTextTrimming textTrimming = CellTextTrimming.None, bool allowMultiLineText = false);
+        Rect GetCellRect(int row, int col);
+        void Pop();
+        void PushClip(Geometry clipGeometry);
+        void PushGuidelineSet(GuidelineSet guidelines);
+        void PushOpacity(double opacity);
+        void PushTransform(Transform transform);
+        double Snap(double value);
+        Point Snap(Point point);
+        Rect Snap(Rect rect);
+    }
+
+    internal class RenderContext : IRenderContext, IDisposable
     {
         private bool _disposed;
         private DrawingContext _drawingContext;
+        private bool _isOwnDrawingContext;
 
-        public SheetView SheetView { get; }
+        public ISheetView SheetView => View;
         public ViewPort ViewPort { get; }
         public IWorksheet Worksheet { get; }
         public IRows Rows { get; }
@@ -26,30 +53,26 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
         public IRowHeaders RowHeaders { get; }
         public IColumns RowHeaderColumns { get; }
         public AutoFilter AutoFilter { get; }
-        public HeaderHoverManager HeaderHoverManager { get; }
-        public Pen GridLinePen { get; }
-        public Brush SelectedHeaderBackground { get; }
-        public Brush SelectedHeaderForeground { get; }
-        public Brush RangeSelectedHeaderBackground { get; }
-        public CellRange Selection => SheetView != null ? SheetView.Selection : default;
-        public GridLineVisibility GridLineVisibility => SheetView != null ? SheetView.GridLineVisibility : GridLineVisibility.Both;
-        public double RowHeaderWidth => SheetView != null ? SheetView.GetRowHeaderWidth() * Zoom : 0;
-        public double ColumnHeaderHeight => SheetView != null ? SheetView.GetColumnHeaderHeight() * Zoom : 0;
+        internal SheetView View { get; }
+        internal HeaderHoverManager HeaderHoverManager { get; }
+        internal Pen GridLinePen { get; }
+        internal Brush SelectedHeaderBackground { get; }
+        internal Brush SelectedHeaderForeground { get; }
+        internal Brush RangeSelectedHeaderBackground { get; }
+        public CellRange Selection => View != null ? View.Selection : default;
+        public GridLineVisibility GridLineVisibility => View != null ? View.GridLineVisibility : GridLineVisibility.Both;
+        public double RowHeaderWidth => View != null ? View.GetRowHeaderWidth() * Zoom : 0;
+        public double ColumnHeaderHeight => View != null ? View.GetColumnHeaderHeight() * Zoom : 0;
 
         public double Zoom { get; }
         public double PixelPerDip { get; }
         public double TextPadding { get; }
         public double HalfPenWidth { get; }
 
-        public RenderContext(DrawingGroup drawing, SheetView view, double textPadding = 5)
+        public RenderContext(DrawingContext context, SheetView view, double textPadding = 5)
         {
-            if (drawing == null)
-                throw new ArgumentNullException(nameof(drawing));
-            if (view == null)
-                throw new ArgumentNullException(nameof(view));
-
-            _drawingContext = drawing.Open();
-            SheetView = view;
+            _drawingContext = context;
+            View = view;
             ViewPort = view.ViewPort;
             Worksheet = view.WorkSheet;
 
@@ -82,6 +105,16 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             Zoom = view.ZoomFactor > 0 ? view.ZoomFactor : 1.0;
             HalfPenWidth = GridLinePen != null ? (GridLinePen.Thickness * PixelPerDip / 2.0) : 0.5;
             TextPadding = textPadding;
+        }
+
+        public RenderContext(DrawingGroup drawing, SheetView view, double textPadding = 5) : this(drawing.Open(), view, textPadding)
+        {
+            if (drawing == null)
+                throw new ArgumentNullException(nameof(drawing));
+            if (view == null)
+                throw new ArgumentNullException(nameof(view));
+
+            _isOwnDrawingContext = true;
         }
 
         #region Coordinate & Snapping Helpers
@@ -278,6 +311,14 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             _drawingContext.Pop();
         }
 
+        public void DrawRoundedRectangle(Brush brush, Pen pen, Rect rect, int radiusX, int radiusY)
+        {
+            if (_disposed || _drawingContext == null) return;
+
+            _drawingContext.DrawRoundedRectangle(brush, pen, rect, radiusX, radiusY);
+        }
+
+
         #endregion
 
         #region IDisposable
@@ -289,7 +330,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
             try
             {
-                _drawingContext?.Close();
+                if (_isOwnDrawingContext)
+                {
+                    _drawingContext?.Close();
+                }
             }
             catch
             {
@@ -300,7 +344,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                 _drawingContext = null;
             }
         }
-
         #endregion
     }
 }

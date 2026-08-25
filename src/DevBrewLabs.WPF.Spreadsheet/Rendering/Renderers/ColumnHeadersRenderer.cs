@@ -80,7 +80,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
             if (context.HeaderHoverManager.HoveredColumn == column)
             {
-                var hoverBrush = context.SheetView.Spread?.MouseHoverHeaderBackground;
+                var hoverBrush = context.View.Spread?.MouseHoverHeaderBackground;
                 if (hoverBrush != null)
                 {
                     backGroundBrush = hoverBrush;

@@ -1,3 +1,4 @@
+using DevBrewLabs.WPF.Spreadsheet.Rendering;
 using System.Windows;
 using System.Windows.Media;
 
@@ -94,33 +95,32 @@ namespace DevBrewLabs.WPF.Spreadsheet.Elements
             }
         }
 
-        public override void Draw(DrawingContext dc, Rect bounds, CellElementState state, ISheetView view, int row, int col)
+        public override void Draw(IRenderContext context, Rect bounds, CellElementState state, int row, int col)
         {
             if (bounds.Width <= 0 || bounds.Height <= 0) return;
 
             // 1. Draw background
             if (state == CellElementState.Pressed)
             {
-                dc.DrawRectangle(_pressedBackground, null, bounds);
+                context.DrawRectangle(_pressedBackground, null, bounds);
             }
             else if (state == CellElementState.Hover)
             {
-                dc.DrawRectangle(_hoverBackground, null, bounds);
+                context.DrawRectangle(_hoverBackground, null, bounds);
             }
 
             // 2. Draw vertical separator on left edge
-            dc.DrawLine(_separatorPen, new Point(bounds.Left, bounds.Top), new Point(bounds.Left, bounds.Bottom));
+            context.DrawLine(_separatorPen, new Point(bounds.Left, bounds.Top), new Point(bounds.Left, bounds.Bottom));
 
             // 3. Draw horizontal separator below the Up button
             if (Direction == SpinDirection.Up)
             {
-                dc.DrawLine(_separatorPen, new Point(bounds.Left, bounds.Bottom), new Point(bounds.Right, bounds.Bottom));
+                context.DrawLine(_separatorPen, new Point(bounds.Left, bounds.Bottom), new Point(bounds.Right, bounds.Bottom));
             }
 
             // 4. Draw arrow icon
-            double zoom = view?.ZoomFactor > 0 ? view.ZoomFactor : 1.0;
-            double arrowWidth = 8 * zoom;
-            double arrowHeight = 4 * zoom;
+            double arrowWidth = 8 * context.Zoom;
+            double arrowHeight = 4 * context.Zoom;
             double x = bounds.X + (bounds.Width - arrowWidth) / 2.0;
             double y = bounds.Y + (bounds.Height - arrowHeight) / 2.0;
 
@@ -134,10 +134,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.Elements
                 arrowBrush = _disabledArrowBrush;
             }
 
-            double scale = zoom;
-            dc.PushTransform(new MatrixTransform(scale, 0, 0, scale, x, y));
-            dc.DrawGeometry(arrowBrush, null, Direction == SpinDirection.Up ? _upArrowGeometry : _downArrowGeometry);
-            dc.Pop();
+            context.PushTransform(new MatrixTransform(context.Zoom, 0, 0, context.Zoom, x, y));
+            context.DrawGeometry(arrowBrush, null, Direction == SpinDirection.Up ? _upArrowGeometry : _downArrowGeometry);
+            context.Pop();
         }
     }
 }

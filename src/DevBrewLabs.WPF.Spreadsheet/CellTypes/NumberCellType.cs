@@ -2,10 +2,8 @@ using DevBrewLabs.Spreadsheet;
 using DevBrewLabs.Spreadsheet.Formatters;
 using DevBrewLabs.WPF.Spreadsheet.Elements;
 using DevBrewLabs.WPF.Spreadsheet.Rendering;
-using DevBrewLabs.WPF.Spreadsheet.Rendering.Text;
 using DevBrewLabs.WPF.Spreadsheet.UI.Editors;
 using System.Windows;
-using System.Windows.Media;
 
 namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
 {
@@ -73,7 +71,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
             worksheet.SetValue(row, col, (double)nextVal);
         }
 
-        internal override void DrawCell(RenderContext renderContext, object value, IStyle style, IFormatter formatter, Rect cellRect)
+        public override void DrawCell(IRenderContext renderContext, object value, IStyle style, IFormatter formatter, Rect cellRect)
         {
             base.DrawCell(renderContext, value, style, formatter, cellRect);
 

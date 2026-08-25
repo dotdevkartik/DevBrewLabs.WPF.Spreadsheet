@@ -1,5 +1,6 @@
 using DevBrewLabs.Spreadsheet;
 using DevBrewLabs.WPF.Spreadsheet.CellTypes;
+using DevBrewLabs.WPF.Spreadsheet.Rendering;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -27,13 +28,13 @@ namespace DevBrewLabs.WPF.Spreadsheet.Elements
         /// <summary>
         /// Renders this element on the provided DrawingContext.
         /// </summary>
-        /// <param name="dc">The DrawingContext to draw on.</param>
+        /// <param name="context">The DrawingContext to draw on.</param>
         /// <param name="bounds">The bounding box of the element.</param>
         /// <param name="state">The current interaction state (Normal, Hover, Pressed, Disabled).</param>
         /// <param name="view">The active sheet view.</param>
         /// <param name="row">The cell row index.</param>
         /// <param name="col">The cell column index.</param>
-        public abstract void Draw(DrawingContext dc, Rect bounds, CellElementState state, ISheetView view, int row, int col);
+        public abstract void Draw(IRenderContext context, Rect bounds, CellElementState state, int row, int col);
 
         /// <summary>
         /// Handles click events on this element, routing them by default to the owning cell type's <see cref="BaseCellType.OnElementClick"/>.

@@ -1,9 +1,5 @@
-using DevBrewLabs.Spreadsheet;
-using DevBrewLabs.Spreadsheet.Drawing;
 using DevBrewLabs.WPF.Spreadsheet.CellTypes;
-using System.Diagnostics;
 using System.Windows;
-using System.Windows.Media;
 
 namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 {
@@ -67,7 +63,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
             var style = context.Worksheet.GetCellStyle(row, col, sheetRow, sheetColumn);
 
-            bool allowFiltering = context.SheetView.Spread.AllowFiltering;
+            bool allowFiltering = context.View.Spread.AllowFiltering;
 
             bool isFilterHeader = allowFiltering && context.AutoFilter != null && context.AutoFilter.IsFilterHeaderCell(row, col);
 

@@ -1,5 +1,6 @@
 using DevBrewLabs.Spreadsheet;
 using DevBrewLabs.Spreadsheet.Utils;
+using DevBrewLabs.WPF.Spreadsheet.Rendering;
 using DevBrewLabs.WPF.Spreadsheet.UI.Editors;
 using DevBrewLabs.WPF.Spreadsheet.UI.Managers;
 using System;
@@ -668,19 +669,19 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             
             // Give the handle a subtle white border so it pops out over the grid lines
             dc.DrawRectangle(null, new Pen(Brushes.White, 1), handleRect);
-            
-            DrawCellElements(dc, zoom);
 
+            RenderContext context = new RenderContext(dc, SheetView);
+            DrawCellElements(context);
+            context.Dispose();
             dc.Pop();
         }
 
-        private void DrawCellElements(DrawingContext dc, double zoom)
+        private void DrawCellElements(RenderContext context)
         {
             var cellInteractionManager = SheetView.Spread?.CellInteractionManager;
             if (cellInteractionManager == null) return;
 
-            var viewRange = SheetView.ViewPort.ViewRange;
-            var viewPort = (ViewPort)SheetView.ViewPort;
+            var viewRange = context.ViewPort.ViewRange;
 
             for (int row = viewRange.TopRow; row <= viewRange.BottomRow; row++)
             {
@@ -693,19 +694,19 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                     {
                         if (!scaledCellRect.HasValue)
                         {
-                            var cellRect = viewPort.GetCellRect(row, col);
+                            var cellRect = context.GetCellRect(row, col);
                             var unscaled = ToSheetViewRect(cellRect);
                             scaledCellRect = new Rect(
-                                unscaled.X * zoom,
-                                unscaled.Y * zoom,
-                                unscaled.Width * zoom,
-                                unscaled.Height * zoom);
+                                unscaled.X * context.Zoom,
+                                unscaled.Y * context.Zoom,
+                                unscaled.Width * context.Zoom,
+                                unscaled.Height * context.Zoom);
                         }
 
-                        var bounds = element.GetBounds(scaledCellRect.Value, zoom);
+                        var bounds = element.GetBounds(scaledCellRect.Value, context.Zoom);
                         var state = cellInteractionManager.GetElementState(row, col, element);
 
-                        element.Draw(dc, bounds, state, SheetView, row, col);
+                        element.Draw(context, bounds, state, row, col);
                     }
                 }
             }
