@@ -98,13 +98,21 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                                 rowHeight = cellRect.Height;
                             }
 
-                            var elementHit = SheetView.Spread.CellInteractionManager.HitTest(SheetView, hitPoint);
-                            if (elementHit != null)
+                            var scaledCellRect = new Rect(
+                                (x - viewPort.LeftColumnLocation) * zoom,
+                                (y - viewPort.TopRowLocation) * zoom,
+                                columnWidth * zoom,
+                                rowHeight * zoom);
+
+                            foreach (var element in SheetView.Spread.CellInteractionManager.GetCellElements(SheetView, hitTestInfo.Row, hitTestInfo.Column))
                             {
-                                hitTestInfo.Element = elementHit.Value.Element is CellTypes.FilterButton 
-                                    ? SheetElement.CellFilterButton 
-                                    : SheetElement.CellElement;
-                                hitTestInfo.CellElement = elementHit.Value.Element;
+                                var elementBounds = element.GetBounds(scaledCellRect, zoom);
+                                if (elementBounds.Contains(hitPoint))
+                                {
+                                    hitTestInfo.Element = SheetElement.CellElement;
+                                    hitTestInfo.CellElement = element;
+                                    break;
+                                }
                             }
 
                             break;

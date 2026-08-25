@@ -1085,7 +1085,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         private static void OnFilterAppearanceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var spread = (Spread)d;
-            spread.Invalidate(rowHeaders: false, columnHeaders: false, cells: true, topLeft: false);
+            spread.RefreshInteractionLayers(rowHeaders: false, columnHeaders: false, cells: true);
         }
     }
     #endregion

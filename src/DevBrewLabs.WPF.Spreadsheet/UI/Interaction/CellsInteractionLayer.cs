@@ -53,21 +53,22 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
         {
             base.OnMouseLeftButtonDown(e);
 
-            var mousePoint = e.GetPosition(this);
-            if (SheetView.Spread.CellInteractionManager.OnMouseLeftButtonDown(SheetView, mousePoint))
-            {
-                e.Handled = true;
-                return;
-            }
-
             var hitTest = HitTest();
 
             if (hitTest == null || hitTest.Row == -1 || hitTest.Column == -1)
                 return;
 
+            if (hitTest.CellElement != null)
+            {
+                if (SheetView.Spread.CellInteractionManager.OnMouseLeftButtonDown(SheetView, hitTest.Row, hitTest.Column, hitTest.CellElement))
+                {
+                    e.Handled = true;
+                    return;
+                }
+            }
+
             switch(hitTest.Element)
             {
-                case SheetElement.CellFilterButton:
                 case SheetElement.CellElement:
                     break;
 
@@ -140,14 +141,14 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
         {
             base.OnMouseLeftButtonUp(e);
 
-            if(_isDragging)
+            if (_isDragging)
             {
                 _isDragging = false;
                 Cursor = null;
             }
 
-            var mousePoint = e.GetPosition(this);
-            SheetView.Spread.CellInteractionManager.OnMouseLeftButtonUp(SheetView, mousePoint);
+            var hitTest = HitTest();
+            SheetView.Spread.CellInteractionManager.OnMouseLeftButtonUp(SheetView, hitTest?.Row ?? -1, hitTest?.Column ?? -1, hitTest?.CellElement);
         }
 
         private void UpdatePreferredCoordinatesBeforeMove()
@@ -397,23 +398,15 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 return;
             }
 
-            if (SheetView.SelectionMode == SelectionMode.Cell ||
-                SheetView.SelectionMode == SelectionMode.Row || SheetView.SelectionMode == SelectionMode.Column)
-            {
-                SheetView.Spread.CellInteractionManager.ClearState(SheetView);
-                return;
-            }
-
             if (_scrolling)
                 return;
-
-            var mousePoint = e.GetPosition(this);
-            bool isElementHovered = SheetView.Spread.CellInteractionManager.OnMouseMove(SheetView, mousePoint, out var elementCursor);
 
             var hitTest = HitTest();
 
             if (hitTest == null)
             {
+                SheetView.Spread.CellInteractionManager.ClearState(SheetView);
+
                 if (e.LeftButton != MouseButtonState.Pressed)
                     return;
 
@@ -426,17 +419,17 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             }
             else
             {
+                var cellElement = hitTest.CellElement;
+                bool isElementHovered = cellElement != null;
+                SheetView.Spread.CellInteractionManager.UpdateHover(SheetView, hitTest.Row, hitTest.Column, cellElement);
+
                 if (hitTest.Element == SheetElement.DragFill || _isDragging)
                 {
                     Cursor = SheetUtils.DragFillCursor;
                 }
                 else if (isElementHovered)
                 {
-                    Cursor = elementCursor;
-                }
-                else if (hitTest.Element == SheetElement.Cell || hitTest.Element == SheetElement.CellElement || hitTest.Element == SheetElement.CellFilterButton)
-                {
-                    Cursor = null;
+                    Cursor = cellElement.Cursor;
                 }
                 else
                 {
@@ -536,6 +529,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
         private void SelectRange(SpreadHitTestResult hitTest)
         {
             if (hitTest == null)
+                return;
+
+            if (SheetView.SelectionMode == SelectionMode.Cell ||
+                SheetView.SelectionMode == SelectionMode.Row ||
+                SheetView.SelectionMode == SelectionMode.Column)
                 return;
 
             if (_isDragging)

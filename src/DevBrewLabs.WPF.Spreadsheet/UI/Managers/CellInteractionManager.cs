@@ -11,6 +11,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
         private (int Row, int Column, CellElement Element)? _hoveredElement;
         private (int Row, int Column, CellElement Element)? _pressedElement;
 
+        public (int Row, int Column, CellElement Element)? HoveredElement => _hoveredElement;
+        public (int Row, int Column, CellElement Element)? PressedElement => _pressedElement;
+
         public CellInteractionManager(Spread spread) : base(spread)
         {
         }
@@ -22,10 +25,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
         {
             if (view == null) yield break;
 
-            var workSheet = (Worksheet)view.WorkSheet;
+            var workSheet = view.WorkSheet as Worksheet;
             if (workSheet == null) yield break;
 
-            var columns = (Columns)workSheet.Columns;
+            var columns = workSheet.Columns as Columns;
             var sheetColumn = columns?.GetItem(col);
 
             // 1. Sheet Features (e.g. AutoFilter header button)
@@ -38,7 +41,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             }
 
             // 2. CellType elements (e.g. Spinners, Dropdowns, DatePickers)
-            var cellType = (BaseCellType)(workSheet.GetCellType(row, col) ?? sheetColumn?.CellType);
+            var cellType = (workSheet.GetCellType(row, col) ?? sheetColumn?.CellType) as BaseCellType;
             if (cellType != null)
             {
                 foreach (var element in cellType.GetElements(view, row, col))
@@ -79,10 +82,16 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
         {
             if (view == null) return null;
 
-            var workSheet = (Worksheet)view.WorkSheet;
-            var viewPort = (ViewPort)view.ViewPort;
-            var rows = (Rows)workSheet.Rows;
-            var columns = (Columns)workSheet.Columns;
+            var workSheet = view.WorkSheet as Worksheet;
+            if (workSheet == null) return null;
+
+            var viewPort = view.ViewPort as ViewPort;
+            if (viewPort == null) return null;
+
+            var rows = workSheet.Rows as Rows;
+            var columns = workSheet.Columns as Columns;
+            if (rows == null || columns == null) return null;
+
             var viewRange = viewPort.ViewRange;
             double zoom = view.ZoomFactor > 0 ? view.ZoomFactor : 1.0;
 
@@ -156,13 +165,12 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             return false;
         }
 
-        public bool OnMouseLeftButtonDown(SheetView view, Point hitPoint)
+        public bool OnMouseLeftButtonDown(SheetView view, int row, int col, CellElement element)
         {
-            var hit = HitTest(view, hitPoint);
-            if (hit != null)
+            if (element != null)
             {
-                _pressedElement = (hit.Value.Row, hit.Value.Column, hit.Value.Element);
-                hit.Value.Element.OnMouseDown(view, hit.Value.Row, hit.Value.Column);
+                _pressedElement = (row, col, element);
+                element.OnMouseDown(view, row, col);
                 InvalidateInteractionLayer(view);
                 return true;
             }
@@ -170,7 +178,18 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             return false;
         }
 
-        public bool OnMouseLeftButtonUp(SheetView view, Point hitPoint)
+        public bool OnMouseLeftButtonDown(SheetView view, Point hitPoint)
+        {
+            var hit = HitTest(view, hitPoint);
+            if (hit != null)
+            {
+                return OnMouseLeftButtonDown(view, hit.Value.Row, hit.Value.Column, hit.Value.Element);
+            }
+
+            return false;
+        }
+
+        public bool OnMouseLeftButtonUp(SheetView view, int row, int col, CellElement hitElement)
         {
             if (_pressedElement.HasValue)
             {
@@ -178,11 +197,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 _pressedElement = null;
                 InvalidateInteractionLayer(view);
 
-                var hit = HitTest(view, hitPoint);
-                if (hit != null &&
-                    hit.Value.Row == pressed.Row &&
-                    hit.Value.Column == pressed.Column &&
-                    hit.Value.Element == pressed.Element)
+                if (hitElement != null &&
+                    hitElement == pressed.Element &&
+                    row == pressed.Row &&
+                    col == pressed.Column)
                 {
                     pressed.Element.OnClick(view, pressed.Row, pressed.Column);
                     return true;
@@ -192,14 +210,20 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             return false;
         }
 
+        public bool OnMouseLeftButtonUp(SheetView view, Point hitPoint)
+        {
+            if (_pressedElement.HasValue)
+            {
+                var hit = HitTest(view, hitPoint);
+                return OnMouseLeftButtonUp(view, hit?.Row ?? -1, hit?.Column ?? -1, hit?.Element);
+            }
+
+            return false;
+        }
+
         public void OnMouseLeave(SheetView view)
         {
-            if (_hoveredElement.HasValue || _pressedElement.HasValue)
-            {
-                _hoveredElement = null;
-                _pressedElement = null;
-                InvalidateInteractionLayer(view);
-            }
+            ClearState(view);
         }
 
         public void ClearState(SheetView view)
@@ -212,7 +236,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             }
         }
 
-        private void UpdateHover(SheetView view, int row, int col, CellElement element)
+        public void UpdateHover(SheetView view, int row, int col, CellElement element)
         {
             bool wasHovered = _hoveredElement.HasValue;
             bool isNowHovered = element != null;

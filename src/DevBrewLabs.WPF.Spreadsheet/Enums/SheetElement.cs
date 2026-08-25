@@ -7,7 +7,6 @@ namespace DevBrewLabs.WPF.Spreadsheet
         ColumnHeaderResizeBar,
         RowHeaderResizeBar,
         Cell,
-        CellFilterButton,
         CellElement,
         TopLeft,
         ScrollBar,

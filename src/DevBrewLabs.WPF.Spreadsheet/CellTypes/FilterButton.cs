@@ -11,10 +11,44 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
     {
         public static FilterButton Instance { get; } = new FilterButton();
 
+        private static readonly Geometry _activeFilterGeometry = CreateActiveFilterGeometry();
+        private static readonly Geometry _inactiveFilterGeometry = CreateInactiveFilterGeometry();
+
+        private static Geometry CreateActiveFilterGeometry()
+        {
+            var geometry = new StreamGeometry();
+            using (var ctx = geometry.Open())
+            {
+                ctx.BeginFigure(new Point(0, 0), true, true);
+                ctx.LineTo(new Point(10, 0), true, true);
+                ctx.LineTo(new Point(6, 5), true, true);
+                ctx.LineTo(new Point(6, 10), true, true);
+                ctx.LineTo(new Point(4, 8), true, true);
+                ctx.LineTo(new Point(4, 5), true, true);
+            }
+            geometry.Freeze();
+            return geometry;
+        }
+
+        private static Geometry CreateInactiveFilterGeometry()
+        {
+            var geometry = new StreamGeometry();
+            using (var ctx = geometry.Open())
+            {
+                ctx.BeginFigure(new Point(0, 3), true, true);
+                ctx.LineTo(new Point(10, 3), true, true);
+                ctx.LineTo(new Point(5, 8), true, true);
+            }
+            geometry.Freeze();
+            return geometry;
+        }
+
         public override Rect GetBounds(Rect cellRect, double zoom)
         {
             double filterButtonWidth = 16 * zoom;
-            return new Rect(cellRect.Right - filterButtonWidth, cellRect.Y, filterButtonWidth, cellRect.Height);
+            double filterButtonHeight = Math.Min(cellRect.Height, 20 * zoom);
+            double y = cellRect.Y + (cellRect.Height - filterButtonHeight) / 2;
+            return new Rect(cellRect.Right - filterButtonWidth, y, filterButtonWidth, filterButtonHeight);
         }
 
         public override void Draw(DrawingContext dc, Rect bounds, CellElementState state, ISheetView view, int row, int col)
@@ -37,27 +71,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
 
             bool isActive = view.WorkSheet?.AutoFilter?.IsColumnFiltered(col) == true;
 
-            var geometry = new StreamGeometry();
-            using (var ctx = geometry.Open())
-            {
-                if (isActive)
-                {
-                    ctx.BeginFigure(new Point(x, y), true, true);
-                    ctx.LineTo(new Point(x + iconSize, y), true, true);
-                    ctx.LineTo(new Point(x + iconSize * 0.6, y + iconSize * 0.5), true, true);
-                    ctx.LineTo(new Point(x + iconSize * 0.6, y + iconSize), true, true);
-                    ctx.LineTo(new Point(x + iconSize * 0.4, y + iconSize * 0.8), true, true);
-                    ctx.LineTo(new Point(x + iconSize * 0.4, y + iconSize * 0.5), true, true);
-                }
-                else
-                {
-                    ctx.BeginFigure(new Point(x, y + iconSize * 0.3), true, true);
-                    ctx.LineTo(new Point(x + iconSize, y + iconSize * 0.3), true, true);
-                    ctx.LineTo(new Point(x + iconSize * 0.5, y + iconSize * 0.8), true, true);
-                }
-            }
-            geometry.Freeze();
-
             Brush brush;
             if (isHovered)
             {
@@ -70,7 +83,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
 
             if (brush != null)
             {
-                dc.DrawGeometry(brush, null, geometry);
+                double scale = iconSize / 10.0;
+                dc.PushTransform(new MatrixTransform(scale, 0, 0, scale, x, y));
+                dc.DrawGeometry(brush, null, isActive ? _activeFilterGeometry : _inactiveFilterGeometry);
+                dc.Pop();
             }
         }
 
