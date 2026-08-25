@@ -52,6 +52,14 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
             base.OnMouseLeftButtonDown(e);
+
+            var mousePoint = e.GetPosition(this);
+            if (SheetView.Spread.CellInteractionManager.OnMouseLeftButtonDown(SheetView, mousePoint))
+            {
+                e.Handled = true;
+                return;
+            }
+
             var hitTest = HitTest();
 
             if (hitTest == null || hitTest.Row == -1 || hitTest.Column == -1)
@@ -59,11 +67,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
             switch(hitTest.Element)
             {
-                case VisualElement.CellFilterButton:
-                    SheetView.Spread.FilterManager.ShowFilterDropdown(SheetView, hitTest.Column);
+                case SheetElement.CellFilterButton:
+                case SheetElement.CellElement:
                     break;
 
-                case VisualElement.Cell:
+                case SheetElement.Cell:
                     // Starts editing
                     if (e.ClickCount == 2)
                     {
@@ -87,7 +95,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                     }
                     break;
 
-                case VisualElement.DragFill:
+                case SheetElement.DragFill:
                     _isDragging = true;
                     break;
             }
@@ -103,7 +111,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
             switch (hitTest.Element)
             {
-                case VisualElement.Cell:
+                case SheetElement.Cell:
                     if (SheetView.Spread.EditingManager.IsEditing)
                     {
                         if (!SheetView.Spread.EditingManager.EndEdit(true))
@@ -122,7 +130,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
         {
             base.OnMouseRightButtonUp(e);
             var hitTest = HitTest();
-            if (hitTest != null && (hitTest.Element == VisualElement.Cell || hitTest.Element == VisualElement.TopLeft))
+            if (hitTest != null && (hitTest.Element == SheetElement.Cell || hitTest.Element == SheetElement.TopLeft))
             {
                 SheetView.Spread?.ContextMenuManager?.ShowContextMenu(SheetView, hitTest, this);
             }
@@ -137,6 +145,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 _isDragging = false;
                 Cursor = null;
             }
+
+            var mousePoint = e.GetPosition(this);
+            SheetView.Spread.CellInteractionManager.OnMouseLeftButtonUp(SheetView, mousePoint);
         }
 
         private void UpdatePreferredCoordinatesBeforeMove()
@@ -382,15 +393,22 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
             if (SheetView.Spread.EditingManager.IsEditing)
             {
+                SheetView.Spread.CellInteractionManager.ClearState(SheetView);
                 return;
             }
 
             if (SheetView.SelectionMode == SelectionMode.Cell ||
                 SheetView.SelectionMode == SelectionMode.Row || SheetView.SelectionMode == SelectionMode.Column)
+            {
+                SheetView.Spread.CellInteractionManager.ClearState(SheetView);
                 return;
+            }
 
             if (_scrolling)
                 return;
+
+            var mousePoint = e.GetPosition(this);
+            bool isElementHovered = SheetView.Spread.CellInteractionManager.OnMouseMove(SheetView, mousePoint, out var elementCursor);
 
             var hitTest = HitTest();
 
@@ -408,11 +426,19 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             }
             else
             {
-                if (hitTest.Element == VisualElement.DragFill || _isDragging)
+                if (hitTest.Element == SheetElement.DragFill || _isDragging)
+                {
                     Cursor = SheetUtils.DragFillCursor;
-                else if (hitTest.Element == VisualElement.CellFilterButton)
-                    Cursor = Cursors.Hand;
-                else if (hitTest.Element == VisualElement.Cell)
+                }
+                else if (isElementHovered)
+                {
+                    Cursor = elementCursor;
+                }
+                else if (hitTest.Element == SheetElement.Cell || hitTest.Element == SheetElement.CellElement || hitTest.Element == SheetElement.CellFilterButton)
+                {
+                    Cursor = null;
+                }
+                else
                 {
                     Cursor = null;
                 }
@@ -425,6 +451,12 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
                 SelectRange(hitTest);
             }
+        }
+
+        protected override void OnMouseLeave(MouseEventArgs e)
+        {
+            base.OnMouseLeave(e);
+            SheetView.Spread.CellInteractionManager.OnMouseLeave(SheetView);
         }
 
         private async Task SelectiveMouseScroll()
@@ -639,7 +671,46 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             // Give the handle a subtle white border so it pops out over the grid lines
             dc.DrawRectangle(null, new Pen(Brushes.White, 1), handleRect);
             
+            DrawCellElements(dc, zoom);
+
             dc.Pop();
+        }
+
+        private void DrawCellElements(DrawingContext dc, double zoom)
+        {
+            var cellInteractionManager = SheetView.Spread?.CellInteractionManager;
+            if (cellInteractionManager == null) return;
+
+            var viewRange = SheetView.ViewPort.ViewRange;
+            var viewPort = (ViewPort)SheetView.ViewPort;
+
+            for (int row = viewRange.TopRow; row <= viewRange.BottomRow; row++)
+            {
+                for (int col = viewRange.LeftColumn; col <= viewRange.RightColumn; col++)
+                {
+                    var elements = cellInteractionManager.GetCellElements(SheetView, row, col);
+                    Rect? scaledCellRect = null;
+
+                    foreach (var element in elements)
+                    {
+                        if (!scaledCellRect.HasValue)
+                        {
+                            var cellRect = viewPort.GetCellRect(row, col);
+                            var unscaled = ToSheetViewRect(cellRect);
+                            scaledCellRect = new Rect(
+                                unscaled.X * zoom,
+                                unscaled.Y * zoom,
+                                unscaled.Width * zoom,
+                                unscaled.Height * zoom);
+                        }
+
+                        var bounds = element.GetBounds(scaledCellRect.Value, zoom);
+                        var state = cellInteractionManager.GetElementState(row, col, element);
+
+                        element.Draw(dc, bounds, state, SheetView, row, col);
+                    }
+                }
+            }
         }
 
         private bool AreClose(Point p1, Point p2)

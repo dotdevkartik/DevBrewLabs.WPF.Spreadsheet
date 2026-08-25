@@ -21,7 +21,7 @@ namespace SpreadsheetSampleExplorer
         private void Spread_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             var hitTest = spread.HitTest(e.GetPosition(spread));
-            if (hitTest != null && hitTest.Element == VisualElement.ColumnHeader)
+            if (hitTest != null && hitTest.Element == SheetElement.ColumnHeader)
             {
                 spread.Sheets.ActiveSheet.AutoSizeColumn(hitTest.Column);
             }

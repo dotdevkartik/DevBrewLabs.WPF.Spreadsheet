@@ -34,7 +34,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             var workSheet = (Worksheet)SheetView.WorkSheet;
             var viewPort = SheetView.ViewPort;
 
-            var hitTestInfo = new SpreadHitTestResult() { Element = VisualElement.ColumnHeader, Sheet = SheetView, ActualHitTestPoint = hitPoint };
+            var hitTestInfo = new SpreadHitTestResult() { Element = SheetElement.ColumnHeader, Sheet = SheetView, ActualHitTestPoint = hitPoint };
             var rows = workSheet.ColumnHeaders.Rows.As<ColumnHeaderRows>();
             var columns = workSheet.Columns.As<Columns>();
             var viewRange = SheetView.ViewPort.ViewRange;
@@ -70,7 +70,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                         lastHiddenCol++;
                     }
 
-                    hitTestInfo.Element = VisualElement.ColumnHeaderResizeBar;
+                    hitTestInfo.Element = SheetElement.ColumnHeaderResizeBar;
                     hitTestInfo.Column = lastHiddenCol;
                     x = 0;
                     hitTestInfo.Position = new Point(x - viewPort.LeftColumnLocation,
@@ -105,7 +105,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                     // Left half of double-line indicator -> resizes the visible column to the left
                     if (point.X >= rightEdge - _resizeDelta && point.X <= rightEdge - 0.5)
                     {
-                        hitTestInfo.Element = VisualElement.ColumnHeaderResizeBar;
+                        hitTestInfo.Element = SheetElement.ColumnHeaderResizeBar;
                         hitTestInfo.Column = col;
                         x = colLocation;
                         hitTestInfo.Position = new Point(x - viewPort.LeftColumnLocation,
@@ -115,7 +115,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                     // Right half of double-line indicator -> unhides/expands the last hidden column in the contiguous block
                     if (point.X > rightEdge - 0.5 && point.X <= rightEdge + _resizeDelta)
                     {
-                        hitTestInfo.Element = VisualElement.ColumnHeaderResizeBar;
+                        hitTestInfo.Element = SheetElement.ColumnHeaderResizeBar;
                         hitTestInfo.Column = lastHiddenCol;
                         x = rightEdge;
                         hitTestInfo.Position = new Point(x - viewPort.LeftColumnLocation,
@@ -128,7 +128,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                     // Standard single border between visible columns
                     if (point.X >= rightEdge - _resizeDelta && point.X <= rightEdge + _resizeDelta)
                     {
-                        hitTestInfo.Element = VisualElement.ColumnHeaderResizeBar;
+                        hitTestInfo.Element = SheetElement.ColumnHeaderResizeBar;
                         hitTestInfo.Column = col;
                         x = colLocation;
                         hitTestInfo.Position = new Point(x - viewPort.LeftColumnLocation,

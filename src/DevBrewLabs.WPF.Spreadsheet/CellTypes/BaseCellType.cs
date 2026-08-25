@@ -6,6 +6,9 @@ using System.Windows.Media;
 using DevBrewLabs.Spreadsheet.Drawing;
 using DevBrewLabs.WPF.Spreadsheet.Rendering;
 
+using System.Collections.Generic;
+using System.Linq;
+
 namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
 {
     public abstract class BaseCellType : ICellType
@@ -16,6 +19,14 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
             {
                 renderContext.DrawRectangle(style.BackColor, null, cellRect);
             }
+        }
+
+        /// <summary>
+        /// Gets any interactive or visual sub-elements for the cell.
+        /// </summary>
+        public virtual IEnumerable<CellElement> GetElements(ISheetView view, int row, int col)
+        {
+            return Enumerable.Empty<CellElement>();
         }
 
         /// <summary>

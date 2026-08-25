@@ -29,6 +29,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         private FormulaSuggestionManager _formulaSuggestionManager;
         private HeaderHoverManager _headerHoverManager;
         private ContextMenuManager _contextMenuManager;
+        private CellInteractionManager _cellInteractionManager;
         private SheetViewHost _sheetViewHost;
         private SheetTabControl _sheetTabControl;
         private UndoRedoManager _undoRedoManager;
@@ -60,6 +61,11 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public static readonly DependencyProperty SelectedHeaderBackgroundProperty;
         public static readonly DependencyProperty RangeSelectedHeaderBackgroundProperty;
         public static readonly DependencyProperty SelectedHeaderForegroundProperty;
+        public static readonly DependencyProperty ActiveFilterBrushProperty;
+        public static readonly DependencyProperty InactiveFilterBrushProperty;
+        public static readonly DependencyProperty HoverActiveFilterBrushProperty;
+        public static readonly DependencyProperty HoverInactiveFilterBrushProperty;
+        public static readonly DependencyProperty HoverFilterButtonBackgroundProperty;
 
         static Spread()
         {
@@ -96,6 +102,46 @@ namespace DevBrewLabs.WPF.Spreadsheet
                 new PropertyMetadata(
                     Brushes.White,
                     OnHeaderAppearanceChanged));
+
+            ActiveFilterBrushProperty = DependencyProperty.Register(
+                nameof(ActiveFilterBrush),
+                typeof(Brush),
+                typeof(Spread),
+                new PropertyMetadata(
+                    CreateFrozenBrush(Color.FromArgb(255, 16, 124, 65)),
+                    OnFilterAppearanceChanged));
+
+            InactiveFilterBrushProperty = DependencyProperty.Register(
+                nameof(InactiveFilterBrush),
+                typeof(Brush),
+                typeof(Spread),
+                new PropertyMetadata(
+                    CreateFrozenBrush(Color.FromArgb(255, 107, 114, 128)),
+                    OnFilterAppearanceChanged));
+
+            HoverActiveFilterBrushProperty = DependencyProperty.Register(
+                nameof(HoverActiveFilterBrush),
+                typeof(Brush),
+                typeof(Spread),
+                new PropertyMetadata(
+                    CreateFrozenBrush(Color.FromArgb(255, 13, 101, 53)),
+                    OnFilterAppearanceChanged));
+
+            HoverInactiveFilterBrushProperty = DependencyProperty.Register(
+                nameof(HoverInactiveFilterBrush),
+                typeof(Brush),
+                typeof(Spread),
+                new PropertyMetadata(
+                    CreateFrozenBrush(Color.FromArgb(255, 17, 24, 39)),
+                    OnFilterAppearanceChanged));
+
+            HoverFilterButtonBackgroundProperty = DependencyProperty.Register(
+                nameof(HoverFilterButtonBackground),
+                typeof(Brush),
+                typeof(Spread),
+                new PropertyMetadata(
+                    CreateFrozenBrush(Color.FromArgb(28, 0, 0, 0)),
+                    OnFilterAppearanceChanged));
 
             AllowFilteringProperty = DependencyProperty.Register(
                 nameof(AllowFiltering),
@@ -401,6 +447,51 @@ namespace DevBrewLabs.WPF.Spreadsheet
         }
 
         /// <summary>
+        /// Gets or sets the brush for active filter icons.
+        /// </summary>
+        public Brush ActiveFilterBrush
+        {
+            get { return (Brush)GetValue(ActiveFilterBrushProperty); }
+            set { SetValue(ActiveFilterBrushProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the brush for inactive filter icons.
+        /// </summary>
+        public Brush InactiveFilterBrush
+        {
+            get { return (Brush)GetValue(InactiveFilterBrushProperty); }
+            set { SetValue(InactiveFilterBrushProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the brush for active filter icons when hovered.
+        /// </summary>
+        public Brush HoverActiveFilterBrush
+        {
+            get { return (Brush)GetValue(HoverActiveFilterBrushProperty); }
+            set { SetValue(HoverActiveFilterBrushProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the brush for inactive filter icons when hovered.
+        /// </summary>
+        public Brush HoverInactiveFilterBrush
+        {
+            get { return (Brush)GetValue(HoverInactiveFilterBrushProperty); }
+            set { SetValue(HoverInactiveFilterBrushProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the background brush for filter buttons when hovered.
+        /// </summary>
+        public Brush HoverFilterButtonBackground
+        {
+            get { return (Brush)GetValue(HoverFilterButtonBackgroundProperty); }
+            set { SetValue(HoverFilterButtonBackgroundProperty, value); }
+        }
+
+        /// <summary>
         /// Gets or sets whether context menus are allowed across Spread.
         /// </summary>
         public bool AllowContextMenu
@@ -515,6 +606,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             _rowResizeManager = new RowResizeManager(this);
             _columnResizeManager = new ColumnResizeManager(this);
             _headerHoverManager = new HeaderHoverManager(this);
+            _cellInteractionManager = new CellInteractionManager(this);
             _zoomManager = new ZoomManager(this);
             SelectCell(0, 0);
             Loaded += OnLoaded;
@@ -763,6 +855,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             _formulaSuggestionManager?.Dispose();
             _headerHoverManager?.Dispose();
             _contextMenuManager?.Dispose();
+            _cellInteractionManager?.Dispose();
         }
     }
 
@@ -785,6 +878,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         internal FilterManager FilterManager => _filterManager;
         internal FormulaSuggestionManager FormulaSuggestionManager => _formulaSuggestionManager;
         internal HeaderHoverManager HeaderHoverManager => _headerHoverManager;
+        internal CellInteractionManager CellInteractionManager => _cellInteractionManager;
         internal FormulaTextBox FormulaTextBox { get; set; }
         internal Pen GridLinePen { get; private set; }
         internal Pen SelectionBorderPen { get; private set; }
@@ -979,6 +1073,19 @@ namespace DevBrewLabs.WPF.Spreadsheet
         {
             var spread = (Spread)d;
             spread.Invalidate(rowHeaders: true, columnHeaders: true, cells: false, topLeft: false);
+        }
+
+        private static Brush CreateFrozenBrush(Color color)
+        {
+            var brush = new SolidColorBrush(color);
+            brush.Freeze();
+            return brush;
+        }
+
+        private static void OnFilterAppearanceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var spread = (Spread)d;
+            spread.Invalidate(rowHeaders: false, columnHeaders: false, cells: true, topLeft: false);
         }
     }
     #endregion

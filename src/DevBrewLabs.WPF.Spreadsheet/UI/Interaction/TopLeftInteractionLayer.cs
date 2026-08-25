@@ -13,7 +13,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             base.OnMouseLeftButtonDown(e);
             var hitTest = HitTest();
 
-            if(hitTest != null && hitTest.Element == VisualElement.TopLeft)
+            if(hitTest != null && hitTest.Element == SheetElement.TopLeft)
             {
                 var workSheet = SheetView.WorkSheet;
                 SheetView.ActiveRow = 0;
@@ -27,7 +27,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             base.OnMouseRightButtonDown(e);
             var hitTest = HitTest();
 
-            if (hitTest != null && hitTest.Element == VisualElement.TopLeft)
+            if (hitTest != null && hitTest.Element == SheetElement.TopLeft)
             {
                 var workSheet = SheetView.WorkSheet;
                 SheetView.ActiveRow = 0;

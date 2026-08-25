@@ -80,47 +80,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
             var formatter = context.Worksheet.GetCellFormatter(row, col, sheetRow, sheetColumn);
             cellType.DrawCell(context, value, style, formatter, textRect);
-
-            if (isFilterHeader)
-            {
-                var iconRect = new Rect(cellRect.Right - filterButtonWidth, cellRect.Y, filterButtonWidth, cellRect.Height);
-                bool isActive = context.AutoFilter.IsColumnFiltered(col);
-                DrawFilterIcon(context, iconRect, isActive);
-            }
-        }
-
-        private static readonly DrawingColor ActiveFilterColor = DrawingColor.FromArgb(255, 16, 124, 65); // #107C41 Excel Green
-        private static readonly DrawingColor InactiveFilterColor = DrawingColor.FromArgb(255, 107, 114, 128); // #6B7280 Muted Slate
-
-        private void DrawFilterIcon(RenderContext context, Rect rect, bool isActive)
-        {
-            double iconSize = 8 * context.Zoom;
-            double x = rect.X + (rect.Width - iconSize) / 2;
-            double y = rect.Y + (rect.Height - iconSize) / 2;
-            
-            var geometry = new StreamGeometry();
-            using (var ctx = geometry.Open())
-            {
-                if (isActive)
-                {
-                    ctx.BeginFigure(new Point(x, y), true, true);
-                    ctx.LineTo(new Point(x + iconSize, y), true, true);
-                    ctx.LineTo(new Point(x + iconSize * 0.6, y + iconSize * 0.5), true, true);
-                    ctx.LineTo(new Point(x + iconSize * 0.6, y + iconSize), true, true);
-                    ctx.LineTo(new Point(x + iconSize * 0.4, y + iconSize * 0.8), true, true);
-                    ctx.LineTo(new Point(x + iconSize * 0.4, y + iconSize * 0.5), true, true);
-                }
-                else
-                {
-                    ctx.BeginFigure(new Point(x, y + iconSize * 0.3), true, true);
-                    ctx.LineTo(new Point(x + iconSize, y + iconSize * 0.3), true, true);
-                    ctx.LineTo(new Point(x + iconSize * 0.5, y + iconSize * 0.8), true, true);
-                }
-            }
-            geometry.Freeze();
-
-            var color = isActive ? ActiveFilterColor : InactiveFilterColor;
-            context.DrawGeometry(color, null, geometry);
         }
     }
 }
