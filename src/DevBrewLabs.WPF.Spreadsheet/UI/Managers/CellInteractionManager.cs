@@ -1,5 +1,6 @@
 using DevBrewLabs.Spreadsheet;
 using DevBrewLabs.WPF.Spreadsheet.CellTypes;
+using DevBrewLabs.WPF.Spreadsheet.Elements;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Input;
@@ -10,9 +11,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
     {
         private (int Row, int Column, CellElement Element)? _hoveredElement;
         private (int Row, int Column, CellElement Element)? _pressedElement;
-
-        public (int Row, int Column, CellElement Element)? HoveredElement => _hoveredElement;
-        public (int Row, int Column, CellElement Element)? PressedElement => _pressedElement;
 
         public CellInteractionManager(Spread spread) : base(spread)
         {

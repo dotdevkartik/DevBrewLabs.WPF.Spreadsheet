@@ -49,7 +49,7 @@ namespace SpreadsheetSampleExplorer
 
             _samplesSideBar.RegisterSample(
                 "CellTypes",
-                "Custom Cell Renderers",
+                "Cell Types",
                 "Demonstration of Checkbox, Button, ComboBox, and Text cell types.",
                 "ESSENTIALS",
                 "M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z",

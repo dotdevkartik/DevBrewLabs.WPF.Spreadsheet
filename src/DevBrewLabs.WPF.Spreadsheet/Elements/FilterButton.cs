@@ -2,7 +2,7 @@ using System;
 using System.Windows;
 using System.Windows.Media;
 
-namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
+namespace DevBrewLabs.WPF.Spreadsheet.Elements
 {
     /// <summary>
     /// Interactive filter button displayed in column header cells when AutoFilter is enabled.

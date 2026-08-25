@@ -4,7 +4,6 @@ using DevBrewLabs.Spreadsheet.Filtering;
 using DevBrewLabs.WPF.Spreadsheet.Rendering.Text;
 using DevBrewLabs.WPF.Spreadsheet.Styling;
 using DevBrewLabs.WPF.Spreadsheet.UI;
-using DevBrewLabs.WPF.Spreadsheet.UI.Interaction;
 using DevBrewLabs.WPF.Spreadsheet.UI.Managers;
 using System;
 using System.Windows;

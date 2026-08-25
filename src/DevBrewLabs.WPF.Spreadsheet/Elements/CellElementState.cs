@@ -1,4 +1,4 @@
-namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
+namespace DevBrewLabs.WPF.Spreadsheet.Elements
 {
     public enum CellElementState
     {

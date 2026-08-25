@@ -27,8 +27,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
                 if (align == CellHorizontalAlignment.Auto)
                     align = CellHorizontalAlignment.Center;
 
-                TextRenderer.DrawText(
-                    renderContext,
+                renderContext.DrawText(
                     Text,
                     cellRect,
                     style.FontFamily,

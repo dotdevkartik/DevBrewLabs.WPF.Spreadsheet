@@ -41,9 +41,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
             {
                 textToDraw = value.ToString();
             }
-            
-            TextRenderer.DrawText(
-                renderContext,
+
+            renderContext.DrawText(
                 textToDraw,
                 cellRect,
                 style.FontFamily,

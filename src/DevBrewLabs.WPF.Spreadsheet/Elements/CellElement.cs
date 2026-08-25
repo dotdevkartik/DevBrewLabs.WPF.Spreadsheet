@@ -1,8 +1,10 @@
+using DevBrewLabs.Spreadsheet;
+using DevBrewLabs.WPF.Spreadsheet.CellTypes;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
+namespace DevBrewLabs.WPF.Spreadsheet.Elements
 {
     /// <summary>
     /// Represents an interactive or visual sub-element within a spreadsheet cell.
@@ -34,18 +36,40 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
         public abstract void Draw(DrawingContext dc, Rect bounds, CellElementState state, ISheetView view, int row, int col);
 
         /// <summary>
-        /// Handles click events on this element.
+        /// Handles click events on this element, routing them by default to the owning cell type's <see cref="BaseCellType.OnElementClick"/>.
         /// </summary>
-        public virtual void OnClick(ISheetView view, int row, int col) { }
+        public virtual void OnClick(ISheetView view, int row, int col)
+        {
+            var cellType = GetCellType(view, row, col);
+            cellType?.OnElementClick(view, row, col, this);
+        }
 
         /// <summary>
-        /// Handles mouse down events on this element.
+        /// Handles mouse down events on this element, routing them by default to the owning cell type's <see cref="BaseCellType.OnElementMouseDown"/>.
         /// </summary>
-        public virtual void OnMouseDown(ISheetView view, int row, int col) { }
+        public virtual void OnMouseDown(ISheetView view, int row, int col)
+        {
+            var cellType = GetCellType(view, row, col);
+            cellType?.OnElementMouseDown(view, row, col, this);
+        }
 
         /// <summary>
-        /// Handles mouse up events on this element.
+        /// Handles mouse up events on this element, routing them by default to the owning cell type's <see cref="BaseCellType.OnElementMouseUp"/>.
         /// </summary>
-        public virtual void OnMouseUp(ISheetView view, int row, int col) { }
+        public virtual void OnMouseUp(ISheetView view, int row, int col)
+        {
+            var cellType = GetCellType(view, row, col);
+            cellType?.OnElementMouseUp(view, row, col, this);
+        }
+
+        private static BaseCellType GetCellType(ISheetView view, int row, int col)
+        {
+            var worksheet = view?.WorkSheet as Worksheet;
+            if (worksheet == null) return null;
+
+            var columns = worksheet.Columns as Columns;
+            var sheetColumn = columns?.GetItem(col);
+            return (worksheet.GetCellType(row, col) ?? sheetColumn?.CellType) as BaseCellType;
+        }
     }
 }

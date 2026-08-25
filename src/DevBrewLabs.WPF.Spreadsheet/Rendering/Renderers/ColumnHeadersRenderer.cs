@@ -90,8 +90,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             context.DrawRectangle(backGroundBrush, null, cellRect);
 
             string text = cellValue != null ? cellValue.ToString() : RenderingExtensions.GetColumnHeader(column);
-            TextRenderer.DrawText(
-                context,
+            context.DrawText(
                 text,
                 cellRect,
                 style.FontFamily,
