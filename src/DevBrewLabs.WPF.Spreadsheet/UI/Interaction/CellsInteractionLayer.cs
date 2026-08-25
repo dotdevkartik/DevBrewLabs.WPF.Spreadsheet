@@ -694,13 +694,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                     {
                         if (!scaledCellRect.HasValue)
                         {
-                            var cellRect = context.GetCellRect(row, col);
-                            var unscaled = ToSheetViewRect(cellRect);
-                            scaledCellRect = new Rect(
-                                unscaled.X * context.Zoom,
-                                unscaled.Y * context.Zoom,
-                                unscaled.Width * context.Zoom,
-                                unscaled.Height * context.Zoom);
+                            scaledCellRect = context.GetCellRect(row, col);
                         }
 
                         var bounds = element.GetBounds(scaledCellRect.Value, context.Zoom);

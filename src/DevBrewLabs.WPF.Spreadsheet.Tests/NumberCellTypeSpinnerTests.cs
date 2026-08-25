@@ -208,5 +208,52 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
             var contentWithZoom = cellTypeWithSpinners.GetContentRect(null, 0, 0, new Rect(20, 40, 200, 60), 2.0);
             Assert.That(contentWithZoom.Width, Is.EqualTo(200 - 32));
         }
+
+        [Test]
+        public void SpinnerButton_SpinDown_StepsIntoNegativeNumbers()
+        {
+            var spread = new Spread();
+            var sheetView = spread.Sheets.ActiveSheet;
+            var worksheet = (Worksheet)sheetView.WorkSheet;
+
+            var cellType = new NumberCellType { ShowSpinners = true, Step = 10, Minimum = -100, Maximum = 100 };
+            worksheet.Columns[1].CellType = cellType;
+            worksheet.SetValue(0, 1, 0.0);
+
+            var downBtn = cellType.GetElements(sheetView, 0, 1).OfType<SpinnerButton>().First(b => b.Direction == SpinDirection.Down);
+            downBtn.OnClick(sheetView, 0, 1);
+
+            Assert.That(worksheet.GetValue(0, 1), Is.EqualTo(-10.0));
+
+            downBtn.OnClick(sheetView, 0, 1);
+            Assert.That(worksheet.GetValue(0, 1), Is.EqualTo(-20.0));
+        }
+
+        [Test]
+        public void SpinnerButton_GetBounds_ScalesProperlyWithZoomFactor()
+        {
+            var cellType = new NumberCellType { ShowSpinners = true };
+            var upBtn = cellType.GetElements(null, 0, 0).OfType<SpinnerButton>().First(b => b.Direction == SpinDirection.Up);
+            var downBtn = cellType.GetElements(null, 0, 0).OfType<SpinnerButton>().First(b => b.Direction == SpinDirection.Down);
+
+            // Model cell at unscaled coordinates (0, 0, 100, 30)
+            // At zoom 1.5, scaledCellRect = (0, 0, 150, 45)
+            double zoom = 1.5;
+            var scaledCellRect = new Rect(0, 0, 100 * zoom, 30 * zoom);
+
+            var upBounds = upBtn.GetBounds(scaledCellRect, zoom);
+            var downBounds = downBtn.GetBounds(scaledCellRect, zoom);
+
+            // Spinner width = 16 * 1.5 = 24
+            Assert.That(upBounds.Width, Is.EqualTo(24));
+            Assert.That(upBounds.Height, Is.EqualTo(22.5));
+            Assert.That(upBounds.X, Is.EqualTo(150 - 24));
+            Assert.That(upBounds.Y, Is.EqualTo(0));
+
+            Assert.That(downBounds.Width, Is.EqualTo(24));
+            Assert.That(downBounds.Height, Is.EqualTo(22.5));
+            Assert.That(downBounds.X, Is.EqualTo(150 - 24));
+            Assert.That(downBounds.Y, Is.EqualTo(22.5));
+        }
     }
 }
