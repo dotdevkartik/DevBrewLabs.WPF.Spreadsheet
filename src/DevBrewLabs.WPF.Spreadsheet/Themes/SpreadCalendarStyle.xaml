@@ -94,8 +94,8 @@
         <Setter Property="FontWeight" Value="Normal" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
-        <Setter Property="Width" Value="30" />
-        <Setter Property="Height" Value="30" />
+        <Setter Property="Width" Value="28" />
+        <Setter Property="Height" Value="28" />
         <Setter Property="Margin" Value="1" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="Focusable" Value="False" />
@@ -103,7 +103,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type components:SpreadCalendarDayButton}">
-                    <Grid SnapsToDevicePixels="True">
+                    <Grid Width="28" Height="28" SnapsToDevicePixels="True">
                         <Border x:Name="dayBorder"
                                 Background="{TemplateBinding Background}"
                                 CornerRadius="6"
@@ -111,7 +111,7 @@
 
                         <Border x:Name="todayBorder"
                                 BorderBrush="#107C41"
-                                BorderThickness="1.25"
+                                BorderThickness="1.2"
                                 CornerRadius="6"
                                 Visibility="Collapsed"
                                 SnapsToDevicePixels="True" />

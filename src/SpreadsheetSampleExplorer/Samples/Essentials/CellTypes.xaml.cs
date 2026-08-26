@@ -20,7 +20,6 @@ namespace SpreadsheetSampleExplorer.Samples
         private void SetupSheet(ISheetView sheetView)
         {
             var worksheet = sheetView.WorkSheet;
-
             worksheet.Columns[0].CellType = new TextCellType();
             worksheet.Columns[1].CellType = new CheckBoxCellType() { IsThreeState = true };
             worksheet.Columns[2].CellType = new NumberCellType() { Format = "#,##0", ShowSpinners = true, Step = 10, Minimum = -1000, Maximum = 100000 };

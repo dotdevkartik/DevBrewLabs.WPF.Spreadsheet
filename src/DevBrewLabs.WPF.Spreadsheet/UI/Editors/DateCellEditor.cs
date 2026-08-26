@@ -1,12 +1,9 @@
 using DevBrewLabs.WPF.Spreadsheet.Components;
 using DevBrewLabs.WPF.Spreadsheet.Enums;
+using DevBrewLabs.WPF.Spreadsheet.UI.Managers;
 using System;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Effects;
 
 namespace DevBrewLabs.WPF.Spreadsheet.UI.Editors
 {
@@ -15,72 +12,69 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Editors
     /// </summary>
     public class DateCellEditor : TextCellEditor
     {
-        private Popup _popup;
         private SpreadCalendar _calendar;
         private bool _isInitializing;
-        private double _extraRightWidth = 18.0;
+        private SheetView _sheetView;
+        private int _row;
+        private int _column;
 
         public string Format { get; set; } = "d";
 
         public SpreadCalendar Calendar => _calendar;
 
+        public bool IsPopupOpen => _sheetView?.Spread?.PopupManager != null &&
+                                   _sheetView.Spread.PopupManager.IsPopupOpen &&
+                                   _sheetView.Spread.PopupManager.CurrentContent == _calendar;
+
         public DateCellEditor()
         {
-            InitializePopup();
+            InitializeCalendar();
         }
 
-        private void InitializePopup()
+        private void InitializeCalendar()
         {
             _calendar = new SpreadCalendar();
             _calendar.SelectedDateChanged += OnCalendarSelectedDateChanged;
             _calendar.DateCommitted += OnCalendarDateCommitted;
-
-            var border = new Border
-            {
-                Background = Brushes.White,
-                BorderBrush = new SolidColorBrush(Color.FromRgb(229, 231, 235)),
-                BorderThickness = new Thickness(1),
-                CornerRadius = new CornerRadius(8),
-                Margin = new Thickness(0, 4, 0, 0),
-                Effect = new DropShadowEffect
-                {
-                    BlurRadius = 16,
-                    ShadowDepth = 4,
-                    Direction = 270,
-                    Color = Color.FromRgb(0, 0, 0),
-                    Opacity = 0.12
-                },
-                Child = _calendar
-            };
-
-            _popup = new Popup
-            {
-                PlacementTarget = this,
-                Placement = PlacementMode.Custom,
-                CustomPopupPlacementCallback = PlacePopup,
-                StaysOpen = false,
-                AllowsTransparency = true,
-                PopupAnimation = PopupAnimation.Fade,
-                Child = border
-            };
-        }
-
-        private CustomPopupPlacement[] PlacePopup(Size popupSize, Size targetSize, Point offset)
-        {
-            // Align the right edge of the popup with the right edge of the cell (including the dropdown button width)
-            double x = targetSize.Width + _extraRightWidth - popupSize.Width;
-            double y = targetSize.Height;
-
-            return new[]
-            {
-                new CustomPopupPlacement(new Point(x, y), PopupPrimaryAxis.Horizontal),
-                new CustomPopupPlacement(new Point(0, y), PopupPrimaryAxis.Horizontal)
-            };
         }
 
         public void TogglePopup()
         {
-            _popup.IsOpen = !_popup.IsOpen;
+            if (IsPopupOpen)
+            {
+                ClosePopup();
+            }
+            else
+            {
+                OpenPopup();
+            }
+        }
+
+        public void OpenPopup()
+        {
+            if (_sheetView?.Spread?.PopupManager == null)
+                return;
+
+            _sheetView.Spread.PopupManager.ShowForCell(
+                _sheetView,
+                _row,
+                _column,
+                _calendar,
+                new PopupPlacementOptions
+                {
+                    Alignment = PopupAlignment.Right,
+                    AutoFlip = true,
+                    UseStandardContainer = true,
+                    RestoreFocusTarget = this
+                });
+        }
+
+        public void ClosePopup()
+        {
+            if (IsPopupOpen)
+            {
+                _sheetView?.Spread?.PopupManager?.ClosePopup();
+            }
         }
 
         private void OnCalendarSelectedDateChanged(object sender, DateTime? newDate)
@@ -100,7 +94,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Editors
 
         private void OnCalendarDateCommitted(object sender, EventArgs e)
         {
-            _popup.IsOpen = false;
+            ClosePopup();
             Focus();
             CaretIndex = Text?.Length ?? 0;
         }
@@ -109,8 +103,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Editors
         {
             base.StartEdit(context);
 
-            double zoom = context.ZoomFactor > 0 ? context.ZoomFactor : 1.0;
-            _extraRightWidth = 18.0 * zoom;
+            _sheetView = context.SheetView as SheetView;
+            _row = context.Row;
+            _column = context.Column;
 
             _isInitializing = true;
             _calendar.ViewMode = SpreadCalendarViewMode.Month;
@@ -140,16 +135,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Editors
 
             if (context.Trigger == EditTrigger.DropdownClick)
             {
-                _popup.IsOpen = true;
+                OpenPopup();
             }
-        }
-
-        public override void UpdateLayout(Rect contentRect, double zoomFactor)
-        {
-            base.UpdateLayout(contentRect, zoomFactor);
-            double zoom = zoomFactor > 0 ? zoomFactor : 1.0;
-            _extraRightWidth = 18.0 * zoom;
-            _popup.PlacementTarget = this;
         }
 
         public override bool HandlesKeyDown(KeyEventArgs e)
@@ -159,15 +146,15 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Editors
             // Alt + Down Arrow or F4 toggles calendar dropdown
             if ((key == Key.Down && Keyboard.Modifiers.HasFlag(ModifierKeys.Alt)) || key == Key.F4)
             {
-                _popup.IsOpen = !_popup.IsOpen;
+                TogglePopup();
                 return true;
             }
 
-            if (_popup.IsOpen)
+            if (IsPopupOpen)
             {
                 if (key == Key.Escape)
                 {
-                    _popup.IsOpen = false;
+                    ClosePopup();
                     return true;
                 }
 
@@ -177,7 +164,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Editors
                     {
                         Text = _calendar.SelectedDate.Value.ToString(Format ?? "d");
                     }
-                    _popup.IsOpen = false;
+                    ClosePopup();
                     return false; // let EditingManager commit
                 }
             }
@@ -187,7 +174,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Editors
 
         public override void EndEdit()
         {
-            _popup.IsOpen = false;
+            ClosePopup();
+            _sheetView = null;
             base.EndEdit();
         }
     }

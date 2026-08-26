@@ -30,6 +30,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
         public FrameworkElement ActiveEditorElement => _activeEditor?.Element;
         public bool IsEditing => _activeEditor != null;
         public bool IsShowingFormulaSuggestion => Spread?.FormulaSuggestionManager?.IsOpen == true;
+        public int ActiveRow => _activeRow;
+        public int ActiveColumn => _activeColumn;
 
         public void BeginEdit(SheetView sheetView, int row, int column, EditTrigger trigger = EditTrigger.Programmatic, string initialInput = null, bool focusEditor = true)
         {

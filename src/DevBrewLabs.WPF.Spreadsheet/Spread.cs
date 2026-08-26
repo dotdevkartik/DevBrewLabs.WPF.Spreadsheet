@@ -26,6 +26,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         private RowResizeManager _rowResizeManager;
         private ColumnResizeManager _columnResizeManager;
         private RenderEngine _renderEngine;
+        private SpreadPopupManager _popupManager;
         private FilterManager _filterManager;
         private FormulaSuggestionManager _formulaSuggestionManager;
         private HeaderHoverManager _headerHoverManager;
@@ -612,6 +613,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             WorkBook.WorkSheets.ActiveSheet = workSheet;
             _editingManager = new EditingManager(this);
             _selectionManager = new SelectionManager(this);
+            _popupManager = new SpreadPopupManager(this);
             _filterManager = new FilterManager(this);
             _formulaSuggestionManager = new FormulaSuggestionManager(this);
             _clipboardManager = new ClipboardManager(this);
@@ -868,6 +870,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             _sheetTabControl?.Dispose();
             _sheetViewHost?.Dispose();
             RenderEngine.Dispose();
+            _popupManager?.Dispose();
             _filterManager?.Dispose();
             _formulaSuggestionManager?.Dispose();
             _headerHoverManager?.Dispose();
@@ -892,6 +895,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         internal UndoRedoManager UndoRedoManager => _undoRedoManager;
         internal RowResizeManager RowResizeManager => _rowResizeManager;
         internal ColumnResizeManager ColumnResizeManager => _columnResizeManager;
+        internal SpreadPopupManager PopupManager => _popupManager;
         internal FilterManager FilterManager => _filterManager;
         internal FormulaSuggestionManager FormulaSuggestionManager => _formulaSuggestionManager;
         internal HeaderHoverManager HeaderHoverManager => _headerHoverManager;
@@ -1012,6 +1016,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         {
             base.OnPreviewMouseWheel(e);
 
+            _popupManager?.ClosePopup();
             _filterManager?.HideFilterDropdown();
             _formulaSuggestionManager?.Hide();
 
@@ -1044,6 +1049,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             if (sizeInfo.PreviousSize == sizeInfo.NewSize)
                 return;
 
+            _popupManager?.ClosePopup();
             _filterManager?.HideFilterDropdown();
             _formulaSuggestionManager?.Hide();
 

@@ -91,17 +91,15 @@ namespace DevBrewLabs.WPF.Spreadsheet.Elements
             if (sheetView == null) return;
 
             var editingManager = sheetView.Spread?.EditingManager;
-            if (editingManager != null)
+            if (editingManager == null) return;
+
+            if (editingManager.IsEditing)
             {
-                if (editingManager.IsEditing && editingManager.ActiveEditor is DateCellEditor dateEditor)
-                {
-                    dateEditor.TogglePopup();
-                }
-                else
-                {
-                    editingManager.BeginEdit(sheetView, row, col, EditTrigger.DropdownClick);
-                }
+                if (!editingManager.EndEdit(true))
+                    return;
             }
+
+            editingManager.BeginEdit(sheetView, row, col, EditTrigger.DropdownClick);
         }
     }
 }

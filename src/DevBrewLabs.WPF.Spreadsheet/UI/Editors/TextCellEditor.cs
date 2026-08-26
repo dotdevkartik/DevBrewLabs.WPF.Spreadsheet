@@ -18,6 +18,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Editors
 
         public FrameworkElement Element => this;
         public TextBox TextBox => this;
+        protected IEditorContext Context => _context;
 
         event EventHandler ITextEditor.TextChanged
         {
