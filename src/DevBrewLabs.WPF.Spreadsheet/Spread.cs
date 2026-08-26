@@ -10,6 +10,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using DevBrewLabs.WPF.Spreadsheet.Enums;
 
 namespace DevBrewLabs.WPF.Spreadsheet
 {
@@ -550,6 +551,18 @@ namespace DevBrewLabs.WPF.Spreadsheet
         /// </summary>
         public event EventHandler<CalcErrorEventArgs> CalculationError;
         /// <summary>
+        /// Fires before cell editing starts. Can be cancelled.
+        /// </summary>
+        public event EventHandler<CellEditStartingEventArgs> CellEditStarting;
+        /// <summary>
+        /// Fires before cell edit changes are committed. Can be cancelled.
+        /// </summary>
+        public event EventHandler<CellEditEndingEventArgs> CellEditEnding;
+        /// <summary>
+        /// Fires after cell editing has ended.
+        /// </summary>
+        public event EventHandler<CellEditEndedEventArgs> CellEditEnded;
+        /// <summary>
         /// Fires when sheet zoom factor changes.
         /// </summary>
         public event EventHandler<ZoomChangedEventArgs> ZoomChanged;
@@ -668,11 +681,15 @@ namespace DevBrewLabs.WPF.Spreadsheet
         /// <summary>
         /// Starts editing the cell at provided index.
         /// </summary>
-        /// <param name="row"></param>
-        /// <param name="column"></param>
-        public void BeginEdit(int row, int column)
+        /// <param name="row">The row index.</param>
+        /// <param name="column">The column index.</param>
+        /// <param name="trigger">How the edit was initiated.</param>
+        public void BeginEdit(int row, int column, EditTrigger trigger = EditTrigger.Programmatic)
         {
-            _editingManager.BeginEdit((SheetView)Sheets.ActiveSheet, row, column);
+            if (Sheets.ActiveSheet != null)
+            {
+                _editingManager.BeginEdit((SheetView)Sheets.ActiveSheet, row, column, trigger);
+            }
         }
 
         /// <summary>
@@ -928,6 +945,23 @@ namespace DevBrewLabs.WPF.Spreadsheet
         internal void RaiseContextMenuOpening(SpreadContextMenuOpeningEventArgs args)
         {
             ContextMenuOpening?.Invoke(this, args);
+        }
+
+        internal bool RaiseCellEditStarting(CellEditStartingEventArgs args)
+        {
+            CellEditStarting?.Invoke(this, args);
+            return !args.Cancel;
+        }
+
+        internal bool RaiseCellEditEnding(CellEditEndingEventArgs args)
+        {
+            CellEditEnding?.Invoke(this, args);
+            return !args.Cancel;
+        }
+
+        internal void RaiseCellEditEnded(CellEditEndedEventArgs args)
+        {
+            CellEditEnded?.Invoke(this, args);
         }
     }
     #endregion

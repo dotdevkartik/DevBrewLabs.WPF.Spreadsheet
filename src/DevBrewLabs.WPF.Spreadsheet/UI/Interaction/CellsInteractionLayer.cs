@@ -1,5 +1,6 @@
 using DevBrewLabs.Spreadsheet;
 using DevBrewLabs.Spreadsheet.Utils;
+using DevBrewLabs.WPF.Spreadsheet.Enums;
 using DevBrewLabs.WPF.Spreadsheet.Rendering;
 using DevBrewLabs.WPF.Spreadsheet.UI.Editors;
 using DevBrewLabs.WPF.Spreadsheet.UI.Managers;
@@ -77,7 +78,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                     // Starts editing
                     if (e.ClickCount == 2)
                     {
-                        SheetView.Spread.EditingManager.BeginEdit(SheetView, hitTest.Row, hitTest.Column);
+                        SheetView.Spread.EditingManager.BeginEdit(SheetView, hitTest.Row, hitTest.Column, EditTrigger.DoubleClick);
                     }
                     else
                     {
@@ -271,24 +272,46 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
         {
             base.OnPreviewKeyDown(e);
             var editingManager = SheetView.Spread.EditingManager.As<EditingManager>();
-            
-            if(e.Key == Key.Down || e.Key == Key.Up || e.Key == Key.Left || e.Key == Key.Right)
+
+            if (editingManager.IsEditing && editingManager.ActiveEditor != null)
+            {
+                if (editingManager.ActiveEditor.HandlesKeyDown(e))
+                    return;
+            }
+
+            if (e.Key == Key.Down || e.Key == Key.Up || e.Key == Key.Left || e.Key == Key.Right)
             {
                 if (editingManager.IsEditing)
                     return;
             }
 
-            if(e.Key == Key.Tab && editingManager.IsEditing && !editingManager.IsShowingFormulaSuggestion)
+            if (e.Key == Key.Tab && editingManager.IsEditing && !editingManager.IsShowingFormulaSuggestion)
             {
                 if (!editingManager.EndEdit(true) && editingManager.ActiveEditor != null)
                 {
-                    editingManager.ActiveEditor.Focus();
+                    editingManager.ActiveEditorElement?.Focus();
                     return;
                 }
             }
 
             switch (e.Key)
             {
+                case Key.F2:
+                    if (!editingManager.IsEditing)
+                    {
+                        e.Handled = true;
+                        editingManager.BeginEdit(SheetView, SheetView.ActiveRow, SheetView.ActiveColumn, EditTrigger.F2Key);
+                    }
+                    break;
+
+                case Key.Escape:
+                    if (editingManager.IsEditing)
+                    {
+                        e.Handled = true;
+                        editingManager.EndEdit(false);
+                    }
+                    break;
+
                 case Key.Down:
                     e.Handled = true;
                     MoveDownCellSelection();
@@ -320,33 +343,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 case Key.System:
                 case Key.Enter:
                     Key actualKey = e.Key == Key.System ? e.SystemKey : e.Key;
-                    if (actualKey == Key.Enter && ((e.KeyboardDevice.Modifiers & ModifierKeys.Alt) == ModifierKeys.Alt || Keyboard.Modifiers.HasFlag(ModifierKeys.Alt)))
-                    {
-                        if (editingManager.IsEditing && editingManager.ActiveEditor is TextEditor textBox)
-                        {
-                            if (!textBox.AcceptsReturn)
-                                return;
-
-                            e.Handled = true;
-                            int caretIndex = textBox.CaretIndex;
-                            string currentText = textBox.Text ?? string.Empty;
-                            if (textBox.SelectionLength > 0)
-                            {
-                                currentText = currentText.Remove(textBox.SelectionStart, textBox.SelectionLength);
-                                caretIndex = textBox.SelectionStart;
-                            }
-                            textBox.Text = currentText.Insert(caretIndex, Environment.NewLine);
-                            textBox.CaretIndex = caretIndex + Environment.NewLine.Length;
-
-                            var cellRect = SheetView.ViewPort.GetCellRect(textBox.Row, textBox.Column);
-                            int lineCount = TextUtils.GetLineCount(textBox.Text);
-                            double fontLineHeight = textBox.FontSize * 1.3;
-                            double requiredHeight = Math.Max(cellRect.Height - 3, lineCount * fontLineHeight + 6);
-                            textBox.Height = requiredHeight;
-                        }
-                        return;
-                    }
-
                     if (actualKey == Key.Enter)
                     {
                         e.Handled = true;
@@ -359,6 +355,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                     break;
 
                 case Key.Delete:
+                    if (editingManager.IsEditing)
+                        return;
+
                     e.Handled = true;
                     SheetView.Spread.SuspendUpdates = true;
                     for (int row = SheetView.Selection.TopRow; row <= SheetView.Selection.BottomRow; row++)
@@ -379,12 +378,22 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                     break;
 
                 default:
-                    if (e.KeyboardDevice.Modifiers != ModifierKeys.None || e.Key == Key.CapsLock)
+                    if (editingManager.IsEditing)
                         return;
 
-                    editingManager.UseCellValue = false;
-                    editingManager.BeginEdit(SheetView, SheetView.ActiveRow, SheetView.ActiveColumn);
-                    editingManager.UseCellValue = true;
+                    if (e.KeyboardDevice.Modifiers != ModifierKeys.None && e.KeyboardDevice.Modifiers != ModifierKeys.Shift)
+                        return;
+
+                    if (e.Key == Key.CapsLock || e.Key == Key.LeftShift || e.Key == Key.RightShift ||
+                        e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl || e.Key == Key.LeftAlt || e.Key == Key.RightAlt ||
+                        e.Key == Key.LWin || e.Key == Key.RWin || e.Key == Key.PageUp || e.Key == Key.PageDown ||
+                        e.Key == Key.Home || e.Key == Key.End || e.Key == Key.Insert || e.Key == Key.Scroll ||
+                        e.Key == Key.Pause || e.Key == Key.PrintScreen || e.Key == Key.F1 || e.Key == Key.F3 ||
+                        e.Key == Key.F4 || e.Key == Key.F5 || e.Key == Key.F6 || e.Key == Key.F7 || e.Key == Key.F8 ||
+                        e.Key == Key.F9 || e.Key == Key.F10 || e.Key == Key.F11 || e.Key == Key.F12)
+                        return;
+
+                    editingManager.BeginEdit(SheetView, SheetView.ActiveRow, SheetView.ActiveColumn, EditTrigger.DirectTyping);
                     break;
             }
         }
@@ -655,10 +664,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             else
             {
                 // If editing is active then update editor location
-                if(SheetView.Spread.EditingManager.ActiveEditor != null)
+                if (SheetView.Spread.EditingManager.ActiveEditorElement != null)
                 {
-                    SetLeft(SheetView.Spread.EditingManager.ActiveEditor, activeCellRect.Left + 1);
-                    SetTop(SheetView.Spread.EditingManager.ActiveEditor, activeCellRect.Top + 1);
+                    SetLeft(SheetView.Spread.EditingManager.ActiveEditorElement, activeCellRect.Left + 1);
+                    SetTop(SheetView.Spread.EditingManager.ActiveEditorElement, activeCellRect.Top + 1);
                 }
             }
 

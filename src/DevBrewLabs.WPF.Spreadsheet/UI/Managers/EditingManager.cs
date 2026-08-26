@@ -1,152 +1,173 @@
 using DevBrewLabs.Spreadsheet;
 using DevBrewLabs.Spreadsheet.CalcEngine;
-using DevBrewLabs.Spreadsheet.Utils;
+using DevBrewLabs.Spreadsheet.Formatters;
+using DevBrewLabs.WPF.Spreadsheet.CellTypes;
+using DevBrewLabs.WPF.Spreadsheet.Components;
+using DevBrewLabs.WPF.Spreadsheet.Enums;
 using DevBrewLabs.WPF.Spreadsheet.UI.Editors;
 using DevBrewLabs.WPF.Spreadsheet.UI.Interaction;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using DevBrewLabs.WPF.Spreadsheet.CellTypes;
 
 namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 {
     internal class EditingManager : UIManager
     {
         private SheetView _editingView;
+        private ICellEditor _activeEditor;
+        private IEditorContext _activeContext;
+        private int _activeRow;
+        private int _activeColumn;
+        private bool _isSyncing;
 
         public EditingManager(Spread spread) : base(spread)
         {
-            UseCellValue = true;
         }
 
-        public FrameworkElement ActiveEditor { get; private set; }
-        public bool IsEditing => ActiveEditor != null;
-        internal bool UseCellValue { get; set; }
+        public ICellEditor ActiveEditor => _activeEditor;
+        public FrameworkElement ActiveEditorElement => _activeEditor?.Element;
+        public bool IsEditing => _activeEditor != null;
+        public bool IsShowingFormulaSuggestion => Spread?.FormulaSuggestionManager?.IsOpen == true;
 
-        public void BeginEdit(SheetView sheetView, int row, int column)
+        public void BeginEdit(SheetView sheetView, int row, int column, EditTrigger trigger = EditTrigger.Programmatic, string initialInput = null, bool focusEditor = true)
         {
-            if (IsEditing)
+            if (IsEditing || sheetView == null)
                 return;
 
-            _editingView = sheetView;
             var workSheet = (Worksheet)sheetView.WorkSheet;
+            if (workSheet == null)
+                return;
 
             var anchor = workSheet.GetSpanCellRange(row, column);
-            if (anchor != default)
-            {
-                row = anchor.TopRow;
-                column = anchor.LeftColumn;
-            }
+            int editRow = anchor != default ? anchor.TopRow : row;
+            int editColumn = anchor != default ? anchor.LeftColumn : column;
 
-            var sheetColumn = ((Columns)workSheet.Columns).GetItem(column);
-            var sheetRow = ((Rows)workSheet.Rows).GetItem(row);
+            var sheetColumn = ((Columns)workSheet.Columns).GetItem(editColumn);
+            var sheetRow = ((Rows)workSheet.Rows).GetItem(editRow);
 
-            bool locked = workSheet.GetLocked(row, column) || 
-                (sheetRow != null && sheetRow.Locked) || 
+            bool locked = workSheet.GetLocked(editRow, editColumn) ||
+                (sheetRow != null && sheetRow.Locked) ||
                 (sheetColumn != null && sheetColumn.Locked);
 
             if (locked)
                 return;
 
+            var cellType = (BaseCellType)(workSheet.GetCellType(editRow, editColumn)) ?? (BaseCellType)sheetColumn?.CellType ?? TextCellType.Default;
+            if (!cellType.SupportsEditing)
+                return;
+
+            var startingArgs = new CellEditStartingEventArgs(sheetView, editRow, editColumn, trigger);
+            if (Spread != null && !Spread.RaiseCellEditStarting(startingArgs))
+                return;
+
+            var viewPort = sheetView.ViewPort.As<ViewPort>();
+            var cellRect = viewPort.GetCellRect(editRow, editColumn);
+            cellRect.X -= viewPort.LeftColumnLocation;
+            cellRect.Y -= viewPort.TopRowLocation;
+
+            double zoom = sheetView.ZoomFactor > 0 ? sheetView.ZoomFactor : 1.0;
+            var style = workSheet.GetCellStyle(editRow, editColumn, sheetRow, sheetColumn);
+            var formatter = workSheet.GetCellFormatter(editRow, editColumn, sheetRow, sheetColumn);
+            var value = workSheet.GetValue(editRow, editColumn);
+            var formula = workSheet.GetFormula(editRow, editColumn);
+            var formattedText = formatter?.Format(value) ?? value?.ToString() ?? string.Empty;
+
+            var context = new EditorContext
+            {
+                SheetView = sheetView,
+                Worksheet = workSheet,
+                Row = editRow,
+                Column = editColumn,
+                CellBounds = cellRect,
+                ZoomFactor = zoom,
+                Value = value,
+                Formula = formula,
+                FormattedText = formattedText,
+                Style = style,
+                Formatter = formatter,
+                Trigger = trigger,
+                InitialInput = initialInput
+            };
+
+            var editor = cellType.CreateEditor(context);
+            if (editor == null || editor.Element == null)
+                return;
+
+            _editingView = sheetView;
+            _activeContext = context;
+            _activeEditor = editor;
+            _activeRow = editRow;
+            _activeColumn = editColumn;
+
+            editor.StartEdit(context);
+
             var cellsInteractionLayer = _editingView.CellsSurface.GetInteractionLayer();
-            var cellRect = _editingView.ViewPort.GetCellRect(row, column);
-            cellRect.X -= _editingView.ViewPort.As<ViewPort>().LeftColumnLocation;
-            cellRect.Y -= _editingView.ViewPort.As<ViewPort>().TopRowLocation;
-
-            var cellType = (BaseCellType)(workSheet.GetCellType(row, column)) ?? (BaseCellType)sheetColumn?.CellType ?? TextCellType.Default;
-
-            var style = workSheet.GetCellStyle(row, column, sheetRow, sheetColumn);
-            var editor = cellType.GetEditor(style);
-            editor.SheetView = _editingView;
-            ActiveEditor = editor;
-
-            var formula = workSheet.GetFormula(row, column);
-            if (!string.IsNullOrEmpty(formula))
-            {
-                editor.Text = formula;
-            }
-            else
-            {
-                var value = workSheet.GetValue(row, column);
-                var formatter = workSheet.GetCellFormatter(row, column, sheetRow, sheetColumn);
-                editor.Text = formatter?.Format(value) ?? value?.ToString() ?? "";
-            }
-
-            if (!UseCellValue)
-                editor.Text = "";
-
-            editor.CaretIndex = editor.Text.Length;
-
-            if (editor is TextEditor gcTextBox)
-            {
-                gcTextBox.AcceptsReturn = style.AllowMultiLineText;
-            }
-
-            editor.Row = row;
-            editor.Column = column;
-            editor.KeyDown += OnEditorKeyDown;
-            Spread.FormulaSuggestionManager.Attach(editor);
-            cellsInteractionLayer.Children.Add(ActiveEditor);
+            cellsInteractionLayer.Children.Add(editor.Element);
             UpdateEditorLayout();
-            editor.Focus();
+
+            editor.Element.KeyDown += OnEditorKeyDown;
+
+            if (Spread != null && Spread.ShowFormulaSuggestions && editor is IFormulaEditor formulaEditor)
+            {
+                Spread.FormulaSuggestionManager.Attach(formulaEditor.TextBox);
+            }
+
+            AttachSyncBridge();
+
+            if (focusEditor)
+            {
+                editor.Element.Focus();
+            }
         }
 
         public void UpdateEditorLayout()
         {
-            if (ActiveEditor is EditorBase editor && Spread?.Sheets?.ActiveSheet != null)
-            {
-                var sheetView = Spread.Sheets.ActiveSheet.As<SheetView>();
-                var workSheet = sheetView.WorkSheet;
-                double zoom = sheetView.ZoomFactor > 0 ? sheetView.ZoomFactor : 1.0;
-                var viewPort = sheetView.ViewPort.As<ViewPort>();
+            if (!IsEditing || _editingView == null || Spread?.Sheets?.ActiveSheet == null)
+                return;
 
-                var cellRect = sheetView.ViewPort.GetCellRect(editor.Row, editor.Column);
-                cellRect.X -= viewPort.LeftColumnLocation;
-                cellRect.Y -= viewPort.TopRowLocation;
-                var sheetColumn = ((Columns)workSheet.Columns).GetItem(editor.Column);
-                var sheetRow = ((Rows)workSheet.Rows).GetItem(editor.Row);
-                var style = workSheet.GetCellStyle(editor.Row, editor.Column, sheetRow, sheetColumn);
+            var sheetView = _editingView;
+            var workSheet = sheetView.WorkSheet as Worksheet;
+            if (workSheet == null)
+                return;
 
-                var scaledCellRect = new Rect(
-                    cellRect.X * zoom,
-                    cellRect.Y * zoom,
-                    cellRect.Width * zoom,
-                    cellRect.Height * zoom);
+            double zoom = sheetView.ZoomFactor > 0 ? sheetView.ZoomFactor : 1.0;
+            var viewPort = sheetView.ViewPort.As<ViewPort>();
 
-                var cellType = (workSheet.GetCellType(editor.Row, editor.Column) ?? sheetColumn?.CellType) as BaseCellType ?? TextCellType.Default;
-                var contentRect = cellType.GetContentRect(sheetView, editor.Row, editor.Column, scaledCellRect, zoom);
+            var cellRect = viewPort.GetCellRect(_activeRow, _activeColumn);
+            cellRect.X -= viewPort.LeftColumnLocation;
+            cellRect.Y -= viewPort.TopRowLocation;
 
-                editor.FontSize = (style?.FontSize ?? 14) * zoom;
-                double availableWidth = System.Math.Max(0, contentRect.Width - 3);
-                editor.MinWidth = availableWidth;
+            var sheetColumn = ((Columns)workSheet.Columns).GetItem(_activeColumn);
+            var cellType = (workSheet.GetCellType(_activeRow, _activeColumn) ?? sheetColumn?.CellType) as BaseCellType ?? TextCellType.Default;
 
-                int initialLineCount = TextUtils.GetLineCount(editor.Text);
-                if (style.AllowMultiLineText && initialLineCount > 1)
-                {
-                    double initialLineHeight = editor.FontSize * 1.3;
-                    editor.Height = System.Math.Max(contentRect.Height - 3, initialLineCount * initialLineHeight + 6);
-                }
-                else
-                {
-                    editor.Height = System.Math.Max(0, contentRect.Height - 3);
-                }
+            var scaledCellRect = new Rect(
+                cellRect.X * zoom,
+                cellRect.Y * zoom,
+                cellRect.Width * zoom,
+                cellRect.Height * zoom);
 
-                Canvas.SetLeft(ActiveEditor, contentRect.X + 1);
-                Canvas.SetTop(ActiveEditor, contentRect.Y + 1);
-            }
+            var contentRect = cellType.GetContentRect(sheetView, _activeRow, _activeColumn, scaledCellRect, zoom);
+            _activeEditor.UpdateLayout(contentRect, zoom);
         }
 
         private void OnEditorKeyDown(object sender, KeyEventArgs e)
         {
-            switch(e.Key)
+            if (_activeEditor == null)
+                return;
+
+            if (_activeEditor.HandlesKeyDown(e))
+                return;
+
+            switch (e.Key)
             {
                 case Key.Escape:
+                    e.Handled = true;
                     EndEdit(false);
                     break;
             }
         }
-
-        public bool IsShowingFormulaSuggestion => Spread?.FormulaSuggestionManager?.IsOpen == true;
 
         public bool EndEdit(bool commitChanges)
         {
@@ -154,108 +175,180 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 return false;
 
             var cellsInteractionLayer = _editingView.CellsSurface.GetInteractionLayer();
+            int row = _activeRow;
+            int col = _activeColumn;
+            var view = _editingView;
+            var editor = _activeEditor;
 
             if (!commitChanges)
             {
-                Spread.FormulaSuggestionManager.Detach();
-                if (ActiveEditor != null)
-                {
-                    ActiveEditor.KeyDown -= OnEditorKeyDown;
-                    cellsInteractionLayer.Children.Remove(ActiveEditor);
-                    ActiveEditor = null;
-                }
+                DetachSyncBridge();
+                Spread?.FormulaSuggestionManager?.Detach();
+
+                editor.Element.KeyDown -= OnEditorKeyDown;
+                editor.EndEdit();
+                cellsInteractionLayer.Children.Remove(editor.Element);
+
+                _activeEditor = null;
+                _activeContext = null;
+                _editingView = null;
+
+                Spread?.RaiseCellEditEnded(new CellEditEndedEventArgs(view, row, col, false));
+                cellsInteractionLayer.Focus();
                 return true;
             }
 
-            if (ActiveEditor is TextEditor gcTextBox)
+            if (!editor.Validate(out string errorMessage))
             {
-                return EndTextCellEdit(gcTextBox, _editingView, cellsInteractionLayer);
-            }
-            else if(ActiveEditor is NumericEditor numTextBox)
-            {
-                return EndNumericCellEdit(numTextBox, _editingView, cellsInteractionLayer);
-            }
-
-            return false;
-        }
-
-        private bool EndNumericCellEdit(NumericEditor numTextBox, ISheetView sheetView, InteractionLayer layer)
-        {
-            Spread.FormulaSuggestionManager.Detach();
-            var workSheet = sheetView.WorkSheet;
-            var cellChangedAction = new CellChangedAction() { SheetView = sheetView.As<SheetView>() };
-            cellChangedAction.OldState.Value = workSheet.GetValue(numTextBox.Row, numTextBox.Column);
-            cellChangedAction.OldState.Row = numTextBox.Row;
-            cellChangedAction.OldState.Column = numTextBox.Column;
-            cellChangedAction.OldState.Selection = sheetView.Selection.Clone();
-
-            workSheet.SetRawValue(numTextBox.Row, numTextBox.Column, numTextBox.Text);
-
-            if (sheetView.AutoSizeRows)
-                sheetView.AutoSizeRow(numTextBox.Row);
-            if (sheetView.AutoSizeColumns)
-                sheetView.AutoSizeColumn(numTextBox.Column);
-
-            cellChangedAction.NewState.Value = workSheet.GetValue(numTextBox.Row, numTextBox.Column);
-            cellChangedAction.NewState.Row = numTextBox.Row;
-            cellChangedAction.NewState.Column = numTextBox.Column;
-            cellChangedAction.NewState.Selection = sheetView.Selection.Clone();
-
-            Spread.UndoRedoManager.AddAction(cellChangedAction);
-
-            layer.Children.Remove(ActiveEditor);
-            ActiveEditor.KeyDown -= OnEditorKeyDown;
-            ActiveEditor = null;
-            layer.Focus();
-            return true;
-        }
-
-        private bool EndTextCellEdit(TextEditor gcTextBox, ISheetView sheetView, InteractionLayer layer)
-        {
-            var workSheet = sheetView.WorkSheet;
-            var cellChangedAction = new CellChangedAction() { SheetView = sheetView.As<SheetView>() };
-            cellChangedAction.OldState.Value = workSheet.GetValue(gcTextBox.Row, gcTextBox.Column);
-            cellChangedAction.OldState.Row = gcTextBox.Row;
-            cellChangedAction.OldState.Column = gcTextBox.Column;
-            cellChangedAction.OldState.Selection = sheetView.Selection.Clone();
-
-            try
-            {
-                workSheet.SetRawValue(gcTextBox.Row, gcTextBox.Column, gcTextBox.Text);
-            }
-            catch (CalcEngineException ex)
-            {
-                sheetView.Spread.RaiseCalculationError(new CalcErrorEventArgs()
-                {
-                    Exception = ex,
-                    Row = gcTextBox.Row,
-                    Column = gcTextBox.Column,
-                    Formula = gcTextBox.Text,
-                    SheetView = sheetView
-                });
-                ActiveEditor.Focus();
+                editor.Element.Focus();
                 return false;
             }
 
-            Spread.FormulaSuggestionManager.Detach();
-            if (sheetView.AutoSizeRows)
-                sheetView.AutoSizeRow(gcTextBox.Row);
-            if (sheetView.AutoSizeColumns)
-                sheetView.AutoSizeColumn(gcTextBox.Column);
+            object newValue = editor.GetValue();
 
-            // We add undo/redo regardless of formula or value to support full history
-            cellChangedAction.NewState.Value = workSheet.GetValue(gcTextBox.Row, gcTextBox.Column);
-            cellChangedAction.NewState.Row = gcTextBox.Row;
-            cellChangedAction.NewState.Column = gcTextBox.Column;
-            cellChangedAction.NewState.Selection = sheetView.Selection.Clone();
-            Spread.UndoRedoManager.AddAction(cellChangedAction);
+            var endingArgs = new CellEditEndingEventArgs(view, row, col, newValue);
+            if (Spread != null && !Spread.RaiseCellEditEnding(endingArgs))
+            {
+                editor.Element.Focus();
+                return false;
+            }
 
-            layer.Children.Remove(ActiveEditor);
-            ActiveEditor.KeyDown -= OnEditorKeyDown;
-            ActiveEditor = null;
-            layer.Focus();
+            var workSheet = (Worksheet)view.WorkSheet;
+            var cellChangedAction = new CellChangedAction { SheetView = view };
+            cellChangedAction.OldState.Value = workSheet.GetValue(row, col);
+            cellChangedAction.OldState.Row = row;
+            cellChangedAction.OldState.Column = col;
+            cellChangedAction.OldState.Selection = view.Selection.Clone();
+
+            try
+            {
+                if (newValue is string strVal)
+                {
+                    workSheet.SetRawValue(row, col, strVal);
+                }
+                else
+                {
+                    workSheet.SetValue(row, col, newValue);
+                }
+            }
+            catch (CalcEngineException ex)
+            {
+                Spread?.RaiseCalculationError(new CalcErrorEventArgs
+                {
+                    Exception = ex,
+                    Row = row,
+                    Column = col,
+                    Formula = newValue?.ToString(),
+                    SheetView = view
+                });
+                editor.Element.Focus();
+                return false;
+            }
+
+            if (view.AutoSizeRows)
+                view.AutoSizeRow(row);
+            if (view.AutoSizeColumns)
+                view.AutoSizeColumn(col);
+
+            cellChangedAction.NewState.Value = workSheet.GetValue(row, col);
+            cellChangedAction.NewState.Row = row;
+            cellChangedAction.NewState.Column = col;
+            cellChangedAction.NewState.Selection = view.Selection.Clone();
+            Spread?.UndoRedoManager?.AddAction(cellChangedAction);
+
+            DetachSyncBridge();
+            Spread?.FormulaSuggestionManager?.Detach();
+
+            editor.Element.KeyDown -= OnEditorKeyDown;
+            editor.EndEdit();
+            cellsInteractionLayer.Children.Remove(editor.Element);
+
+            _activeEditor = null;
+            _activeContext = null;
+            _editingView = null;
+
+            Spread?.RaiseCellEditEnded(new CellEditEndedEventArgs(view, row, col, true));
+            cellsInteractionLayer.Focus();
             return true;
+        }
+
+        #region Formula Bar Two-Way Sync
+        private void AttachSyncBridge()
+        {
+            var formulaBar = Spread?.FormulaTextBox;
+            if (formulaBar == null || !(_activeEditor is ITextEditor textEditor))
+                return;
+
+            textEditor.TextChanged += OnInCellEditorTextChanged;
+            if (formulaBar.Editor != null)
+            {
+                formulaBar.Editor.TextChanged += OnFormulaBarTextChanged;
+            }
+        }
+
+        private void DetachSyncBridge()
+        {
+            var formulaBar = Spread?.FormulaTextBox;
+            if (_activeEditor is ITextEditor textEditor)
+            {
+                textEditor.TextChanged -= OnInCellEditorTextChanged;
+            }
+
+            if (formulaBar?.Editor != null)
+            {
+                formulaBar.Editor.TextChanged -= OnFormulaBarTextChanged;
+            }
+        }
+
+        private void OnInCellEditorTextChanged(object sender, EventArgs e)
+        {
+            if (_isSyncing || Spread?.FormulaTextBox == null || !(_activeEditor is ITextEditor textEditor))
+                return;
+
+            try
+            {
+                _isSyncing = true;
+                Spread.FormulaTextBox.Text = textEditor.Text;
+            }
+            finally
+            {
+                _isSyncing = false;
+            }
+        }
+
+        private void OnFormulaBarTextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_isSyncing || !(_activeEditor is ITextEditor textEditor) || Spread?.FormulaTextBox == null)
+                return;
+
+            try
+            {
+                _isSyncing = true;
+                textEditor.Text = Spread.FormulaTextBox.Text;
+                UpdateEditorLayout();
+            }
+            finally
+            {
+                _isSyncing = false;
+            }
+        }
+        #endregion
+
+        private class EditorContext : IEditorContext
+        {
+            public ISheetView SheetView { get; internal set; }
+            public IWorksheet Worksheet { get; internal set; }
+            public int Row { get; internal set; }
+            public int Column { get; internal set; }
+            public Rect CellBounds { get; internal set; }
+            public double ZoomFactor { get; internal set; }
+            public object Value { get; internal set; }
+            public string Formula { get; internal set; }
+            public string FormattedText { get; internal set; }
+            public IStyle Style { get; internal set; }
+            public IFormatter Formatter { get; internal set; }
+            public EditTrigger Trigger { get; internal set; }
+            public string InitialInput { get; internal set; }
         }
     }
 }
-

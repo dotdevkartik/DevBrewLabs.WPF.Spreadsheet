@@ -71,10 +71,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
             }
         }
 
-        public override EditorBase GetEditor(IStyle style)
-        {
-            throw new NotImplementedException();
-        }
+        public override bool SupportsEditing => false;
     }
 }
 
