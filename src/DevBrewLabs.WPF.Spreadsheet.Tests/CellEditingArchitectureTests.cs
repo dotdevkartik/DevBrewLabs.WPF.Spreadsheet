@@ -195,5 +195,45 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
             Assert.That(spread.EditingManager.IsEditing, Is.False);
             Assert.That(ws.GetValue(0, 0), Is.EqualTo(new System.DateTime(2026, 12, 31)));
         }
+
+        [Test]
+        public void SpreadCalendar_InitialProperties_AndNavigation()
+        {
+            var calendar = new DevBrewLabs.WPF.Spreadsheet.Components.SpreadCalendar();
+            calendar.SelectedDate = new System.DateTime(2026, 8, 26);
+
+            Assert.That(calendar.SelectedDate, Is.EqualTo(new System.DateTime(2026, 8, 26)));
+            Assert.That(calendar.DisplayDate, Is.EqualTo(new System.DateTime(2026, 8, 26)));
+            Assert.That(calendar.ViewMode, Is.EqualTo(DevBrewLabs.WPF.Spreadsheet.Components.SpreadCalendarViewMode.Month));
+
+            // Switch view modes
+            calendar.ViewMode = DevBrewLabs.WPF.Spreadsheet.Components.SpreadCalendarViewMode.Year;
+            Assert.That(calendar.ViewMode, Is.EqualTo(DevBrewLabs.WPF.Spreadsheet.Components.SpreadCalendarViewMode.Year));
+
+            calendar.ViewMode = DevBrewLabs.WPF.Spreadsheet.Components.SpreadCalendarViewMode.Decade;
+            Assert.That(calendar.ViewMode, Is.EqualTo(DevBrewLabs.WPF.Spreadsheet.Components.SpreadCalendarViewMode.Decade));
+        }
+
+        [Test]
+        public void SpreadCalendar_DateSelection_FiresEvent()
+        {
+            var calendar = new DevBrewLabs.WPF.Spreadsheet.Components.SpreadCalendar();
+            System.DateTime? chosenDate = null;
+            calendar.SelectedDateChanged += (s, d) => chosenDate = d;
+
+            calendar.SelectedDate = new System.DateTime(2026, 5, 14);
+
+            Assert.That(chosenDate, Is.EqualTo(new System.DateTime(2026, 5, 14)));
+        }
+
+        [Test]
+        public void DateCellEditor_UsesSpreadCalendar_AndSyncsDate()
+        {
+            var editor = new DateCellEditor();
+            Assert.That(editor.Calendar, Is.Not.Null);
+
+            editor.Calendar.SelectedDate = new System.DateTime(2026, 8, 26);
+            Assert.That(editor.Text, Is.EqualTo(new System.DateTime(2026, 8, 26).ToString("d")));
+        }
     }
 }

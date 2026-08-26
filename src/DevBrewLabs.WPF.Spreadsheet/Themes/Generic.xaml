@@ -13,6 +13,7 @@
         <ResourceDictionary Source="/DevBrewLabs.WPF.Spreadsheet;component/Themes/FormulaTextBoxStyle.xaml"/>
         <ResourceDictionary Source="/DevBrewLabs.WPF.Spreadsheet;component/Themes/FormulaParameterTooltipStyle.xaml"/>
         <ResourceDictionary Source="/DevBrewLabs.WPF.Spreadsheet;component/Themes/ContextMenuStyle.xaml"/>
+        <ResourceDictionary Source="/DevBrewLabs.WPF.Spreadsheet;component/Themes/SpreadCalendarStyle.xaml"/>
     </ResourceDictionary.MergedDictionaries>
 
     <Style TargetType="{x:Type local:Spread}">

@@ -1,0 +1,340 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:components="clr-namespace:DevBrewLabs.WPF.Spreadsheet.Components">
+
+    <!-- Crisp Vector Geometries for Chevron Navigation Icons -->
+    <Geometry x:Key="CalendarPrevChevronGeometry">M 6.5 2.5 L 2.5 6.5 L 6.5 10.5</Geometry>
+    <Geometry x:Key="CalendarNextChevronGeometry">M 3.5 2.5 L 7.5 6.5 L 3.5 10.5</Geometry>
+
+    <!-- Navigation Chevrons Style (28x28 circle) -->
+    <Style x:Key="SpreadCalendarNavigationButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Width" Value="28" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="14"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#F1F5F9" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#E2E8F0" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="border" Property="Opacity" Value="0.3" />
+                            <Setter Property="Cursor" Value="Arrow" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Center View Switcher Header Button Style -->
+    <Style x:Key="SpreadCalendarHeaderButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="#0F172A" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontFamily" Value="Segoe UI" />
+        <Setter Property="Padding" Value="8,4" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="6"
+                            Padding="{TemplateBinding Padding}"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          RecognizesAccessKey="True" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#F1F5F9" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#E2E8F0" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Modern Day Button Style (1-31) -->
+    <Style TargetType="{x:Type components:SpreadCalendarDayButton}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="#1E293B" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontFamily" Value="Segoe UI" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Width" Value="30" />
+        <Setter Property="Height" Value="30" />
+        <Setter Property="Margin" Value="1" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type components:SpreadCalendarDayButton}">
+                    <Grid SnapsToDevicePixels="True">
+                        <Border x:Name="dayBorder"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="6"
+                                SnapsToDevicePixels="True" />
+
+                        <Border x:Name="todayBorder"
+                                BorderBrush="#107C41"
+                                BorderThickness="1.25"
+                                CornerRadius="6"
+                                Visibility="Collapsed"
+                                SnapsToDevicePixels="True" />
+
+                        <ContentPresenter x:Name="content"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <!-- Inactive (adjacent month overflow) -->
+                        <Trigger Property="IsInactive" Value="True">
+                            <Setter Property="Foreground" Value="#CBD5E1" />
+                        </Trigger>
+                        <!-- Today (not selected) -->
+                        <Trigger Property="IsToday" Value="True">
+                            <Setter TargetName="todayBorder" Property="Visibility" Value="Visible" />
+                            <Setter Property="FontWeight" Value="SemiBold" />
+                            <Setter Property="Foreground" Value="#107C41" />
+                        </Trigger>
+                        <!-- Mouse Over -->
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="dayBorder" Property="Background" Value="#F1F5F9" />
+                            <Setter Property="Foreground" Value="#0F172A" />
+                        </Trigger>
+                        <!-- Selected -->
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="dayBorder" Property="Background" Value="#107C41" />
+                            <Setter TargetName="todayBorder" Property="Visibility" Value="Collapsed" />
+                            <Setter Property="Foreground" Value="#FFFFFF" />
+                            <Setter Property="FontWeight" Value="SemiBold" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Modern Month / Year Button Style (12 grid buttons) -->
+    <Style TargetType="{x:Type components:SpreadCalendarMonthButton}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="#1E293B" />
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="FontFamily" Value="Segoe UI" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="MinWidth" Value="48" />
+        <Setter Property="Height" Value="38" />
+        <Setter Property="Margin" Value="2" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type components:SpreadCalendarMonthButton}">
+                    <Grid SnapsToDevicePixels="True">
+                        <Border x:Name="btnBorder"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="6"
+                                SnapsToDevicePixels="True" />
+
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <!-- Inactive -->
+                        <Trigger Property="IsInactive" Value="True">
+                            <Setter Property="Foreground" Value="#CBD5E1" />
+                        </Trigger>
+                        <!-- Mouse Over -->
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="btnBorder" Property="Background" Value="#F1F5F9" />
+                            <Setter Property="Foreground" Value="#0F172A" />
+                        </Trigger>
+                        <!-- Selected -->
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="btnBorder" Property="Background" Value="#107C41" />
+                            <Setter Property="Foreground" Value="#FFFFFF" />
+                            <Setter Property="FontWeight" Value="SemiBold" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Modern Footer Action Link Button Style ("Today", "Clear") -->
+    <Style x:Key="SpreadCalendarFooterLinkButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="#107C41" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FontSize" Value="11.5" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontFamily" Value="Segoe UI" />
+        <Setter Property="Padding" Value="8,4" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="4"
+                            Padding="{TemplateBinding Padding}"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#F1F5F9" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#E2E8F0" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Master SpreadCalendar Control Style -->
+    <Style TargetType="{x:Type components:SpreadCalendar}">
+        <Setter Property="Background" Value="#FFFFFF" />
+        <Setter Property="BorderBrush" Value="#E2E8F0" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="FontFamily" Value="Segoe UI" />
+        <Setter Property="Width" Value="238" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type components:SpreadCalendar}">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="10"
+                            Padding="10,8,10,6"
+                            SnapsToDevicePixels="True">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <!-- Modern Header Bar -->
+                            <Grid Grid.Row="0" Margin="0,0,0,6">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <Button x:Name="PART_PreviousButton"
+                                        Grid.Column="0"
+                                        Style="{StaticResource SpreadCalendarNavigationButtonStyle}">
+                                    <Path Data="{StaticResource CalendarPrevChevronGeometry}"
+                                          Stroke="#475569"
+                                          StrokeThickness="1.5"
+                                          StrokeStartLineCap="Round"
+                                          StrokeEndLineCap="Round"
+                                          Width="9" Height="12"
+                                          IsHitTestVisible="False"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center" />
+                                </Button>
+
+                                <Button x:Name="PART_HeaderButton"
+                                        Grid.Column="1"
+                                        HorizontalAlignment="Center"
+                                        Style="{StaticResource SpreadCalendarHeaderButtonStyle}" />
+
+                                <Button x:Name="PART_NextButton"
+                                        Grid.Column="2"
+                                        Style="{StaticResource SpreadCalendarNavigationButtonStyle}">
+                                    <Path Data="{StaticResource CalendarNextChevronGeometry}"
+                                          Stroke="#475569"
+                                          StrokeThickness="1.5"
+                                          StrokeStartLineCap="Round"
+                                          StrokeEndLineCap="Round"
+                                          Width="9" Height="12"
+                                          IsHitTestVisible="False"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center" />
+                                </Button>
+                            </Grid>
+
+                            <!-- Views Container -->
+                            <Grid Grid.Row="1" MinHeight="192">
+                                <!-- Month View (Days) -->
+                                <Grid x:Name="PART_MonthView" Visibility="Visible" />
+
+                                <!-- Year View (12 Months) -->
+                                <Grid x:Name="PART_YearView" Visibility="Collapsed" />
+
+                                <!-- Decade View (12 Years) -->
+                                <Grid x:Name="PART_DecadeView" Visibility="Collapsed" />
+                            </Grid>
+
+                            <!-- Modern Footer Action Bar -->
+                            <Border Grid.Row="2"
+                                    Margin="0,6,0,0"
+                                    Padding="0,6,0,0"
+                                    BorderBrush="#F1F5F9"
+                                    BorderThickness="0,1,0,0">
+                                <Grid>
+                                    <Button x:Name="PART_TodayButton"
+                                            Content="Today"
+                                            HorizontalAlignment="Left"
+                                            Style="{StaticResource SpreadCalendarFooterLinkButtonStyle}" />
+
+                                    <Button x:Name="PART_ClearButton"
+                                            Content="Clear"
+                                            Foreground="#64748B"
+                                            HorizontalAlignment="Right"
+                                            Style="{StaticResource SpreadCalendarFooterLinkButtonStyle}" />
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

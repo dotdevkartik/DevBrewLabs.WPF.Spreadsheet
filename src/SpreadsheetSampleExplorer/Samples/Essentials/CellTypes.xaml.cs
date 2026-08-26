@@ -25,6 +25,7 @@ namespace SpreadsheetSampleExplorer.Samples
             worksheet.Columns[1].CellType = new CheckBoxCellType() { IsThreeState = true };
             worksheet.Columns[2].CellType = new NumberCellType() { Format = "#,##0", ShowSpinners = true, Step = 10, Minimum = -1000, Maximum = 100000 };
             worksheet.Columns[3].CellType = new DateCellType();
+            worksheet.Columns[3].Width = 110;
             worksheet.Columns[4].CellType = new ButtonCellType() { Text = "Button" };
 
             var data = DataSource.GetCellTypesData(50, 4);
