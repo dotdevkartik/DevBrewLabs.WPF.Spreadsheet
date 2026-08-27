@@ -67,7 +67,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
         public double PixelPerDip { get; }
         public double TextPadding { get; }
 
-        public RenderContext(DrawingContext context, SheetView view, double textPadding = 5)
+        public RenderContext(DrawingContext context, SheetView view, double textPadding = 0)
         {
             _drawingContext = context;
             View = view;
