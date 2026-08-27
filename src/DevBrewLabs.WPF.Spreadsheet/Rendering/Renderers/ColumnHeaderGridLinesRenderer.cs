@@ -10,8 +10,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
     {
         public override void OnRender(RenderContext context, int topRow, int leftColumn, int bottomRow, int rightColumn)
         {
-            GuidelineSet guidelines = new GuidelineSet();
-            context.PushGuidelineSet(guidelines);
+            double dpi = context.PixelPerDip > 0 ? context.PixelPerDip : 1.0;
+            double penThickness = context.GridLinePen != null ? context.GridLinePen.Thickness : 1.0;
+            double halfPenDip = penThickness / 2.0;
+            double halfPenPx = halfPenDip * dpi;
+            double invDpi = 1.0 / dpi;
 
             for (int row = topRow; row <= bottomRow; row++)
             {
@@ -20,11 +23,12 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
                     continue;
                 
                 var rowLocation = context.ViewPort.GetHeaderRowLocation(row);
-                var y = rowLocation * context.Zoom;
-                var scaledRowHeight = rowHeight * context.Zoom;
+                var rawY = rowLocation * context.ZoomFactor;
+                var scaledRowHeight = rowHeight * context.ZoomFactor;
 
-                guidelines.GuidelinesY.Add(y + context.HalfPenWidth);
-                guidelines.GuidelinesY.Add(y + scaledRowHeight + context.HalfPenWidth);
+                double y1 = (Math.Round((rawY + halfPenDip) * dpi, MidpointRounding.AwayFromZero) - halfPenPx) * invDpi;
+                double y2 = (Math.Round((rawY + scaledRowHeight + halfPenDip) * dpi, MidpointRounding.AwayFromZero) - halfPenPx) * invDpi;
+                double snappedRowHeight = y2 - y1;
 
                 for (int col = leftColumn; col <= rightColumn; col++)
                 {
@@ -37,16 +41,14 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
 
                     double colLocation = context.ViewPort.GetColumnLocation(col);
 
-                    var x = (colLocation - context.ViewPort.LeftColumnLocation) * context.Zoom;
-                    var scaledColumnWidth = columnWidth * context.Zoom;
+                    var rawX = (colLocation - context.ViewPort.LeftColumnLocation) * context.ZoomFactor;
+                    var scaledColumnWidth = columnWidth * context.ZoomFactor;
 
-                    if (row == topRow)
-                    {
-                        guidelines.GuidelinesX.Add(x + context.HalfPenWidth);
-                        guidelines.GuidelinesX.Add(x + scaledColumnWidth + context.HalfPenWidth);
-                    }
+                    double x1 = (Math.Round((rawX + halfPenDip) * dpi, MidpointRounding.AwayFromZero) - halfPenPx) * invDpi;
+                    double x2 = (Math.Round((rawX + scaledColumnWidth + halfPenDip) * dpi, MidpointRounding.AwayFromZero) - halfPenPx) * invDpi;
+                    double snappedColWidth = x2 - x1;
 
-                    var cellRect = new Rect(x, y, scaledColumnWidth, scaledRowHeight);
+                    var cellRect = new Rect(x1, y1, snappedColWidth, snappedRowHeight);
                     context.DrawRectangle(null, context.GridLinePen, cellRect);
                 }
 
@@ -69,28 +71,30 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
                         if (col == 0 || !isPrevHidden)
                         {
                             double colLocation = context.ViewPort.GetColumnLocation(col);
-                            var x = (colLocation - context.ViewPort.LeftColumnLocation) * context.Zoom;
-                            DrawHiddenColumnIndicator(context, x, y, scaledRowHeight);
+                            var rawX = (colLocation - context.ViewPort.LeftColumnLocation) * context.ZoomFactor;
+                            double x = (Math.Round((rawX + halfPenDip) * dpi, MidpointRounding.AwayFromZero) - halfPenPx) * invDpi;
+                            DrawHiddenColumnIndicator(context, x, y1, snappedRowHeight, dpi, halfPenDip, halfPenPx, invDpi);
                         }
                     }
                 }
             }
-
-            context.Pop();
         }
 
-        private void DrawHiddenColumnIndicator(RenderContext context, double x, double rowLocation, double rowHeight)
+        private void DrawHiddenColumnIndicator(RenderContext context, double x, double rowLocation, double rowHeight, double dpi, double halfPenDip, double halfPenPx, double invDpi)
         {
             var defaultStyle = context.Worksheet.WorkBook.GetNamedStyle(StyleKeys.DefaultColumnHeaderStyleKey);
 
             if (x <= 0)
             {
-                context.DrawLine(context.GridLinePen, new Point(x + 3.0, rowLocation), new Point(x + 3.0, rowLocation + rowHeight));
+                double lineX = (Math.Round((x + 3.0 + halfPenDip) * dpi, MidpointRounding.AwayFromZero) - halfPenPx) * invDpi;
+                context.DrawLine(context.GridLinePen, new Point(lineX, rowLocation), new Point(lineX, rowLocation + rowHeight));
                 return;
             }
 
-            double line1X = x - 1.5;
-            double line2X = x + 1.5;
+            double rawLine1X = x - 1.5;
+            double rawLine2X = x + 1.5;
+            double line1X = (Math.Round((rawLine1X + halfPenDip) * dpi, MidpointRounding.AwayFromZero) - halfPenPx) * invDpi;
+            double line2X = (Math.Round((rawLine2X + halfPenDip) * dpi, MidpointRounding.AwayFromZero) - halfPenPx) * invDpi;
 
             var rectLeft = Math.Min(line1X, line2X) - 0.5;
             var rectWidth = Math.Abs(line2X - line1X) + 1.0;

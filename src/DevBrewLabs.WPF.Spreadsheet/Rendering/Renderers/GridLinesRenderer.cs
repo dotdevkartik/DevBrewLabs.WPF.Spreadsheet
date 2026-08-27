@@ -1,4 +1,5 @@
 using DevBrewLabs.Spreadsheet;
+using System;
 using System.Windows;
 using System.Windows.Media;
 
@@ -27,8 +28,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
         private void DrawHorizontalGridlines(RenderContext context, int topRow, int leftColumn, int bottomRow, int rightColumn)
         {
-            GuidelineSet guidelines = new GuidelineSet();
-            context.PushGuidelineSet(guidelines);
+            double dpi = context.PixelPerDip > 0 ? context.PixelPerDip : 1.0;
+            double penThickness = context.GridLinePen != null ? context.GridLinePen.Thickness : 1.0;
+            double halfPenDip = penThickness / 2.0;
+            double halfPenPx = halfPenDip * dpi;
+            double invDpi = 1.0 / dpi;
 
             for (int row = topRow; row <= bottomRow; row++)
             {
@@ -39,8 +43,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                     continue;
 
                 var rowLocation = context.ViewPort.GetRowLocation(row);
-                double y = (rowLocation - context.ViewPort.TopRowLocation + rowHeight) * context.Zoom;
-                guidelines.GuidelinesY.Add(y + context.HalfPenWidth);
+                double rawY = (rowLocation - context.ViewPort.TopRowLocation + rowHeight) * context.ZoomFactor;
+                double y = (Math.Round((rawY + halfPenDip) * dpi, MidpointRounding.AwayFromZero) - halfPenPx) * invDpi;
 
                 bool drawing = false;
                 double startX = 0;
@@ -53,8 +57,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                     var colWidth = context.Columns.GetColumnWidth(col);
                     if (colWidth == 0) continue;
 
-                    double x = (context.ViewPort.GetColumnLocation(col) - context.ViewPort.LeftColumnLocation) * context.Zoom;
-                    double nextX = x + colWidth * context.Zoom;
+                    double x = (context.ViewPort.GetColumnLocation(col) - context.ViewPort.LeftColumnLocation) * context.ZoomFactor;
+                    double nextX = x + colWidth * context.ZoomFactor;
 
                     var anchor1 = context.Worksheet.GetSpanCellRange(row, col);
                     
@@ -74,7 +78,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                         if (!drawing)
                         {
                             drawing = true;
-                            startX = (col == leftColumn) ? System.Math.Min(0, x) : x;
+                            startX = (col == leftColumn) ? Math.Min(0, x) : x;
                         }
                     }
                     else
@@ -93,14 +97,15 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                     context.DrawLine(context.GridLinePen, new Point(startX, y), new Point(currentX, y));
                 }
             }
-
-            context.Pop();
         }
 
         private void DrawVerticalGridlines(RenderContext context, int topRow, int leftColumn, int bottomRow, int rightColumn)
         {
-            GuidelineSet guidelines = new GuidelineSet();
-            context.PushGuidelineSet(guidelines);
+            double dpi = context.PixelPerDip > 0 ? context.PixelPerDip : 1.0;
+            double penThickness = context.GridLinePen != null ? context.GridLinePen.Thickness : 1.0;
+            double halfPenDip = penThickness / 2.0;
+            double halfPenPx = halfPenDip * dpi;
+            double invDpi = 1.0 / dpi;
 
             for (int col = leftColumn; col <= rightColumn; col++)
             {
@@ -111,8 +116,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                     continue;
 
                 var colLocation = context.ViewPort.GetColumnLocation(col);
-                double x = (colLocation - context.ViewPort.LeftColumnLocation + columnWidth) * context.Zoom;
-                guidelines.GuidelinesX.Add(x + context.HalfPenWidth);
+                double rawX = (colLocation - context.ViewPort.LeftColumnLocation + columnWidth) * context.ZoomFactor;
+                double x = (Math.Round((rawX + halfPenDip) * dpi, MidpointRounding.AwayFromZero) - halfPenPx) * invDpi;
 
                 bool drawing = false;
                 double startY = 0;
@@ -125,8 +130,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                     var rowHeight = context.Rows.GetRowHeight(row);
                     if (rowHeight == 0) continue;
 
-                    double y = (context.ViewPort.GetRowLocation(row) - context.ViewPort.TopRowLocation) * context.Zoom;
-                    double nextY = y + rowHeight * context.Zoom;
+                    double y = (context.ViewPort.GetRowLocation(row) - context.ViewPort.TopRowLocation) * context.ZoomFactor;
+                    double nextY = y + rowHeight * context.ZoomFactor;
 
                     var anchor1 = context.Worksheet.GetSpanCellRange(row, col);
                     
@@ -146,7 +151,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                         if (!drawing)
                         {
                             drawing = true;
-                            startY = (row == topRow) ? System.Math.Min(0, y) : y;
+                            startY = (row == topRow) ? Math.Min(0, y) : y;
                         }
                     }
                     else
@@ -165,8 +170,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                     context.DrawLine(context.GridLinePen, new Point(x, startY), new Point(x, currentY));
                 }
             }
-
-            context.Pop();
         }
     }
 }

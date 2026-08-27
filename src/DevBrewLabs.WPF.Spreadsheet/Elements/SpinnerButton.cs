@@ -119,8 +119,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Elements
             }
 
             // 4. Draw arrow icon
-            double arrowWidth = 8 * context.Zoom;
-            double arrowHeight = 4 * context.Zoom;
+            double arrowWidth = 8 * context.ZoomFactor;
+            double arrowHeight = 4 * context.ZoomFactor;
             double x = bounds.X + (bounds.Width - arrowWidth) / 2.0;
             double y = bounds.Y + (bounds.Height - arrowHeight) / 2.0;
 
@@ -134,7 +134,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Elements
                 arrowBrush = _disabledArrowBrush;
             }
 
-            context.PushTransform(new MatrixTransform(context.Zoom, 0, 0, context.Zoom, x, y));
+            context.PushTransform(new MatrixTransform(context.ZoomFactor, 0, 0, context.ZoomFactor, x, y));
             context.DrawGeometry(arrowBrush, null, Direction == SpinDirection.Up ? _upArrowGeometry : _downArrowGeometry);
             context.Pop();
         }

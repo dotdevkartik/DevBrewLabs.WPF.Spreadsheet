@@ -32,21 +32,25 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
 
         public override void DrawCell(IRenderContext renderContext, object value, IStyle style, IFormatter formatter, Rect cellRect)
         {
-            var scaledCheckBoxSize = new Size(CheckBoxSize.Width * renderContext.Zoom, CheckBoxSize.Height * renderContext.Zoom);
-            var checkBoxRect = cellRect.ToCellCheckBoxRect(scaledCheckBoxSize);
-            var halfPenWidth = _pen.Thickness / 2;
-            GuidelineSet guidelines = new GuidelineSet();
-            guidelines.GuidelinesX.Add(checkBoxRect.Left + halfPenWidth);
-            guidelines.GuidelinesX.Add(checkBoxRect.Right + halfPenWidth);
-            guidelines.GuidelinesY.Add(checkBoxRect.Top + halfPenWidth);
-            guidelines.GuidelinesY.Add(checkBoxRect.Bottom + halfPenWidth);
-            renderContext.PushGuidelineSet(guidelines);
+            var scaledCheckBoxSize = new Size(CheckBoxSize.Width * renderContext.ZoomFactor, CheckBoxSize.Height * renderContext.ZoomFactor);
+            var rawCheckBoxRect = cellRect.ToCellCheckBoxRect(scaledCheckBoxSize);
+            
+            double dpi = 1.0;
+            if (renderContext is RenderContext rc)
+            {
+                dpi = rc.PixelPerDip > 0 ? rc.PixelPerDip : 1.0;
+            }
+
+            double x1 = DevBrewLabs.WPF.Spreadsheet.Rendering.Text.PixelSnapper.SnapLine(rawCheckBoxRect.Left, dpi, _pen.Thickness);
+            double y1 = DevBrewLabs.WPF.Spreadsheet.Rendering.Text.PixelSnapper.SnapLine(rawCheckBoxRect.Top, dpi, _pen.Thickness);
+            double x2 = DevBrewLabs.WPF.Spreadsheet.Rendering.Text.PixelSnapper.SnapLine(rawCheckBoxRect.Right, dpi, _pen.Thickness);
+            double y2 = DevBrewLabs.WPF.Spreadsheet.Rendering.Text.PixelSnapper.SnapLine(rawCheckBoxRect.Bottom, dpi, _pen.Thickness);
+            var checkBoxRect = new Rect(x1, y1, x2 - x1, y2 - y1);
 
             base.DrawCell(renderContext, value, style, formatter, cellRect);
 
             renderContext.DrawRectangle(null, _pen, checkBoxRect);
             DrawMark(renderContext, checkBoxRect, value);
-            renderContext.Pop();
         }
 
         /// <summary>

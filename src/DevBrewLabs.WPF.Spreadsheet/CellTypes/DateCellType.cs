@@ -53,7 +53,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
             if (value == null)
                 return;
 
-            var contentRect = GetContentRect(renderContext.SheetView, -1, -1, cellRect, renderContext.Zoom);
+            var contentRect = GetContentRect(renderContext.SheetView, -1, -1, cellRect, renderContext.ZoomFactor);
 
             var align = style.HorizontalAlignment;
             if (align == CellHorizontalAlignment.Auto)

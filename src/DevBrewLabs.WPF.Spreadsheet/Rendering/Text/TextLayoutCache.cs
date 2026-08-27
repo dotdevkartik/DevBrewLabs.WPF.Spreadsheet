@@ -90,7 +90,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
             RenderContext context,
             bool characterEllipses)
         {
-            var key = new TextLayoutCacheKey(text, fontFamily.FamilyName, fontSize, fontWeight, fontStyle, context.Zoom, availableWidth, characterEllipses, context.PixelPerDip);
+            var key = new TextLayoutCacheKey(text, fontFamily.FamilyName, fontSize, fontWeight, fontStyle, context.ZoomFactor, availableWidth, characterEllipses, context.PixelPerDip);
 
             if (_cache.TryGetValue(key, out var cachedLayout))
             {

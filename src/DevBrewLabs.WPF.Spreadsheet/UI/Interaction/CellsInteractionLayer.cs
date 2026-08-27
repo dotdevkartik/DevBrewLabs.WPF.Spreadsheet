@@ -605,6 +605,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             if (SheetView == null)
                 return;
 
+            RenderContext context = new RenderContext(dc, SheetView);
+            DrawCellElements(context);
+            context.Dispose();
+
             double zoom = SheetView.ZoomFactor > 0 ? SheetView.ZoomFactor : 1.0;
             var workSheet = SheetView.WorkSheet;
 
@@ -633,14 +637,13 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 unscaledActive.Width * zoom,
                 unscaledActive.Height * zoom);
 
-            double halfPenWidth = SheetView.Spread.GridLinePen.Thickness / 2;
-            GuidelineSet guidelines = new GuidelineSet();
-            guidelines.GuidelinesY.Add(selectionRangeRect.TopRight.Y + halfPenWidth);
-            guidelines.GuidelinesY.Add(selectionRangeRect.BottomRight.Y + halfPenWidth);
-            guidelines.GuidelinesX.Add(selectionRangeRect.BottomLeft.X + halfPenWidth);
-            guidelines.GuidelinesX.Add(selectionRangeRect.BottomRight.X + halfPenWidth);
-
-            dc.PushGuidelineSet(guidelines);
+            double dpi = SheetView.Spread.PixelPerDip > 0 ? SheetView.Spread.PixelPerDip : 1.0;
+            double borderPenThickness = SheetView.Spread.SelectionBorderPen != null ? SheetView.Spread.SelectionBorderPen.Thickness : 1.0;
+            double selLeft = Rendering.Text.PixelSnapper.SnapLine(selectionRangeRect.Left, dpi, borderPenThickness);
+            double selTop = Rendering.Text.PixelSnapper.SnapLine(selectionRangeRect.Top, dpi, borderPenThickness);
+            double selRight = Rendering.Text.PixelSnapper.SnapLine(selectionRangeRect.Right, dpi, borderPenThickness);
+            double selBottom = Rendering.Text.PixelSnapper.SnapLine(selectionRangeRect.Bottom, dpi, borderPenThickness);
+            selectionRangeRect = new Rect(selLeft, selTop, selRight - selLeft, selBottom - selTop);
 
             var borderGeometry = new StreamGeometry();
             using (var ctx = borderGeometry.Open())
@@ -678,11 +681,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             
             // Give the handle a subtle white border so it pops out over the grid lines
             dc.DrawRectangle(null, new Pen(Brushes.White, 1), handleRect);
-
-            RenderContext context = new RenderContext(dc, SheetView);
-            DrawCellElements(context);
-            context.Dispose();
-            dc.Pop();
         }
 
         private void DrawCellElements(RenderContext context)
@@ -706,7 +704,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                             scaledCellRect = context.GetCellRect(row, col);
                         }
 
-                        var bounds = element.GetBounds(scaledCellRect.Value, context.Zoom);
+                        var bounds = element.GetBounds(scaledCellRect.Value, context.ZoomFactor);
                         var state = cellInteractionManager.GetElementState(row, col, element);
 
                         element.Draw(context, bounds, state, row, col);

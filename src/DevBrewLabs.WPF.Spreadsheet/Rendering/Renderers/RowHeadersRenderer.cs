@@ -25,8 +25,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                 var sheetRow = context.Rows.GetItem(row);
                 double rowLocation = context.ViewPort.GetRowLocation(row);
 
-                var y = (rowLocation - context.ViewPort.TopRowLocation) * context.Zoom;
-                var scaledRowHeight = rowHeight * context.Zoom;
+                var y = (rowLocation - context.ViewPort.TopRowLocation) * context.ZoomFactor;
+                var scaledRowHeight = rowHeight * context.ZoomFactor;
 
                 for (int col = leftColumn; col <= rightColumn; col++)
                 {
@@ -37,8 +37,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
                     var sheetColumn = context.RowHeaderColumns.GetItem(col);
                     var colLocation = context.ViewPort.GetHeaderColumnLocation(col);
-                    var x = colLocation * context.Zoom;
-                    var scaledColumnWidth = columnWidth * context.Zoom;
+                    var x = colLocation * context.ZoomFactor;
+                    var scaledColumnWidth = columnWidth * context.ZoomFactor;
 
                     var cellRect = new Rect(x, y, scaledColumnWidth, scaledRowHeight);
                     var style = context.Worksheet.GetRowHeaderCellStyle(row, col, sheetRow, sheetColumn);

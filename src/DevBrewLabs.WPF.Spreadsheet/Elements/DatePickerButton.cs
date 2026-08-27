@@ -71,7 +71,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Elements
                 context.DrawRoundedRectangle(spread.HoverFilterButtonBackground, null, hoverBgRect, 2, 2);
             }
 
-            double iconSize = 10 * context.Zoom;
+            double iconSize = 10 * context.ZoomFactor;
             double x = bounds.X + (bounds.Width - iconSize) / 2;
             double y = bounds.Y + (bounds.Height - iconSize) / 2;
 

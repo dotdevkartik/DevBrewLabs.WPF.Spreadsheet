@@ -13,7 +13,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 {
     public interface IRenderContext
     {
-        double Zoom { get; }
+        double ZoomFactor { get; }
         ISheetView SheetView { get; }
 
         void DrawGeometry(DrawingColor? color, DrawingPen? pen, Geometry geometry);
@@ -29,7 +29,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
         Rect GetCellRect(int row, int col);
         void Pop();
         void PushClip(Geometry clipGeometry);
-        void PushGuidelineSet(GuidelineSet guidelines);
         void PushOpacity(double opacity);
         void PushTransform(Transform transform);
         double Snap(double value);
@@ -61,13 +60,12 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
         internal Brush RangeSelectedHeaderBackground { get; }
         public CellRange Selection => View != null ? View.Selection : default;
         public GridLineVisibility GridLineVisibility => View != null ? View.GridLineVisibility : GridLineVisibility.Both;
-        public double RowHeaderWidth => View != null ? View.GetRowHeaderWidth() * Zoom : 0;
-        public double ColumnHeaderHeight => View != null ? View.GetColumnHeaderHeight() * Zoom : 0;
+        public double RowHeaderWidth => View != null ? View.GetRowHeaderWidth() * ZoomFactor : 0;
+        public double ColumnHeaderHeight => View != null ? View.GetColumnHeaderHeight() * ZoomFactor : 0;
 
-        public double Zoom { get; }
+        public double ZoomFactor { get; }
         public double PixelPerDip { get; }
         public double TextPadding { get; }
-        public double HalfPenWidth { get; }
 
         public RenderContext(DrawingContext context, SheetView view, double textPadding = 5)
         {
@@ -102,8 +100,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                 PixelPerDip = 1.0;
             }
 
-            Zoom = view.ZoomFactor > 0 ? view.ZoomFactor : 1.0;
-            HalfPenWidth = GridLinePen != null ? (GridLinePen.Thickness * PixelPerDip / 2.0) : 0.5;
+            ZoomFactor = view.ZoomFactor > 0 ? view.ZoomFactor : 1.0;
             TextPadding = textPadding;
         }
 
@@ -140,42 +137,42 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
         public double GetScreenX(double modelX)
         {
-            return ViewPort != null ? (modelX - ViewPort.LeftColumnLocation) * Zoom : modelX * Zoom;
+            return ViewPort != null ? (modelX - ViewPort.LeftColumnLocation) * ZoomFactor : modelX * ZoomFactor;
         }
 
         public double GetScreenY(double modelY)
         {
-            return ViewPort != null ? (modelY - ViewPort.TopRowLocation) * Zoom : modelY * Zoom;
+            return ViewPort != null ? (modelY - ViewPort.TopRowLocation) * ZoomFactor : modelY * ZoomFactor;
         }
 
         public double GetColumnScreenLocation(int col)
         {
-            return ViewPort != null ? (ViewPort.GetColumnLocation(col) - ViewPort.LeftColumnLocation) * Zoom : 0;
+            return ViewPort != null ? (ViewPort.GetColumnLocation(col) - ViewPort.LeftColumnLocation) * ZoomFactor : 0;
         }
 
         public double GetRowScreenLocation(int row)
         {
-            return ViewPort != null ? (ViewPort.GetRowLocation(row) - ViewPort.TopRowLocation) * Zoom : 0;
+            return ViewPort != null ? (ViewPort.GetRowLocation(row) - ViewPort.TopRowLocation) * ZoomFactor : 0;
         }
 
         public double GetHeaderColumnScreenLocation(int col)
         {
-            return ViewPort != null ? ViewPort.GetHeaderColumnLocation(col) * Zoom : 0;
+            return ViewPort != null ? ViewPort.GetHeaderColumnLocation(col) * ZoomFactor : 0;
         }
 
         public double GetHeaderRowScreenLocation(int row)
         {
-            return ViewPort != null ? ViewPort.GetHeaderRowLocation(row) * Zoom : 0;
+            return ViewPort != null ? ViewPort.GetHeaderRowLocation(row) * ZoomFactor : 0;
         }
 
         public Rect GetCellRect(int row, int col)
         {
             if (ViewPort == null) return Rect.Empty;
             var unzoomed = ViewPort.GetCellRect(row, col);
-            double x = (unzoomed.X - ViewPort.LeftColumnLocation) * Zoom;
-            double y = (unzoomed.Y - ViewPort.TopRowLocation) * Zoom;
-            double width = unzoomed.Width * Zoom;
-            double height = unzoomed.Height * Zoom;
+            double x = (unzoomed.X - ViewPort.LeftColumnLocation) * ZoomFactor;
+            double y = (unzoomed.Y - ViewPort.TopRowLocation) * ZoomFactor;
+            double width = unzoomed.Width * ZoomFactor;
+            double height = unzoomed.Height * ZoomFactor;
             double penThickness = GridLinePen != null ? GridLinePen.Thickness : 1.0;
             return new Rect(x, y, Math.Max(0, width - penThickness), Math.Max(0, height - penThickness));
         }
@@ -295,13 +292,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             if (_disposed || _drawingContext == null) return;
 
             _drawingContext.PushOpacity(opacity);
-        }
-
-        public void PushGuidelineSet(GuidelineSet guidelines)
-        {
-            if (_disposed || _drawingContext == null) return;
-
-            _drawingContext.PushGuidelineSet(guidelines);
         }
 
         public void Pop()

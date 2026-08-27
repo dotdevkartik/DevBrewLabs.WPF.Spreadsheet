@@ -17,7 +17,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
         {
             base.DrawCell(renderContext, value, style, formatter, cellRect);
 
-            cellRect.Inflate(-3 * renderContext.Zoom, -3 * renderContext.Zoom);
+            cellRect.Inflate(-3 * renderContext.ZoomFactor, -3 * renderContext.ZoomFactor);
             renderContext.DrawRectangle(DrawingColor.LightGray, null, cellRect);
 
             if(!string.IsNullOrEmpty(Text))

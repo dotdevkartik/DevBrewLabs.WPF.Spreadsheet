@@ -29,7 +29,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
                 text = TextUtils.NormalizeToSingleLine(text);
             }
 
-            double textPadding = renderContext.TextPadding * renderContext.Zoom;
+            double textPadding = renderContext.TextPadding * renderContext.ZoomFactor;
             double availableWidth = bounds.Width - (2 * textPadding);
             if (availableWidth <= 0)
                 return;
@@ -51,7 +51,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
                 }
             }
 
-            double scaledFontSize = fontSize * renderContext.Zoom;
+            double scaledFontSize = fontSize * renderContext.ZoomFactor;
 
             string[] lines = allowMultiLineText 
                 ? TextUtils.GetLines(text) 
