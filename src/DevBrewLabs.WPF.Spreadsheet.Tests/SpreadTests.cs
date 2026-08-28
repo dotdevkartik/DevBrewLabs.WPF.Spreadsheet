@@ -231,5 +231,38 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
                 spread.Invalidate(rowHeaders: true, columnHeaders: true, cells: true, topLeft: true);
             });
         }
+
+        [Test]
+        public void Spread_PreviewMouseWheel_RaisesWithoutException()
+        {
+            var spread = new Spread();
+            var mouseDevice = System.Windows.Input.InputManager.Current.PrimaryMouseDevice;
+            var eventArgs = new System.Windows.Input.MouseWheelEventArgs(mouseDevice, Environment.TickCount, -120)
+            {
+                RoutedEvent = UIElement.PreviewMouseWheelEvent,
+                Source = spread
+            };
+
+            Assert.DoesNotThrow(() => spread.RaiseEvent(eventArgs));
+        }
+
+        [Test]
+        public void Spread_PreviewMouseWheel_HorizontalScroll_RaisesWithoutException()
+        {
+            var spread = new Spread();
+            var activeSheetView = spread.Sheets.ActiveSheet as SheetView;
+            if (activeSheetView != null)
+            {
+                activeSheetView.MouseWheelScrollDirection = MouseWheelScrollDirection.Horizontal;
+            }
+            var mouseDevice = System.Windows.Input.InputManager.Current.PrimaryMouseDevice;
+            var eventArgs = new System.Windows.Input.MouseWheelEventArgs(mouseDevice, Environment.TickCount, -120)
+            {
+                RoutedEvent = UIElement.PreviewMouseWheelEvent,
+                Source = spread
+            };
+
+            Assert.DoesNotThrow(() => spread.RaiseEvent(eventArgs));
+        }
     }
 }

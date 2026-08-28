@@ -1016,7 +1016,9 @@ namespace DevBrewLabs.WPF.Spreadsheet
             _filterManager?.HideFilterDropdown();
             _formulaSuggestionManager?.Hide();
 
-            var activeSheetView = Sheets.ActiveSheet.As<SheetView>();
+            var activeSheetView = Sheets?.ActiveSheet as SheetView;
+            if (activeSheetView == null)
+                return;
 
             if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
             {
@@ -1026,16 +1028,28 @@ namespace DevBrewLabs.WPF.Spreadsheet
             }
 
             double zoom = activeSheetView.ZoomFactor > 0 ? activeSheetView.ZoomFactor : 1.0;
-            switch (activeSheetView.MouseWheelScrollDirection)
-            {
-                case MouseWheelScrollDirection.Vertical:
-                    _sheetTabControl?.ScrollVerticalBy(-e.Delta / (5.0 * zoom));
-                    break;
+            double notches = e.Delta / 120.0;
 
-                case MouseWheelScrollDirection.Horizontal:
-                    _sheetTabControl?.ScrollHorizontalBy(-e.Delta / (5.0 * zoom));
-                    break;
+            bool isHorizontal = activeSheetView.MouseWheelScrollDirection == MouseWheelScrollDirection.Horizontal
+                || Keyboard.Modifiers.HasFlag(ModifierKeys.Shift);
+
+            if (isHorizontal)
+            {
+                double colWidth = activeSheetView.WorkSheet?.DefaultColumnWidth > 0
+                    ? activeSheetView.WorkSheet.DefaultColumnWidth
+                    : 64;
+                _sheetTabControl?.ScrollHorizontalBy(-notches * colWidth / zoom);
             }
+            else
+            {
+                int lines = SystemParameters.WheelScrollLines > 0 ? SystemParameters.WheelScrollLines : 3;
+                double rowHeight = activeSheetView.WorkSheet?.DefaultRowHeight > 0
+                    ? activeSheetView.WorkSheet.DefaultRowHeight
+                    : 22;
+                _sheetTabControl?.ScrollVerticalBy(-notches * lines * rowHeight / zoom);
+            }
+
+            e.Handled = true;
         }
 
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
