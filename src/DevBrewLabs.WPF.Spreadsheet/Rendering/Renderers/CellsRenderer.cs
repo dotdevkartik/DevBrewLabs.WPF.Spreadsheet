@@ -67,7 +67,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
             bool isFilterHeader = allowFiltering && context.AutoFilter != null && context.AutoFilter.IsFilterHeaderCell(row, col);
 
-            double filterButtonWidth = 16 * context.Zoom;
+            double filterButtonWidth = 16 * context.ZoomFactor;
             var textRect = cellRect;
             if (isFilterHeader)
             {

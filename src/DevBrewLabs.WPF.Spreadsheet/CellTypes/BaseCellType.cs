@@ -78,10 +78,19 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
         }
 
         /// <summary>
-        /// Gets the editor for cell type
+        /// Gets a value indicating whether this cell type supports in-place editing.
         /// </summary>
-        /// <returns></returns>
-        public abstract EditorBase GetEditor(IStyle style);
+        public virtual bool SupportsEditing => true;
+
+        /// <summary>
+        /// Creates an editor instance for this cell type using the supplied context.
+        /// </summary>
+        /// <param name="context">The editor context.</param>
+        /// <returns>A new <see cref="ICellEditor"/> instance, or null if editing is not supported.</returns>
+        public virtual ICellEditor CreateEditor(IEditorContext context)
+        {
+            return null;
+        }
     }
 }
 

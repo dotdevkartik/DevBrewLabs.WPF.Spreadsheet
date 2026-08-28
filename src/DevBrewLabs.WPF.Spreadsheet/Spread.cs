@@ -10,6 +10,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using DevBrewLabs.WPF.Spreadsheet.Enums;
 
 namespace DevBrewLabs.WPF.Spreadsheet
 {
@@ -25,6 +26,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         private RowResizeManager _rowResizeManager;
         private ColumnResizeManager _columnResizeManager;
         private RenderEngine _renderEngine;
+        private SpreadPopupManager _popupManager;
         private FilterManager _filterManager;
         private FormulaSuggestionManager _formulaSuggestionManager;
         private HeaderHoverManager _headerHoverManager;
@@ -550,6 +552,18 @@ namespace DevBrewLabs.WPF.Spreadsheet
         /// </summary>
         public event EventHandler<CalcErrorEventArgs> CalculationError;
         /// <summary>
+        /// Fires before cell editing starts. Can be cancelled.
+        /// </summary>
+        public event EventHandler<CellEditStartingEventArgs> CellEditStarting;
+        /// <summary>
+        /// Fires before cell edit changes are committed. Can be cancelled.
+        /// </summary>
+        public event EventHandler<CellEditEndingEventArgs> CellEditEnding;
+        /// <summary>
+        /// Fires after cell editing has ended.
+        /// </summary>
+        public event EventHandler<CellEditEndedEventArgs> CellEditEnded;
+        /// <summary>
         /// Fires when sheet zoom factor changes.
         /// </summary>
         public event EventHandler<ZoomChangedEventArgs> ZoomChanged;
@@ -594,11 +608,12 @@ namespace DevBrewLabs.WPF.Spreadsheet
             Background = Brushes.Transparent;
             SnapsToDevicePixels = true;
             GridLineBrush = new SolidColorBrush(Color.FromRgb(160, 165, 175));
-            PixelPerDip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
+            SheetUtils.PixelPerDip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
             var workSheet = WorkBook.WorkSheets.AddSheet("Sheet1");
             WorkBook.WorkSheets.ActiveSheet = workSheet;
             _editingManager = new EditingManager(this);
             _selectionManager = new SelectionManager(this);
+            _popupManager = new SpreadPopupManager(this);
             _filterManager = new FilterManager(this);
             _formulaSuggestionManager = new FormulaSuggestionManager(this);
             _clipboardManager = new ClipboardManager(this);
@@ -668,11 +683,15 @@ namespace DevBrewLabs.WPF.Spreadsheet
         /// <summary>
         /// Starts editing the cell at provided index.
         /// </summary>
-        /// <param name="row"></param>
-        /// <param name="column"></param>
-        public void BeginEdit(int row, int column)
+        /// <param name="row">The row index.</param>
+        /// <param name="column">The column index.</param>
+        /// <param name="trigger">How the edit was initiated.</param>
+        public void BeginEdit(int row, int column, EditTrigger trigger = EditTrigger.Programmatic)
         {
-            _editingManager.BeginEdit((SheetView)Sheets.ActiveSheet, row, column);
+            if (Sheets.ActiveSheet != null)
+            {
+                _editingManager.BeginEdit((SheetView)Sheets.ActiveSheet, row, column, trigger);
+            }
         }
 
         /// <summary>
@@ -851,6 +870,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             _sheetTabControl?.Dispose();
             _sheetViewHost?.Dispose();
             RenderEngine.Dispose();
+            _popupManager?.Dispose();
             _filterManager?.Dispose();
             _formulaSuggestionManager?.Dispose();
             _headerHoverManager?.Dispose();
@@ -862,10 +882,6 @@ namespace DevBrewLabs.WPF.Spreadsheet
     #region Internals
     public partial class Spread
     {
-        internal const double GridLineThickness = 0.35;
-        internal const double SelectionBorderThickness = 1.5;
-        internal double PixelPerDip { get; set; }
-
         internal EditingManager EditingManager => _editingManager;
         internal SelectionManager SelectionManager => _selectionManager;
         internal ClipboardManager ClipboardManager => _clipboardManager;
@@ -875,6 +891,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         internal UndoRedoManager UndoRedoManager => _undoRedoManager;
         internal RowResizeManager RowResizeManager => _rowResizeManager;
         internal ColumnResizeManager ColumnResizeManager => _columnResizeManager;
+        internal SpreadPopupManager PopupManager => _popupManager;
         internal FilterManager FilterManager => _filterManager;
         internal FormulaSuggestionManager FormulaSuggestionManager => _formulaSuggestionManager;
         internal HeaderHoverManager HeaderHoverManager => _headerHoverManager;
@@ -929,6 +946,23 @@ namespace DevBrewLabs.WPF.Spreadsheet
         {
             ContextMenuOpening?.Invoke(this, args);
         }
+
+        internal bool RaiseCellEditStarting(CellEditStartingEventArgs args)
+        {
+            CellEditStarting?.Invoke(this, args);
+            return !args.Cancel;
+        }
+
+        internal bool RaiseCellEditEnding(CellEditEndingEventArgs args)
+        {
+            CellEditEnding?.Invoke(this, args);
+            return !args.Cancel;
+        }
+
+        internal void RaiseCellEditEnded(CellEditEndedEventArgs args)
+        {
+            CellEditEnded?.Invoke(this, args);
+        }
     }
     #endregion
 
@@ -978,10 +1012,13 @@ namespace DevBrewLabs.WPF.Spreadsheet
         {
             base.OnPreviewMouseWheel(e);
 
+            _popupManager?.ClosePopup();
             _filterManager?.HideFilterDropdown();
             _formulaSuggestionManager?.Hide();
 
-            var activeSheetView = Sheets.ActiveSheet.As<SheetView>();
+            var activeSheetView = Sheets?.ActiveSheet as SheetView;
+            if (activeSheetView == null)
+                return;
 
             if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
             {
@@ -991,16 +1028,28 @@ namespace DevBrewLabs.WPF.Spreadsheet
             }
 
             double zoom = activeSheetView.ZoomFactor > 0 ? activeSheetView.ZoomFactor : 1.0;
-            switch (activeSheetView.MouseWheelScrollDirection)
-            {
-                case MouseWheelScrollDirection.Vertical:
-                    _sheetTabControl?.ScrollVerticalBy(-e.Delta / (5.0 * zoom));
-                    break;
+            double notches = e.Delta / 120.0;
 
-                case MouseWheelScrollDirection.Horizontal:
-                    _sheetTabControl?.ScrollHorizontalBy(-e.Delta / (5.0 * zoom));
-                    break;
+            bool isHorizontal = activeSheetView.MouseWheelScrollDirection == MouseWheelScrollDirection.Horizontal
+                || Keyboard.Modifiers.HasFlag(ModifierKeys.Shift);
+
+            if (isHorizontal)
+            {
+                double colWidth = activeSheetView.WorkSheet?.DefaultColumnWidth > 0
+                    ? activeSheetView.WorkSheet.DefaultColumnWidth
+                    : 64;
+                _sheetTabControl?.ScrollHorizontalBy(-notches * colWidth / zoom);
             }
+            else
+            {
+                int lines = SystemParameters.WheelScrollLines > 0 ? SystemParameters.WheelScrollLines : 3;
+                double rowHeight = activeSheetView.WorkSheet?.DefaultRowHeight > 0
+                    ? activeSheetView.WorkSheet.DefaultRowHeight
+                    : 22;
+                _sheetTabControl?.ScrollVerticalBy(-notches * lines * rowHeight / zoom);
+            }
+
+            e.Handled = true;
         }
 
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
@@ -1010,6 +1059,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             if (sizeInfo.PreviousSize == sizeInfo.NewSize)
                 return;
 
+            _popupManager?.ClosePopup();
             _filterManager?.HideFilterDropdown();
             _formulaSuggestionManager?.Hide();
 
@@ -1019,7 +1069,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         protected override void OnDpiChanged(DpiScale oldDpi, DpiScale newDpi)
         {
             base.OnDpiChanged(oldDpi, newDpi);
-            PixelPerDip = newDpi.PixelsPerDip;
+            SheetUtils.PixelPerDip = newDpi.PixelsPerDip;
             TextLayoutCache.Clear();
             Refresh();
         }
@@ -1059,14 +1109,14 @@ namespace DevBrewLabs.WPF.Spreadsheet
         {
             var spread = d as Spread;
             if (e.NewValue != null && !e.NewValue.Equals(e.OldValue))
-                spread.UpdateSelectionBorderPen(spread.SelectionBorderBrush, SelectionBorderThickness);
+                spread.UpdateSelectionBorderPen(spread.SelectionBorderBrush, SheetUtils.SelectionBorderThickness);
         }
 
         private static void OnGridLineBrushChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var spread = d as Spread;
             if (e.NewValue != null && !e.NewValue.Equals(e.OldValue))
-                spread.UpdateGridlinePen(spread.GridLineBrush, GridLineThickness);
+                spread.UpdateGridlinePen(spread.GridLineBrush, SheetUtils.GridLineThickness);
         }
 
         private static void OnHeaderAppearanceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

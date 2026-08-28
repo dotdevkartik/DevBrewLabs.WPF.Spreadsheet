@@ -3,18 +3,27 @@ using System.Windows.Input;
 
 namespace DevBrewLabs.WPF.Spreadsheet.UI.Editors
 {
-    internal class NumericEditor : EditorBase
+    /// <summary>
+    /// In-place numeric editor for spreadsheet cells.
+    /// </summary>
+    public class NumericCellEditor : TextCellEditor
     {
-        public NumericEditor()
+        public NumericCellEditor()
         {
-            BorderThickness = new Thickness();
+            TextAlignment = TextAlignment.Right;
+        }
+
+        public override void StartEdit(IEditorContext context)
+        {
+            base.StartEdit(context);
+            TextAlignment = TextAlignment.Right;
         }
 
         protected override void OnPreviewTextInput(TextCompositionEventArgs e)
         {
             base.OnPreviewTextInput(e);
 
-            if(!string.IsNullOrEmpty(e.Text))
+            if (!string.IsNullOrEmpty(e.Text))
             {
                 var character = e.Text[0];
                 var ascii = (int)character;

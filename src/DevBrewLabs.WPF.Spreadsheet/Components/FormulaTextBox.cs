@@ -1,5 +1,6 @@
 using DevBrewLabs.Spreadsheet;
 using DevBrewLabs.WPF.Spreadsheet.Commands;
+using DevBrewLabs.WPF.Spreadsheet.Enums;
 using DevBrewLabs.WPF.Spreadsheet.UI.Editors;
 using System.Windows;
 using System.Windows.Controls;
@@ -179,20 +180,14 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
             if (Spread == null || !_txtEditor.IsFocused)
                 return;
 
-            var activeSheetView = Spread.Sheets?.ActiveSheet;
+            var activeSheetView = Spread.Sheets?.ActiveSheet as SheetView;
             if (activeSheetView == null)
                 return;
 
-            if (Spread.EditingManager.IsEditing)
+            if (!Spread.EditingManager.IsEditing)
             {
-                var editor = Spread.EditingManager.ActiveEditor as IEditorInfo;
-                editor?.SetValue(_txtEditor.Text);
-                return;
+                Spread.EditingManager.BeginEdit(activeSheetView, activeSheetView.ActiveRow, activeSheetView.ActiveColumn, EditTrigger.Programmatic, null, focusEditor: false);
             }
-
-            Spread.BeginEdit(activeSheetView.ActiveRow, activeSheetView.ActiveColumn);
-            (Spread.EditingManager.ActiveEditor as IEditorInfo)?.SetValue(_txtEditor.Text);
-            _txtEditor.Focus();
         }
 
         private void OnTextBoxKeyDown(object sender, KeyEventArgs e)

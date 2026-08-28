@@ -12,10 +12,9 @@
   [![Target Framework](https://img.shields.io/badge/.NET_10.0_%7C_4.7.2_%7C_Standard_2.0-512BD4.svg?style=for-the-badge&logo=dotnet)](https://dotnet.microsoft.com/)
   [![License](https://img.shields.io/badge/license-MIT-green.svg?style=for-the-badge)](LICENSE)
 
-  <p align="center">
-    A modern, modular, and blazing-fast Excel-like spreadsheet component for WPF applications.
-    Built for <b>.NET 10.0</b> performance while maintaining <b>.NET Framework 4.7.2</b> compatibility.
-  </p>
+  > [!NOTE]
+  > **STATUS: ACTIVE DEVELOPMENT** 🚧  
+  > This component is currently under active development. We are iterating fast, focusing on stabilizing existing features and improving performance before a stable v1.0 release. You might encounter bugs - feel free to contribute!
 </div>
 
 ---
@@ -24,17 +23,74 @@
 
 Building complex data grids and spreadsheet-like interfaces in WPF can be challenging and often leads to performance bottlenecks. **DevBrewLabs.Spreadsheet** solves this by combining a platform-agnostic core data engine with a highly virtualized WPF UI, delivering smooth navigation even with millions of cells.
 
-Complete with a multi-sheet calculation engine (`DevBrewLabs.Spreadsheet.CalcEngine`) and an Excel-inspired Material 3 aesthetic, it provides everything you need to build powerful data-driven applications.
+Complete with a multi-sheet calculation engine (`DevBrewLabs.Spreadsheet.CalcEngine`) and a modern Material 3 aesthetic, it provides everything you need to build powerful data-driven applications.
 
-## ✨ Key Features
+## ✨ Features Showcase
 
-- 🚀 **Blazing Fast Performance**: UI virtualization ensures buttery-smooth scrolling and navigation across datasets of 1,000,000+ rows.
-- 🧮 **Advanced Calculation Engine**: Robust cross-worksheet formula dependencies with a real-time recalculation engine.
-- 🎨 **Modern Material 3 Aesthetic**: Beautifully designed with an Excel Green (`#107C41`) accent, light-slate surface palette, and customizable grid elements.
-- 🔄 **Seamless Data Binding**: Natively bind to your POCO collections (`List<T>`) and ADO.NET `DataTable` objects with robust two-way synchronization.
-- 🛠️ **Rich Cell Rendering**: Includes built-in renderers for Checkboxes, Buttons, ComboBoxes, Hyperlinks, and Text.
-- 🔀 **Multi-Targeted Architecture**: Harness the power of **.NET 10** optimizations without leaving legacy **.NET 4.7.2** applications behind.
-- ⚙️ **Flexible Configuration**: Choose from Item, Pixel, and Deferred scroll modes, plus multi-column sorting capabilities.
+All features shown here are actively demonstrated in the `SpreadsheetSampleExplorer` project. Run the samples to see them in action!
+
+### 🟢 Essentials
+- **Testing (Formula Bar & Editor)**: Interactive formula bar linked with spreadsheet cell selection.
+  ```xml
+  <sheets:FormulaTextBox Margin="8" Spread="{Binding ElementName=SpreadControl}"/>
+  ```
+- **Cell Types**: Demonstration of Checkbox, Button, ComboBox, and Text cell types.
+  ```csharp
+  sheet.Cells[0, 0].CellType = new CheckBoxCellType { IsThreeState = true };
+  sheet.Cells[1, 0].CellType = new ButtonCellType { Text = "Execute" };
+  ```
+- **Performance**: Benchmark dataset load times, rendering speed, and compare scroll modes.
+  ```csharp
+  spread.SuspendUpdates = true;
+  // Load 1,000,000 rows quickly without triggering layout passes
+  spread.SuspendUpdates = false;
+  ```
+- **Data Sorting Engine**: Fast ascending and descending multi-range data sorting.
+  ```csharp
+  var options = new SortOptions();
+  options.SortLevels.Add(new SortInfo(colIndex: 1, ascending: true));
+  sheet.Sort(new CellRange(0, 0, 100, 5), options);
+  ```
+
+### 📊 Data & Calculations
+- **Multi-Sheet Formulas**: Cross-worksheet formula engine with real-time dependency recalculation.
+  ```csharp
+  sheet.Cells[0, 0].Formula = "SUM(Sheet2!B4:E4)";
+  ```
+- **List & DataTable Binding**: Automatic two-way binding to custom C# object lists and DataTables.
+  ```csharp
+  worksheet.DataSource = customers; // Binds List<T> or DataTable
+  ```
+- **Excel-like AutoFilter**: Filter down spreadsheet data quickly using dynamic header dropdowns.
+  ```csharp
+  sheet.AutoFilter.SetRange(new CellRange(0, 0, 500, 5));
+  ```
+- **Portfolio Dashboard**: Industry-grade dashboard with custom formatters, spanning, and live streams.
+  ```csharp
+  // Efficient real-time updates for high-frequency streaming
+  sheet.Cells[1, 1].Value = liveTicker.CurrentPrice; 
+  ```
+
+### 🎨 Appearance & Styling
+- **Cell Spanning**: Merge and unmerge cells, spanning multiple rows and columns.
+  ```csharp
+  // Spans 2 rows and 7 columns starting at cell (1,1)
+  worksheet.AddSpan(startRow: 1, startColumn: 1, rowCount: 2, columnCount: 7); 
+  ```
+- **Grid Styling & Themes**: Custom cell background colors, borders, fonts, and gridlines.
+  ```csharp
+  sheet.Cells[0, 0].BackColor = Colors.LightSlateGray;
+  sheet.Cells[0, 0].ForeColor = Colors.White;
+  ```
+- **Worksheet Zooming**: Zoom in and out on active worksheet using slider, presets, or Ctrl+MouseWheel.
+  ```csharp
+  spread.ZoomFactor = 1.5; // Zoom to 150%
+  ```
+- **Spread Properties**: Configure and toggle various spread properties such as scroll mode, gridlines, and resize behaviors.
+  ```csharp
+  spread.ScrollMode = ScrollMode.Item; // or ScrollMode.Pixel
+  spread.ShowGridLines = false;
+  ```
 
 ## ⚡ Unrivaled Performance
 
@@ -44,7 +100,7 @@ We optimized the core data engine and WPF renderer for sub-second data loading a
 | :--- | :--- | :--- | :--- |
 | **100,000 Rows** | 1,000,000 Cells | **50 - 60 ms** | ⚡ Instantaneous |
 | **500,000 Rows** | 5,000,000 Cells | **150 - 200 ms** | ⚡ Ultra Fast |
-| **1,000,000 Rows** | 10,000,000 Cells | **300 - 400 ms** | 🚀 Enterprise Scale |
+| **1,000,000 Rows** | 10,000,000 Cells | **300 - 400 ms** | 🚀 Unmatched Scale |
 
 *(Benchmarks measure engine loading and first UI frame render on standard hardware.)*
 
@@ -64,23 +120,14 @@ Built with a strict separation of concerns to maximize reusability across differ
 ### 1. Add to XAML
 Import the namespace and drop the `Spread` control into your WPF Window.
 
-```xaml
+```xml
 <Window x:Class="SpreadDemo.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:sheets="http://schemas.devbrewlabs.com/2026/wpf/spreadsheet"
         Title="Spreadsheet Demo" Height="600" Width="900">
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-
-        <!-- Optional: Formula Bar linked to the Spread control -->
-        <sheets:FormulaTextBox Margin="8" Spread="{Binding ElementName=SpreadControl}"/>
-
-        <!-- Main Spreadsheet Control -->
-        <sheets:Spread x:Name="SpreadControl" Grid.Row="1"/>
+        <sheets:Spread x:Name="SpreadControl" />
     </Grid>
 </Window>
 ```
@@ -91,37 +138,21 @@ Easily connect your business objects to the active worksheet.
 ```csharp
 using DevBrewLabs.Spreadsheet.Data;
 
-// Get your data
 var customers = GetCustomerList();
 var worksheet = SpreadControl.WorkBook.WorkSheets.GetSheet(0);
 
-// Bind and map columns
 worksheet.DataSource = customers;
-worksheet.Columns[0].DataMap = new PropertyDataMap("Id");
-worksheet.Columns[1].DataMap = new PropertyDataMap("FirstName");
-worksheet.Columns[2].DataMap = new PropertyDataMap("LastName");
-worksheet.Columns[3].DataMap = new PropertyDataMap("Email");
+worksheet.Columns[0].DataMap = new PropertyDataMap("FirstName");
 ```
 
-## 🎮 Explore the Samples
+## 🛣️ Future Roadmap
 
-The repository includes a comprehensive **Samples Explorer** app (`SpreadsheetSampleExplorer.csproj`). Run it to see the engine in action:
-
-- **📈 Real-Time Data**: Live stock market feed simulation with automatic recalculations.
-- **🧮 Multi-Sheet Formulas**: Cross-sheet dependencies evaluating in real-time.
-- **🎨 Theme Gallery**: Switch between Slate, Excel Classic, Emerald, Indigo, and Corporate themes.
-- **⚡ Performance Benchmarks**: Test 1M+ row datasets directly on your machine.
-- **📝 Binding & Editors**: See custom cell renderers and POCO/DataTable bindings live.
+- Stabilizing existing features.
+- Adding Excel I/O
 
 ## 🤝 Contributing
 
 We welcome contributions from the community! Whether it's a bug report, a new feature suggestion, or a pull request, your help is appreciated. 
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
 
 ## 📄 License
 

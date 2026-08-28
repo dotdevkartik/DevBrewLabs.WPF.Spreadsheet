@@ -1,5 +1,7 @@
 using DevBrewLabs.Spreadsheet;
 using DevBrewLabs.Spreadsheet.Utils;
+using DevBrewLabs.WPF.Spreadsheet.CellTypes;
+using DevBrewLabs.WPF.Spreadsheet.Enums;
 using DevBrewLabs.WPF.Spreadsheet.Rendering;
 using DevBrewLabs.WPF.Spreadsheet.UI.Editors;
 using DevBrewLabs.WPF.Spreadsheet.UI.Managers;
@@ -77,7 +79,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                     // Starts editing
                     if (e.ClickCount == 2)
                     {
-                        SheetView.Spread.EditingManager.BeginEdit(SheetView, hitTest.Row, hitTest.Column);
+                        SheetView.Spread.EditingManager.BeginEdit(SheetView, hitTest.Row, hitTest.Column, EditTrigger.DoubleClick);
                     }
                     else
                     {
@@ -271,24 +273,46 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
         {
             base.OnPreviewKeyDown(e);
             var editingManager = SheetView.Spread.EditingManager.As<EditingManager>();
-            
-            if(e.Key == Key.Down || e.Key == Key.Up || e.Key == Key.Left || e.Key == Key.Right)
+
+            if (editingManager.IsEditing && editingManager.ActiveEditor != null)
+            {
+                if (editingManager.ActiveEditor.HandlesKeyDown(e))
+                    return;
+            }
+
+            if (e.Key == Key.Down || e.Key == Key.Up || e.Key == Key.Left || e.Key == Key.Right)
             {
                 if (editingManager.IsEditing)
                     return;
             }
 
-            if(e.Key == Key.Tab && editingManager.IsEditing && !editingManager.IsShowingFormulaSuggestion)
+            if (e.Key == Key.Tab && editingManager.IsEditing && !editingManager.IsShowingFormulaSuggestion)
             {
                 if (!editingManager.EndEdit(true) && editingManager.ActiveEditor != null)
                 {
-                    editingManager.ActiveEditor.Focus();
+                    editingManager.ActiveEditorElement?.Focus();
                     return;
                 }
             }
 
             switch (e.Key)
             {
+                case Key.F2:
+                    if (!editingManager.IsEditing)
+                    {
+                        e.Handled = true;
+                        editingManager.BeginEdit(SheetView, SheetView.ActiveRow, SheetView.ActiveColumn, EditTrigger.F2Key);
+                    }
+                    break;
+
+                case Key.Escape:
+                    if (editingManager.IsEditing)
+                    {
+                        e.Handled = true;
+                        editingManager.EndEdit(false);
+                    }
+                    break;
+
                 case Key.Down:
                     e.Handled = true;
                     MoveDownCellSelection();
@@ -320,33 +344,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 case Key.System:
                 case Key.Enter:
                     Key actualKey = e.Key == Key.System ? e.SystemKey : e.Key;
-                    if (actualKey == Key.Enter && ((e.KeyboardDevice.Modifiers & ModifierKeys.Alt) == ModifierKeys.Alt || Keyboard.Modifiers.HasFlag(ModifierKeys.Alt)))
-                    {
-                        if (editingManager.IsEditing && editingManager.ActiveEditor is TextEditor textBox)
-                        {
-                            if (!textBox.AcceptsReturn)
-                                return;
-
-                            e.Handled = true;
-                            int caretIndex = textBox.CaretIndex;
-                            string currentText = textBox.Text ?? string.Empty;
-                            if (textBox.SelectionLength > 0)
-                            {
-                                currentText = currentText.Remove(textBox.SelectionStart, textBox.SelectionLength);
-                                caretIndex = textBox.SelectionStart;
-                            }
-                            textBox.Text = currentText.Insert(caretIndex, Environment.NewLine);
-                            textBox.CaretIndex = caretIndex + Environment.NewLine.Length;
-
-                            var cellRect = SheetView.ViewPort.GetCellRect(textBox.Row, textBox.Column);
-                            int lineCount = TextUtils.GetLineCount(textBox.Text);
-                            double fontLineHeight = textBox.FontSize * 1.3;
-                            double requiredHeight = Math.Max(cellRect.Height - 3, lineCount * fontLineHeight + 6);
-                            textBox.Height = requiredHeight;
-                        }
-                        return;
-                    }
-
                     if (actualKey == Key.Enter)
                     {
                         e.Handled = true;
@@ -359,6 +356,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                     break;
 
                 case Key.Delete:
+                    if (editingManager.IsEditing)
+                        return;
+
                     e.Handled = true;
                     SheetView.Spread.SuspendUpdates = true;
                     for (int row = SheetView.Selection.TopRow; row <= SheetView.Selection.BottomRow; row++)
@@ -378,14 +378,110 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                     }
                     break;
 
-                default:
-                    if (e.KeyboardDevice.Modifiers != ModifierKeys.None || e.Key == Key.CapsLock)
+                case Key.Space:
+                    if (editingManager.IsEditing)
                         return;
 
-                    editingManager.UseCellValue = false;
-                    editingManager.BeginEdit(SheetView, SheetView.ActiveRow, SheetView.ActiveColumn);
-                    editingManager.UseCellValue = true;
+                    var activeWs = SheetView.WorkSheet as Worksheet;
+                    if (activeWs != null)
+                    {
+                        var activeColItem = ((Columns)activeWs.Columns)?.GetItem(SheetView.ActiveColumn);
+                        var activeType = (activeWs.GetCellType(SheetView.ActiveRow, SheetView.ActiveColumn) ?? activeColItem?.CellType) as CheckBoxCellType;
+                        if (activeType != null)
+                        {
+                            e.Handled = true;
+                            ToggleSelectedCheckBoxes();
+                            return;
+                        }
+                    }
                     break;
+
+                default:
+                    if (editingManager.IsEditing)
+                        return;
+
+                    if (e.KeyboardDevice.Modifiers != ModifierKeys.None && e.KeyboardDevice.Modifiers != ModifierKeys.Shift)
+                        return;
+
+                    if (e.Key == Key.CapsLock || e.Key == Key.LeftShift || e.Key == Key.RightShift ||
+                        e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl || e.Key == Key.LeftAlt || e.Key == Key.RightAlt ||
+                        e.Key == Key.LWin || e.Key == Key.RWin || e.Key == Key.PageUp || e.Key == Key.PageDown ||
+                        e.Key == Key.Home || e.Key == Key.End || e.Key == Key.Insert || e.Key == Key.Scroll ||
+                        e.Key == Key.Pause || e.Key == Key.PrintScreen || e.Key == Key.F1 || e.Key == Key.F3 ||
+                        e.Key == Key.F4 || e.Key == Key.F5 || e.Key == Key.F6 || e.Key == Key.F7 || e.Key == Key.F8 ||
+                        e.Key == Key.F9 || e.Key == Key.F10 || e.Key == Key.F11 || e.Key == Key.F12)
+                        return;
+
+                    editingManager.BeginEdit(SheetView, SheetView.ActiveRow, SheetView.ActiveColumn, EditTrigger.DirectTyping);
+                    break;
+            }
+        }
+
+        private void ToggleSelectedCheckBoxes()
+        {
+            var sheetView = SheetView;
+            var worksheet = sheetView?.WorkSheet as Worksheet;
+            if (worksheet == null) return;
+
+            var columns = worksheet.Columns as Columns;
+            var rows = worksheet.Rows as Rows;
+            var selection = sheetView.Selection;
+
+            var compositeAction = new CompositeSheetAction();
+            bool anyToggled = false;
+
+            for (int r = selection.TopRow; r <= selection.BottomRow; r++)
+            {
+                var sheetRow = rows?.GetItem(r);
+                for (int c = selection.LeftColumn; c <= selection.RightColumn; c++)
+                {
+                    var sheetCol = columns?.GetItem(c);
+                    bool locked = worksheet.GetLocked(r, c) ||
+                        (sheetRow != null && sheetRow.Locked) ||
+                        (sheetCol != null && sheetCol.Locked);
+
+                    if (locked) continue;
+
+                    var cellType = (worksheet.GetCellType(r, c) ?? sheetCol?.CellType) as CheckBoxCellType;
+                    if (cellType != null)
+                    {
+                        var startingArgs = new CellEditStartingEventArgs(sheetView, r, c, EditTrigger.DirectTyping);
+                        if (sheetView.Spread != null && !sheetView.Spread.RaiseCellEditStarting(startingArgs))
+                            continue;
+
+                        object currentValue = worksheet.GetValue(r, c);
+                        object nextValue = cellType.GetNextValue(currentValue);
+
+                        var endingArgs = new CellEditEndingEventArgs(sheetView, r, c, nextValue);
+                        if (sheetView.Spread != null && !sheetView.Spread.RaiseCellEditEnding(endingArgs))
+                        {
+                            sheetView.Spread?.RaiseCellEditEnded(new CellEditEndedEventArgs(sheetView, r, c, false));
+                            continue;
+                        }
+
+                        var action = new CellChangedAction { SheetView = sheetView };
+                        action.OldState.Value = currentValue;
+                        action.OldState.Row = r;
+                        action.OldState.Column = c;
+                        action.OldState.Selection = selection.Clone();
+
+                        worksheet.SetValue(r, c, nextValue);
+
+                        action.NewState.Value = worksheet.GetValue(r, c);
+                        action.NewState.Row = r;
+                        action.NewState.Column = c;
+                        action.NewState.Selection = selection.Clone();
+
+                        compositeAction.AddAction(action);
+                        sheetView.Spread?.RaiseCellEditEnded(new CellEditEndedEventArgs(sheetView, r, c, true));
+                        anyToggled = true;
+                    }
+                }
+            }
+
+            if (anyToggled)
+            {
+                sheetView.Spread?.UndoRedoManager?.AddAction(compositeAction);
             }
         }
 
@@ -596,6 +692,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             if (SheetView == null)
                 return;
 
+            RenderContext context = new RenderContext(dc, SheetView);
+            DrawCellElements(context);
+
             double zoom = SheetView.ZoomFactor > 0 ? SheetView.ZoomFactor : 1.0;
             var workSheet = SheetView.WorkSheet;
 
@@ -624,14 +723,13 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 unscaledActive.Width * zoom,
                 unscaledActive.Height * zoom);
 
-            double halfPenWidth = SheetView.Spread.GridLinePen.Thickness / 2;
-            GuidelineSet guidelines = new GuidelineSet();
-            guidelines.GuidelinesY.Add(selectionRangeRect.TopRight.Y + halfPenWidth);
-            guidelines.GuidelinesY.Add(selectionRangeRect.BottomRight.Y + halfPenWidth);
-            guidelines.GuidelinesX.Add(selectionRangeRect.BottomLeft.X + halfPenWidth);
-            guidelines.GuidelinesX.Add(selectionRangeRect.BottomRight.X + halfPenWidth);
-
-            dc.PushGuidelineSet(guidelines);
+            double dpi = SheetUtils.PixelPerDip > 0 ? SheetUtils.PixelPerDip : 1.0;
+            double borderPenThickness = SheetView.Spread.SelectionBorderPen != null ? SheetView.Spread.SelectionBorderPen.Thickness : 1.0;
+            double selLeft = Rendering.Text.PixelSnapper.SnapLine(selectionRangeRect.Left, dpi, borderPenThickness);
+            double selTop = Rendering.Text.PixelSnapper.SnapLine(selectionRangeRect.Top, dpi, borderPenThickness);
+            double selRight = Rendering.Text.PixelSnapper.SnapLine(selectionRangeRect.Right, dpi, borderPenThickness);
+            double selBottom = Rendering.Text.PixelSnapper.SnapLine(selectionRangeRect.Bottom, dpi, borderPenThickness);
+            selectionRangeRect = new Rect(selLeft, selTop, selRight - selLeft, selBottom - selTop);
 
             var borderGeometry = new StreamGeometry();
             using (var ctx = borderGeometry.Open())
@@ -642,7 +740,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 ctx.LineTo(selectionRangeRect.BottomLeft, true, true);
                 ctx.LineTo(new Point(selectionRangeRect.BottomRight.X - 3, selectionRangeRect.BottomRight.Y), true, true);
             }
-            dc.DrawGeometry(null, SheetView.Spread.SelectionBorderPen, borderGeometry);
+            context.DrawGeometry(null, SheetView.Spread.SelectionBorderPen, borderGeometry);
 
             if (!AreClose(activeCellRect, selectionRangeRect))
             {
@@ -650,30 +748,27 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 var pathGeometry = new PathGeometry();
                 pathGeometry.Figures.Add(new PathFigure(new Point(selectionRangeRect.Left + margin, selectionRangeRect.Top + margin), 
                     GetSelectionBackgroundSegments(selectionRangeRect, activeCellRect), true));
-                dc.DrawGeometry(SheetView.Spread.SelectionBackground, null, pathGeometry);
+                context.DrawGeometry(SheetView.Spread.SelectionBackground, null, pathGeometry);
             }
             else
             {
                 // If editing is active then update editor location
-                if(SheetView.Spread.EditingManager.ActiveEditor != null)
+                if (SheetView.Spread.EditingManager.ActiveEditorElement != null)
                 {
-                    SetLeft(SheetView.Spread.EditingManager.ActiveEditor, activeCellRect.Left + 1);
-                    SetTop(SheetView.Spread.EditingManager.ActiveEditor, activeCellRect.Top + 1);
+                    SetLeft(SheetView.Spread.EditingManager.ActiveEditorElement, activeCellRect.Left + 1);
+                    SetTop(SheetView.Spread.EditingManager.ActiveEditorElement, activeCellRect.Top + 1);
                 }
             }
 
             var handleRect = new Rect(selectionRangeRect.BottomRight.X - 3, selectionRangeRect.BottomRight.Y - 3, 6, 6);
-            
-            // Draw a solid square handle using the border pen's brush
-            dc.DrawRectangle(SheetView.Spread.SelectionBorderPen.Brush, null, handleRect);
-            
-            // Give the handle a subtle white border so it pops out over the grid lines
-            dc.DrawRectangle(null, new Pen(Brushes.White, 1), handleRect);
 
-            RenderContext context = new RenderContext(dc, SheetView);
-            DrawCellElements(context);
+            // Draw a solid square handle using the border pen's brush
+            context.DrawRectangle(SheetView.Spread.SelectionBorderPen.Brush, null, handleRect);
+
+            // Give the handle a subtle white border so it pops out over the grid lines
+            context.DrawRectangle(null, new Pen(Brushes.White, 1), handleRect);
+
             context.Dispose();
-            dc.Pop();
         }
 
         private void DrawCellElements(RenderContext context)
@@ -697,7 +792,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                             scaledCellRect = context.GetCellRect(row, col);
                         }
 
-                        var bounds = element.GetBounds(scaledCellRect.Value, context.Zoom);
+                        var bounds = element.GetBounds(scaledCellRect.Value, context.ZoomFactor);
                         var state = cellInteractionManager.GetElementState(row, col, element);
 
                         element.Draw(context, bounds, state, row, col);

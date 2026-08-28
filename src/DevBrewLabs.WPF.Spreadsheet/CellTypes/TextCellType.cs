@@ -46,26 +46,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
             }
         }
 
-        public override EditorBase GetEditor(IStyle style)
+        public override ICellEditor CreateEditor(IEditorContext context)
         {
-            var editor = new TextEditor
-            {
-                FontFamily = WpfResourceCache.ToWpfFontFamily(style.FontFamily),
-                Foreground = WpfResourceCache.GetBrush(style.ForeColor),
-                Background = WpfResourceCache.GetBrush(style.BackColor),
-                FontWeight = WpfResourceCache.ToWpfFontWeight(style.FontWeight),
-                FontStyle = WpfResourceCache.ToWpfFontStyle(style.FontStyle),
-                FontSize = style.FontSize
-            };
-            return editor;
+            return new TextCellEditor();
         }
     }
 }
-
-
-
-
-
-
-
-

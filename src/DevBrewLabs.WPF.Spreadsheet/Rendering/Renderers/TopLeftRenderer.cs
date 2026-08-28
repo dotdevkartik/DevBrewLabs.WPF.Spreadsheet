@@ -19,8 +19,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
        
             var pathGeometry = new PathGeometry();
             
-            double margin = 3 * context.Zoom;
-            double size = 10 * context.Zoom;
+            double margin = 3 * context.ZoomFactor;
+            double size = 10 * context.ZoomFactor;
 
             pathGeometry.Figures.Add(new PathFigure(new Point(width - margin, height - margin), new PathSegment[]
             {

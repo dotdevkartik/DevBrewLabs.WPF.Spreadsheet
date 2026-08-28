@@ -169,6 +169,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             {
                 _pressedElement = (row, col, element);
                 element.OnMouseDown(view, row, col);
+                view.SelectCell(row, col);       
                 InvalidateInteractionLayer(view);
                 return true;
             }
