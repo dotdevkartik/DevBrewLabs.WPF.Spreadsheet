@@ -1,5 +1,6 @@
 using DevBrewLabs.Spreadsheet;
 using DevBrewLabs.Spreadsheet.Utils;
+using DevBrewLabs.WPF.Spreadsheet.CellTypes;
 using DevBrewLabs.WPF.Spreadsheet.Enums;
 using DevBrewLabs.WPF.Spreadsheet.Rendering;
 using DevBrewLabs.WPF.Spreadsheet.UI.Editors;
@@ -377,6 +378,24 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                     }
                     break;
 
+                case Key.Space:
+                    if (editingManager.IsEditing)
+                        return;
+
+                    var activeWs = SheetView.WorkSheet as Worksheet;
+                    if (activeWs != null)
+                    {
+                        var activeColItem = ((Columns)activeWs.Columns)?.GetItem(SheetView.ActiveColumn);
+                        var activeType = (activeWs.GetCellType(SheetView.ActiveRow, SheetView.ActiveColumn) ?? activeColItem?.CellType) as CheckBoxCellType;
+                        if (activeType != null)
+                        {
+                            e.Handled = true;
+                            ToggleSelectedCheckBoxes();
+                            return;
+                        }
+                    }
+                    break;
+
                 default:
                     if (editingManager.IsEditing)
                         return;
@@ -395,6 +414,74 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
                     editingManager.BeginEdit(SheetView, SheetView.ActiveRow, SheetView.ActiveColumn, EditTrigger.DirectTyping);
                     break;
+            }
+        }
+
+        private void ToggleSelectedCheckBoxes()
+        {
+            var sheetView = SheetView;
+            var worksheet = sheetView?.WorkSheet as Worksheet;
+            if (worksheet == null) return;
+
+            var columns = worksheet.Columns as Columns;
+            var rows = worksheet.Rows as Rows;
+            var selection = sheetView.Selection;
+
+            var compositeAction = new CompositeSheetAction();
+            bool anyToggled = false;
+
+            for (int r = selection.TopRow; r <= selection.BottomRow; r++)
+            {
+                var sheetRow = rows?.GetItem(r);
+                for (int c = selection.LeftColumn; c <= selection.RightColumn; c++)
+                {
+                    var sheetCol = columns?.GetItem(c);
+                    bool locked = worksheet.GetLocked(r, c) ||
+                        (sheetRow != null && sheetRow.Locked) ||
+                        (sheetCol != null && sheetCol.Locked);
+
+                    if (locked) continue;
+
+                    var cellType = (worksheet.GetCellType(r, c) ?? sheetCol?.CellType) as CheckBoxCellType;
+                    if (cellType != null)
+                    {
+                        var startingArgs = new CellEditStartingEventArgs(sheetView, r, c, EditTrigger.DirectTyping);
+                        if (sheetView.Spread != null && !sheetView.Spread.RaiseCellEditStarting(startingArgs))
+                            continue;
+
+                        object currentValue = worksheet.GetValue(r, c);
+                        object nextValue = cellType.GetNextValue(currentValue);
+
+                        var endingArgs = new CellEditEndingEventArgs(sheetView, r, c, nextValue);
+                        if (sheetView.Spread != null && !sheetView.Spread.RaiseCellEditEnding(endingArgs))
+                        {
+                            sheetView.Spread?.RaiseCellEditEnded(new CellEditEndedEventArgs(sheetView, r, c, false));
+                            continue;
+                        }
+
+                        var action = new CellChangedAction { SheetView = sheetView };
+                        action.OldState.Value = currentValue;
+                        action.OldState.Row = r;
+                        action.OldState.Column = c;
+                        action.OldState.Selection = selection.Clone();
+
+                        worksheet.SetValue(r, c, nextValue);
+
+                        action.NewState.Value = worksheet.GetValue(r, c);
+                        action.NewState.Row = r;
+                        action.NewState.Column = c;
+                        action.NewState.Selection = selection.Clone();
+
+                        compositeAction.AddAction(action);
+                        sheetView.Spread?.RaiseCellEditEnded(new CellEditEndedEventArgs(sheetView, r, c, true));
+                        anyToggled = true;
+                    }
+                }
+            }
+
+            if (anyToggled)
+            {
+                sheetView.Spread?.UndoRedoManager?.AddAction(compositeAction);
             }
         }
 
@@ -607,7 +694,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
             RenderContext context = new RenderContext(dc, SheetView);
             DrawCellElements(context);
-            context.Dispose();
 
             double zoom = SheetView.ZoomFactor > 0 ? SheetView.ZoomFactor : 1.0;
             var workSheet = SheetView.WorkSheet;
@@ -637,7 +723,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 unscaledActive.Width * zoom,
                 unscaledActive.Height * zoom);
 
-            double dpi = SheetView.Spread.PixelPerDip > 0 ? SheetView.Spread.PixelPerDip : 1.0;
+            double dpi = SheetUtils.PixelPerDip > 0 ? SheetUtils.PixelPerDip : 1.0;
             double borderPenThickness = SheetView.Spread.SelectionBorderPen != null ? SheetView.Spread.SelectionBorderPen.Thickness : 1.0;
             double selLeft = Rendering.Text.PixelSnapper.SnapLine(selectionRangeRect.Left, dpi, borderPenThickness);
             double selTop = Rendering.Text.PixelSnapper.SnapLine(selectionRangeRect.Top, dpi, borderPenThickness);
@@ -654,7 +740,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 ctx.LineTo(selectionRangeRect.BottomLeft, true, true);
                 ctx.LineTo(new Point(selectionRangeRect.BottomRight.X - 3, selectionRangeRect.BottomRight.Y), true, true);
             }
-            dc.DrawGeometry(null, SheetView.Spread.SelectionBorderPen, borderGeometry);
+            context.DrawGeometry(null, SheetView.Spread.SelectionBorderPen, borderGeometry);
 
             if (!AreClose(activeCellRect, selectionRangeRect))
             {
@@ -662,7 +748,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 var pathGeometry = new PathGeometry();
                 pathGeometry.Figures.Add(new PathFigure(new Point(selectionRangeRect.Left + margin, selectionRangeRect.Top + margin), 
                     GetSelectionBackgroundSegments(selectionRangeRect, activeCellRect), true));
-                dc.DrawGeometry(SheetView.Spread.SelectionBackground, null, pathGeometry);
+                context.DrawGeometry(SheetView.Spread.SelectionBackground, null, pathGeometry);
             }
             else
             {
@@ -675,12 +761,14 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             }
 
             var handleRect = new Rect(selectionRangeRect.BottomRight.X - 3, selectionRangeRect.BottomRight.Y - 3, 6, 6);
-            
+
             // Draw a solid square handle using the border pen's brush
-            dc.DrawRectangle(SheetView.Spread.SelectionBorderPen.Brush, null, handleRect);
-            
+            context.DrawRectangle(SheetView.Spread.SelectionBorderPen.Brush, null, handleRect);
+
             // Give the handle a subtle white border so it pops out over the grid lines
-            dc.DrawRectangle(null, new Pen(Brushes.White, 1), handleRect);
+            context.DrawRectangle(null, new Pen(Brushes.White, 1), handleRect);
+
+            context.Dispose();
         }
 
         private void DrawCellElements(RenderContext context)

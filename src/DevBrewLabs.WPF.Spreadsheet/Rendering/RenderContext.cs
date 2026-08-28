@@ -15,6 +15,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
     {
         double ZoomFactor { get; }
         ISheetView SheetView { get; }
+        double PixelPerDip { get; }
 
         void DrawGeometry(DrawingColor? color, DrawingPen? pen, Geometry geometry);
         void DrawGeometry(Brush brush, Pen pen, Geometry geometry);
@@ -64,7 +65,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
         public double ColumnHeaderHeight => View != null ? View.GetColumnHeaderHeight() * ZoomFactor : 0;
 
         public double ZoomFactor { get; }
-        public double PixelPerDip { get; }
+        public double PixelPerDip => SheetUtils.PixelPerDip;
         public double TextPadding { get; }
 
         public RenderContext(DrawingContext context, SheetView view, double textPadding = 0)
@@ -93,11 +94,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                 SelectedHeaderBackground = spread.SelectedHeaderBackground;
                 SelectedHeaderForeground = spread.SelectedHeaderForeground;
                 RangeSelectedHeaderBackground = spread.RangeSelectedHeaderBackground;
-                PixelPerDip = spread.PixelPerDip;
-            }
-            else
-            {
-                PixelPerDip = 1.0;
             }
 
             ZoomFactor = view.ZoomFactor > 0 ? view.ZoomFactor : 1.0;

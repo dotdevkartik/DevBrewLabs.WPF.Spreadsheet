@@ -13,6 +13,13 @@ namespace DevBrewLabs.WPF.Spreadsheet.Elements
     public abstract class CellElement
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="CellElement"/> class.
+        /// </summary>
+        protected CellElement()
+        {
+        }
+
+        /// <summary>
         /// Gets the cursor displayed when hovering over this element.
         /// </summary>
         public virtual Cursor Cursor => Cursors.Hand;

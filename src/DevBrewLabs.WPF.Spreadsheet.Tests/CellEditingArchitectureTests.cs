@@ -177,7 +177,23 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
             // Verify elements include DatePickerButton
             var elements = System.Linq.Enumerable.ToList(dateCellType.GetElements(spread.Sheets.ActiveSheet, 0, 0));
             Assert.That(elements.Count, Is.EqualTo(1));
-            Assert.That(elements[0], Is.TypeOf<Elements.DatePickerButton>());
+            Assert.That(elements[0], Is.TypeOf<DatePickerButton>());
+            Assert.That(dateCellType.GetElements(spread.Sheets.ActiveSheet, 0, 0).First(), Is.SameAs(elements[0]));
+
+            var dateCellType2 = new DateCellType();
+            var elements2 = System.Linq.Enumerable.ToList(dateCellType2.GetElements(spread.Sheets.ActiveSheet, 0, 0));
+            Assert.That(elements[0], Is.Not.SameAs(elements2[0]));
+
+            var customBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Purple);
+            dateCellType.IconBrush = customBrush;
+            Assert.That(dateCellType.IconPen, Is.Not.Null);
+            Assert.That(dateCellType.IconPen.Brush, Is.SameAs(customBrush));
+            Assert.That(dateCellType.IconPen.IsFrozen, Is.True);
+
+            dateCellType.HoverIconBrush = customBrush;
+            Assert.That(dateCellType.HoverIconPen, Is.Not.Null);
+            Assert.That(dateCellType.HoverIconPen.Brush, Is.SameAs(customBrush));
+            Assert.That(dateCellType.HoverIconPen.IsFrozen, Is.True);
 
             // Begin edit
             spread.BeginEdit(0, 0);

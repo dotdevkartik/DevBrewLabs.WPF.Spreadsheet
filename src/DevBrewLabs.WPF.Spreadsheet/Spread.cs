@@ -608,7 +608,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             Background = Brushes.Transparent;
             SnapsToDevicePixels = true;
             GridLineBrush = new SolidColorBrush(Color.FromRgb(160, 165, 175));
-            PixelPerDip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
+            SheetUtils.PixelPerDip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
             var workSheet = WorkBook.WorkSheets.AddSheet("Sheet1");
             WorkBook.WorkSheets.ActiveSheet = workSheet;
             _editingManager = new EditingManager(this);
@@ -882,10 +882,6 @@ namespace DevBrewLabs.WPF.Spreadsheet
     #region Internals
     public partial class Spread
     {
-        internal const double GridLineThickness = 0.35;
-        internal const double SelectionBorderThickness = 1.5;
-        internal double PixelPerDip { get; set; }
-
         internal EditingManager EditingManager => _editingManager;
         internal SelectionManager SelectionManager => _selectionManager;
         internal ClipboardManager ClipboardManager => _clipboardManager;
@@ -1059,7 +1055,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         protected override void OnDpiChanged(DpiScale oldDpi, DpiScale newDpi)
         {
             base.OnDpiChanged(oldDpi, newDpi);
-            PixelPerDip = newDpi.PixelsPerDip;
+            SheetUtils.PixelPerDip = newDpi.PixelsPerDip;
             TextLayoutCache.Clear();
             Refresh();
         }
@@ -1099,14 +1095,14 @@ namespace DevBrewLabs.WPF.Spreadsheet
         {
             var spread = d as Spread;
             if (e.NewValue != null && !e.NewValue.Equals(e.OldValue))
-                spread.UpdateSelectionBorderPen(spread.SelectionBorderBrush, SelectionBorderThickness);
+                spread.UpdateSelectionBorderPen(spread.SelectionBorderBrush, SheetUtils.SelectionBorderThickness);
         }
 
         private static void OnGridLineBrushChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var spread = d as Spread;
             if (e.NewValue != null && !e.NewValue.Equals(e.OldValue))
-                spread.UpdateGridlinePen(spread.GridLineBrush, GridLineThickness);
+                spread.UpdateGridlinePen(spread.GridLineBrush, SheetUtils.GridLineThickness);
         }
 
         private static void OnHeaderAppearanceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

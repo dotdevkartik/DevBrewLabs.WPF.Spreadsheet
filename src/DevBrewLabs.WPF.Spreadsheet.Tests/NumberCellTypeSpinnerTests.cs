@@ -29,10 +29,38 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
             var elements = cellType.GetElements(null, 0, 0).OfType<SpinnerButton>().ToList();
 
             Assert.That(elements.Count, Is.EqualTo(2));
-            Assert.That(elements[0], Is.SameAs(SpinnerButton.Up));
-            Assert.That(elements[1], Is.SameAs(SpinnerButton.Down));
             Assert.That(elements[0].Direction, Is.EqualTo(SpinDirection.Up));
             Assert.That(elements[1].Direction, Is.EqualTo(SpinDirection.Down));
+
+            // Verify caching per instance
+            var secondCallElements = cellType.GetElements(null, 0, 0).OfType<SpinnerButton>().ToList();
+            Assert.That(secondCallElements[0], Is.SameAs(elements[0]));
+            Assert.That(secondCallElements[1], Is.SameAs(elements[1]));
+        }
+
+        [Test]
+        public void NumberCellType_DistinctInstances_DoNotShareElements()
+        {
+            var cellType1 = new NumberCellType { ShowSpinners = true };
+            var cellType2 = new NumberCellType { ShowSpinners = true };
+
+            var elements1 = cellType1.GetElements(null, 0, 0).ToList();
+            var elements2 = cellType2.GetElements(null, 0, 0).ToList();
+
+            Assert.That(elements1[0], Is.Not.SameAs(elements2[0]));
+            Assert.That(elements1[1], Is.Not.SameAs(elements2[1]));
+        }
+
+        [Test]
+        public void SpinnerCellType_CustomBrushes_CreateFrozenPensAndAreExposed()
+        {
+            var cellType = new NumberCellType();
+            var customBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Blue);
+
+            cellType.SeparatorBrush = customBrush;
+            Assert.That(cellType.SeparatorPen, Is.Not.Null);
+            Assert.That(cellType.SeparatorPen.Brush, Is.SameAs(customBrush));
+            Assert.That(cellType.SeparatorPen.IsFrozen, Is.True);
         }
 
         [Test]
