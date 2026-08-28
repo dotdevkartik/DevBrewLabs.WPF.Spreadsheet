@@ -4,11 +4,11 @@ using System.Windows.Media;
 
 namespace DevBrewLabs.WPF.Spreadsheet
 {
-    internal static class SheetUtils
+    public static class SheetUtils
     {
         public static double GridLineThickness { get; } = 0.35;
         public static double SelectionBorderThickness { get; } = 1.5;
-        public static double PixelPerDip { get; set; }
+        public static double PixelPerDip { get; internal set; }
         public static string Tab { get; } = "\t";
         public static string NextLine { get; } = "\n";
 
