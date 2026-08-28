@@ -28,14 +28,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
         private ButtonElement _buttonElement;
 
         /// <summary>
-        /// Gets or sets the command executed on button click.
+        /// Gets or sets the command executed on button click. When executed, <see cref="CellButtonClickedEventArgs"/> is passed as the parameter.
         /// </summary>
         public ICommand Command { get; set; }
-
-        /// <summary>
-        /// Gets or sets the parameter passed to <see cref="Command"/>.
-        /// </summary>
-        public object CommandParameter { get; set; }
 
         /// <summary>
         /// Gets or sets the default text displayed on the button when cell value is null or empty.
@@ -185,9 +180,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
             var args = new CellButtonClickedEventArgs(view, row, col, this);
             Click?.Invoke(this, args);
 
-            if (Command != null && Command.CanExecute(CommandParameter))
+            if (Command != null && Command.CanExecute(args))
             {
-                Command.Execute(CommandParameter);
+                Command.Execute(args);
             }
         }
 

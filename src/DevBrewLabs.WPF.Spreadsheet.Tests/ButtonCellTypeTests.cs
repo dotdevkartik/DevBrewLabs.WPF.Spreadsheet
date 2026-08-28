@@ -127,23 +127,26 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         }
 
         [Test]
-        public void ButtonCellType_OnClick_ExecutesICommandWithParameter()
+        public void ButtonCellType_OnClick_ExecutesICommandWithCellButtonClickedEventArgs()
         {
             var spread = new Spread();
             var sheetView = spread.Sheets.ActiveSheet;
             var wpfCommand = new TestWpfCommand();
-            var param = "CustomParameter";
             var cellType = new ButtonCellType
             {
-                Command = wpfCommand,
-                CommandParameter = param
+                Command = wpfCommand
             };
 
-            var element = cellType.GetElements(sheetView, 0, 0).First();
-            element.OnClick(sheetView, 0, 0);
+            var element = cellType.GetElements(sheetView, 3, 5).First();
+            element.OnClick(sheetView, 3, 5);
 
             Assert.That(wpfCommand.Executed, Is.True);
-            Assert.That(wpfCommand.ExecutedParameter, Is.SameAs(param));
+            Assert.That(wpfCommand.ExecutedParameter, Is.TypeOf<CellButtonClickedEventArgs>());
+            var args = (CellButtonClickedEventArgs)wpfCommand.ExecutedParameter;
+            Assert.That(args.Row, Is.EqualTo(3));
+            Assert.That(args.Column, Is.EqualTo(5));
+            Assert.That(args.SheetView, Is.SameAs(sheetView));
+            Assert.That(args.CellType, Is.SameAs(cellType));
         }
 
         [Test]
