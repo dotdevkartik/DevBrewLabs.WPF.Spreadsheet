@@ -19,6 +19,9 @@
                 <!-- Left: Feature Badges -->
                 <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
                     <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,0">
+                        <TextBlock Text="▼ Dropdown ComboBox" Foreground="#1D4ED8" FontSize="11" FontWeight="Medium"/>
+                    </Border>
+                    <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,0">
                         <TextBlock Text="☑ Checkbox (3-State)" Foreground="#1D4ED8" FontSize="11" FontWeight="Medium"/>
                     </Border>
                     <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,0">

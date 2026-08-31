@@ -34,6 +34,13 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public static Brush CheckBoxPressedGlowBrush { get; }
         #endregion
 
+        #region ComboBox Defaults
+        public static Brush ComboBoxDropDownArrowBrush { get; }
+        public static Brush ComboBoxDropDownHoverArrowBrush { get; }
+        public static Brush ComboBoxDropDownHoverBackground { get; }
+        public static Brush ComboBoxDropDownPressedBackground { get; }
+        #endregion
+
         #region DatePicker Defaults
         public static Brush DatePickerIconBrush { get; }
         public static Pen DatePickerIconPen { get; }
@@ -89,6 +96,12 @@ namespace DevBrewLabs.WPF.Spreadsheet
             CheckBoxCheckMarkBrush = Brushes.White;
             CheckBoxHoverGlowBrush = CreateFrozenBrush(Color.FromArgb(24, 16, 124, 65));
             CheckBoxPressedGlowBrush = CreateFrozenBrush(Color.FromArgb(50, 16, 124, 65));
+
+            // ComboBox Defaults
+            ComboBoxDropDownArrowBrush = CreateFrozenBrush(Color.FromRgb(100, 105, 115));
+            ComboBoxDropDownHoverArrowBrush = CreateFrozenBrush(Color.FromRgb(17, 24, 39));
+            ComboBoxDropDownHoverBackground = CreateFrozenBrush("#E5E7EB");
+            ComboBoxDropDownPressedBackground = CreateFrozenBrush("#D1D5DB");
 
             // DatePicker Defaults
             DatePickerIconBrush = CreateFrozenBrush(Color.FromRgb(100, 105, 115));

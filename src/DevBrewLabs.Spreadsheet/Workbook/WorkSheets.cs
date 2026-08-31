@@ -85,6 +85,7 @@ namespace DevBrewLabs.Spreadsheet
         /// Verifies if a sheet is already present with the same name.
         /// </summary>
         /// <param name="name"></param>
+        /// <param name="currentSheet"></param>
         /// <exception cref="ArgumentException"></exception>
         internal void VerifySheetName(string name, IWorksheet currentSheet = null)
         {

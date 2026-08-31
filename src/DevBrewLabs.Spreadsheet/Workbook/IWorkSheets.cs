@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace DevBrewLabs.Spreadsheet
@@ -77,7 +77,7 @@ namespace DevBrewLabs.Spreadsheet
         /// <summary>
         /// Gets sheet by index.
         /// </summary>
-        /// <param name="sheetName"></param>
+        /// <param name="index"></param>
         /// <returns></returns>
         IWorksheet GetSheet(int index);
     }
