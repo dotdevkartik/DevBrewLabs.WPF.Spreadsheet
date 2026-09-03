@@ -78,6 +78,18 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
         }
 
         /// <summary>
+        /// Handles mouse move events routed from sub-elements attached to this cell while dragged.
+        /// </summary>
+        /// <param name="view">The active sheet view.</param>
+        /// <param name="row">The cell row index.</param>
+        /// <param name="col">The cell column index.</param>
+        /// <param name="element">The element where mouse move occurred.</param>
+        /// <param name="currentPoint">The current mouse position in surface coordinates.</param>
+        public virtual void OnElementMouseMove(ISheetView view, int row, int col, CellElement element, Point currentPoint)
+        {
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this cell type supports in-place editing.
         /// </summary>
         public virtual bool SupportsEditing => true;

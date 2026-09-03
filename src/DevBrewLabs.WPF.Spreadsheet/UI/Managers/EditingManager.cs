@@ -223,6 +223,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             cellChangedAction.OldState.Column = col;
             cellChangedAction.OldState.Selection = view.Selection.Clone();
 
+            bool valueChanged = true;
             try
             {
                 if (newValue is string strVal)
@@ -230,14 +231,23 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                     if (cellChangedAction.OldState.Value != null && 
                         cellChangedAction.OldState.Value.Equals(DataTypeConverter.ConvertType(newValue)))
                     {
-                        return true;
+                        valueChanged = false;
                     }
-
-                    workSheet.SetRawValue(row, col, strVal);
+                    else
+                    {
+                        workSheet.SetRawValue(row, col, strVal);
+                    }
                 }
                 else
                 {
-                    workSheet.SetValue(row, col, newValue);
+                    if (Equals(cellChangedAction.OldState.Value, newValue))
+                    {
+                        valueChanged = false;
+                    }
+                    else
+                    {
+                        workSheet.SetValue(row, col, newValue);
+                    }
                 }
             }
             catch (CalcEngineException ex)
@@ -254,16 +264,19 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 return false;
             }
 
-            if (view.AutoSizeRows)
-                view.AutoSizeRow(row);
-            if (view.AutoSizeColumns)
-                view.AutoSizeColumn(col);
+            if (valueChanged)
+            {
+                if (view.AutoSizeRows)
+                    view.AutoSizeRow(row);
+                if (view.AutoSizeColumns)
+                    view.AutoSizeColumn(col);
 
-            cellChangedAction.NewState.Value = workSheet.GetValue(row, col);
-            cellChangedAction.NewState.Row = row;
-            cellChangedAction.NewState.Column = col;
-            cellChangedAction.NewState.Selection = view.Selection.Clone();
-            Spread?.UndoRedoManager?.AddAction(cellChangedAction);
+                cellChangedAction.NewState.Value = workSheet.GetValue(row, col);
+                cellChangedAction.NewState.Row = row;
+                cellChangedAction.NewState.Column = col;
+                cellChangedAction.NewState.Selection = view.Selection.Clone();
+                Spread?.UndoRedoManager?.AddAction(cellChangedAction);
+            }
 
             DetachSyncBridge();
             Spread?.FormulaSuggestionManager?.Detach();

@@ -39,6 +39,13 @@ namespace SpreadsheetSampleExplorer.Samples
             worksheet.RowCount = 3000;
             worksheet.ColumnCount = 4;
 
+            // Row Heights: 28px gives modern breathing room for progress capsules and links
+            worksheet.ColumnHeaders.Rows[0].Height = 32;
+            for (int r = 0; r < worksheet.RowCount; r++)
+            {
+                worksheet.Rows[r].Height = 28;
+            }
+
             // 1. Initialize Advanced Cell Types
             _standardProgressBar = new ProgressBarCellType
             {
@@ -46,7 +53,7 @@ namespace SpreadsheetSampleExplorer.Samples
                 Maximum = 100,
                 AutoColor = false,
                 Format = "{0:0}%",
-                TextPlacement = ProgressBarTextPlacement.Overlay
+                TextPlacement = ProgressBarTextPlacement.Right
             };
 
             _autoColorProgressBar = new ProgressBarCellType
@@ -55,7 +62,7 @@ namespace SpreadsheetSampleExplorer.Samples
                 Maximum = 100,
                 AutoColor = true,
                 Format = "{0:0}%",
-                TextPlacement = ProgressBarTextPlacement.Overlay
+                TextPlacement = ProgressBarTextPlacement.Right
             };
 
             _docHyperlinkCellType = new HyperlinkCellType

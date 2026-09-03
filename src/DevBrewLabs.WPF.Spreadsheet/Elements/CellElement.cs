@@ -70,6 +70,15 @@ namespace DevBrewLabs.WPF.Spreadsheet.Elements
             cellType?.OnElementMouseUp(view, row, col, this);
         }
 
+        /// <summary>
+        /// Handles mouse move events while this element is pressed or dragged, routing to the owning cell type.
+        /// </summary>
+        public virtual void OnMouseMove(ISheetView view, int row, int col, Point currentPoint)
+        {
+            var cellType = GetCellType(view, row, col);
+            cellType?.OnElementMouseMove(view, row, col, this, currentPoint);
+        }
+
         private static BaseCellType GetCellType(ISheetView view, int row, int col)
         {
             var worksheet = view?.WorkSheet as Worksheet;

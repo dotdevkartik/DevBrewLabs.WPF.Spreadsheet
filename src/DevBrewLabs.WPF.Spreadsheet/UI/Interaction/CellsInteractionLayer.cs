@@ -62,6 +62,17 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             if (hitTest == null || hitTest.Row == -1 || hitTest.Column == -1)
                 return;
 
+            // If editing is active on a different cell, end edit before processing click on new cell
+            if (SheetView.Spread.EditingManager.IsEditing)
+            {
+                if (hitTest.Row != SheetView.Spread.EditingManager.ActiveRow ||
+                    hitTest.Column != SheetView.Spread.EditingManager.ActiveColumn)
+                {
+                    if (!SheetView.Spread.EditingManager.EndEdit(true))
+                        return;
+                }
+            }
+
             if (hitTest.CellElement != null)
             {
                 if (SheetView.Spread.CellInteractionManager.OnMouseLeftButtonDown(SheetView, hitTest.Row, hitTest.Column, hitTest.CellElement))
@@ -84,13 +95,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                     }
                     else
                     {
-                        // End editing if active.
-                        if (SheetView.Spread.EditingManager.IsEditing)
-                        {
-                            if (!SheetView.Spread.EditingManager.EndEdit(true))
-                                return;
-                        }
-
                         if (SheetView.Spread.FilterManager.IsFilterDropdownOpen)
                         {
                             SheetView.Spread.FilterManager.HideFilterDropdown();
@@ -498,6 +502,15 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
             if (_scrolling)
                 return;
+
+            if (SheetView.Spread.CellInteractionManager.IsElementPressed)
+            {
+                var pressed = SheetView.Spread.CellInteractionManager.PressedElement.Value;
+                var currentPos = Mouse.GetPosition(this);
+                pressed.Element.OnMouseMove(SheetView, pressed.Row, pressed.Column, currentPos);
+                Cursor = pressed.Element.Cursor;
+                return;
+            }
 
             var hitTest = HitTest();
 

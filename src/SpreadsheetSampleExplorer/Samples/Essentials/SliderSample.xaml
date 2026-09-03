@@ -1,0 +1,48 @@
+<UserControl x:Class="SpreadsheetSampleExplorer.Samples.SliderSample"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:sheets="http://schemas.devbrewlabs.com/2026/wpf/spreadsheet"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="1100">
+    <Grid Margin="2">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Top Control & Preset Toolbar -->
+        <Border Grid.Row="0" Background="#FAFAFA" BorderBrush="#E4E4E7" BorderThickness="1" Padding="12,10" Margin="0,0,0,6">
+            <DockPanel LastChildFill="False">
+                <!-- Left: Financial Loan Presets & Toggles -->
+                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="🎚️ Loan Presets:" FontWeight="SemiBold" FontSize="11" Foreground="#3F3F46" VerticalAlignment="Center" Margin="0,0,8,0"/>
+
+                    <Button x:Name="btnStarterHome" Content="🏠 Starter Home" Padding="8,3" FontSize="11" Margin="0,0,5,0" Click="OnPresetClicked" Background="#EFF6FF" BorderBrush="#BFDBFE" Foreground="#1D4ED8" FontWeight="Medium" Cursor="Hand"/>
+                    <Button x:Name="btnLuxuryHome" Content="🏡 Luxury Estate" Padding="8,3" FontSize="11" Margin="0,0,5,0" Click="OnPresetClicked" Background="#ECFDF5" BorderBrush="#A7F3D0" Foreground="#047857" FontWeight="Medium" Cursor="Hand"/>
+                    <Button x:Name="btnCommercial" Content="🏢 Commercial" Padding="8,3" FontSize="11" Margin="0,0,5,0" Click="OnPresetClicked" Background="#FFFBEB" BorderBrush="#FDE68A" Foreground="#B45309" FontWeight="Medium" Cursor="Hand"/>
+                    <Button x:Name="btnAutoLoan" Content="🚗 Auto Loan" Padding="8,3" FontSize="11" Margin="0,0,12,0" Click="OnPresetClicked" Background="#FDF2F8" BorderBrush="#FBCFE8" Foreground="#BE185D" FontWeight="Medium" Cursor="Hand"/>
+
+                    <Border Width="1" Background="#E4E4E7" Margin="0,2,12,2"/>
+
+                    <!-- Options Checkboxes -->
+                    <CheckBox x:Name="chkShowTicks" Content="Show Ticks" IsChecked="True" VerticalAlignment="Center" Margin="0,0,12,0" Checked="OnOptionChanged" Unchecked="OnOptionChanged" FontWeight="Medium" FontSize="11"/>
+                    <CheckBox x:Name="chkReadOnly" Content="Read-Only Mode" IsChecked="False" VerticalAlignment="Center" Margin="0,0,12,0" Checked="OnOptionChanged" Unchecked="OnOptionChanged" FontWeight="Medium" FontSize="11"/>
+                </StackPanel>
+
+                <!-- Right: Notification / Live Feedback Badge -->
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Background="#F0FDF4" BorderBrush="#BBF7D0" BorderThickness="1" CornerRadius="4" Padding="8,3">
+                        <TextBlock x:Name="statusTextBlock" Text="✨ Drag any slider knob to simulate mortgage payments in real-time" FontSize="11" FontWeight="SemiBold" Foreground="#15803D"/>
+                    </Border>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- Main Spreadsheet Container -->
+        <Border Grid.Row="1" BorderThickness="1" BorderBrush="#E4E4E7">
+            <sheets:Spread x:Name="spread"/>
+        </Border>
+    </Grid>
+</UserControl>

@@ -17,12 +17,12 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
 
             Assert.That(cellType.Minimum, Is.EqualTo(0.0));
             Assert.That(cellType.Maximum, Is.EqualTo(100.0));
-            Assert.That(cellType.BarHeight, Is.EqualTo(14.0));
+            Assert.That(cellType.BarHeight, Is.EqualTo(8.0));
             Assert.That(cellType.BarMargin, Is.EqualTo(4.0));
             Assert.That(cellType.CornerRadius, Is.EqualTo(4.0));
             Assert.That(cellType.ShowText, Is.True);
             Assert.That(cellType.Format, Is.EqualTo("{0:0}%"));
-            Assert.That(cellType.TextPlacement, Is.EqualTo(ProgressBarTextPlacement.Overlay));
+            Assert.That(cellType.TextPlacement, Is.EqualTo(ProgressBarTextPlacement.Right));
             Assert.That(cellType.AutoColor, Is.False);
             Assert.That(cellType.SupportsEditing, Is.True);
             Assert.That(cellType.CreateEditor(null), Is.TypeOf<NumericCellEditor>());
