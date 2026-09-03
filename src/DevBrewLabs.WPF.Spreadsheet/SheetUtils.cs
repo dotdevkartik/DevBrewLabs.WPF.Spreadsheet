@@ -172,13 +172,13 @@ namespace DevBrewLabs.WPF.Spreadsheet
             HyperlinkVisitedHoverBrush = CreateFrozenBrush("#5A243F");
 
             // ProgressBar Defaults
-            ProgressBarTrackBrush = CreateFrozenBrush("#E5E7EB");
-            ProgressBarFillBrush = CreateFrozenBrush("#107C41");
-            ProgressBarSuccessBrush = CreateFrozenBrush("#107C41");
+            ProgressBarTrackBrush = CreateFrozenBrush("#E2E8F0");
+            ProgressBarFillBrush = CreateFrozenBrush("#2563EB");
+            ProgressBarSuccessBrush = CreateFrozenBrush("#10B981");
             ProgressBarWarningBrush = CreateFrozenBrush("#F59E0B");
             ProgressBarDangerBrush = CreateFrozenBrush("#EF4444");
-            ProgressBarDarkTextBrush = CreateFrozenBrush("#27272A");
-            ProgressBarOverlayDarkTextBrush = CreateFrozenBrush("#18181B");
+            ProgressBarDarkTextBrush = CreateFrozenBrush("#334155");
+            ProgressBarOverlayDarkTextBrush = CreateFrozenBrush("#1E293B");
 
             // Sparkline Defaults
             SparklineSeriesBrush = CreateFrozenBrush("#2563EB");

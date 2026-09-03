@@ -75,9 +75,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
 
         /// <summary>
         /// Gets or sets the height of the progress bar in device-independent units.
-        /// When null, the bar fills the available cell height minus <see cref="BarMargin"/>.
+        /// When null, the bar fills the available cell height minus <see cref="BarMargin"/>. Default is 8.0.
         /// </summary>
-        public double? BarHeight { get; set; } = 14.0;
+        public double? BarHeight { get; set; } = 8.0;
 
         /// <summary>
         /// Gets or sets the outer margin surrounding the progress bar inside the cell. Default is 4.0.
@@ -85,7 +85,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
         public double BarMargin { get; set; } = 4.0;
 
         /// <summary>
-        /// Gets or sets the corner radius of the progress bar. Default is 4.0.
+        /// Gets or sets the corner radius of the progress bar. Default is 4.0 (yielding a full pill capsule for an 8px bar).
         /// </summary>
         public double CornerRadius { get; set; } = 4.0;
 
@@ -100,9 +100,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
         public string Format { get; set; } = "{0:0}%";
 
         /// <summary>
-        /// Gets or sets where the text is placed relative to the progress bar.
+        /// Gets or sets where the text is placed relative to the progress bar. Default is <see cref="ProgressBarTextPlacement.Right"/>.
         /// </summary>
-        public ProgressBarTextPlacement TextPlacement { get; set; } = ProgressBarTextPlacement.Overlay;
+        public ProgressBarTextPlacement TextPlacement { get; set; } = ProgressBarTextPlacement.Right;
 
         /// <summary>
         /// Gets or sets the foreground brush for the progress text.
@@ -129,12 +129,21 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
             double progress = ComputeProgress(value);
             double dpi = renderContext.PixelPerDip > 0 ? renderContext.PixelPerDip : 1.0;
 
-            double reservedTextWidth = (ShowText && TextPlacement == ProgressBarTextPlacement.Right) ? 42.0 * zoom : 0.0;
+            double reservedTextWidth = (ShowText && TextPlacement == ProgressBarTextPlacement.Right) ? 46.0 * zoom : 0.0;
             double availableWidth = Math.Max(0, cellRect.Width - margin * 2 - reservedTextWidth);
 
-            double rawHeight = BarHeight.HasValue
-                ? BarHeight.Value * zoom
-                : Math.Max(2.0, cellRect.Height - margin * 2);
+            double rawHeight;
+            if (BarHeight.HasValue)
+            {
+                // If overlay placement was requested with default sleek height, expand to 18px so text is not squashed
+                rawHeight = (TextPlacement == ProgressBarTextPlacement.Overlay && BarHeight.Value <= 10.0)
+                    ? 18.0 * zoom
+                    : BarHeight.Value * zoom;
+            }
+            else
+            {
+                rawHeight = Math.Max(2.0, cellRect.Height - margin * 2);
+            }
 
             double barHeight = Math.Min(rawHeight, Math.Max(2.0, cellRect.Height - margin * 2));
             double trackY = cellRect.Y + (cellRect.Height - barHeight) / 2.0;
@@ -147,7 +156,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
             var trackRect = new Rect(x1, y1, Math.Max(0, x2 - x1), Math.Max(0, y2 - y1));
             if (trackRect.Width <= 0 || trackRect.Height <= 0) return;
 
-            int radius = (int)Math.Max(0, Math.Round(CornerRadius * zoom));
+            int radius = (int)Math.Max(0, Math.Min(Math.Round(barHeight / 2.0), Math.Round(CornerRadius * zoom)));
 
             // 1. Draw Track Background
             var trackBg = TrackBrush ?? SheetUtils.ProgressBarTrackBrush;
@@ -159,7 +168,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
             {
                 var fillRect = new Rect(trackRect.X, trackRect.Y, fillWidth, trackRect.Height);
                 var fillBrush = ResolveFillBrush(progress);
-                renderContext.DrawRoundedRectangle(fillBrush, ProgressBorderPen, fillRect, radius, radius);
+                int fillRadius = Math.Min(radius, (int)Math.Round(fillWidth / 2.0));
+                renderContext.DrawRoundedRectangle(fillBrush, ProgressBorderPen, fillRect, fillRadius, fillRadius);
             }
 
             // 3. Draw Text / Percentage
@@ -175,8 +185,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
 
                     if (TextPlacement == ProgressBarTextPlacement.Right)
                     {
-                        textRect = new Rect(x2 + 4 * zoom, cellRect.Y, Math.Max(0, cellRect.Right - (x2 + 4 * zoom) - margin), cellRect.Height);
-                        hAlign = CellHorizontalAlignment.Left;
+                        double textWidth = 40.0 * zoom;
+                        textRect = new Rect(cellRect.Right - margin - textWidth, cellRect.Y, textWidth, cellRect.Height);
+                        hAlign = CellHorizontalAlignment.Right;
                         textBrush = TextForeground ?? (style != null ? WpfResourceCache.GetBrush(style.ForeColor) : SheetUtils.ProgressBarDarkTextBrush);
                     }
                     else // Overlay
@@ -202,7 +213,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
                         textRect,
                         style?.FontFamily,
                         style != null ? Math.Max(9.0, style.FontSize - 1.0) : 10.0,
-                        DrawingFontWeight.Bold,
+                        DrawingFontWeight.Normal,
                         style != null ? style.FontStyle : DrawingFontStyle.Normal,
                         textBrush,
                         hAlign,
