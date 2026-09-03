@@ -106,6 +106,20 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public static Pen SparklineAxisPen { get; }
         #endregion
 
+        #region Slider Defaults
+        public static Brush SliderTrackBrush { get; }
+        public static Pen SliderTrackPen { get; }
+        public static Brush SliderFillBrush { get; }
+        public static Brush SliderThumbBrush { get; }
+        public static Brush SliderThumbBorderBrush { get; }
+        public static Pen SliderThumbBorderPen { get; }
+        public static Brush SliderThumbHoverHaloBrush { get; }
+        public static Brush SliderThumbPressedHaloBrush { get; }
+        public static Brush SliderTickBrush { get; }
+        public static Pen SliderTickPen { get; }
+        public static Brush SliderTextBrush { get; }
+        #endregion
+
         static SheetUtils()
         {
             var assembly = Assembly.GetExecutingAssembly();
@@ -191,6 +205,19 @@ namespace DevBrewLabs.WPF.Spreadsheet
             SparklineMarkerBrush = CreateFrozenBrush("#1E293B");
             SparklineAxisBrush = CreateFrozenBrush("#CBD5E1");
             SparklineAxisPen = CreateFrozenPen(SparklineAxisBrush, 0.8);
+
+            // Slider Defaults
+            SliderTrackBrush = CreateFrozenBrush("#E2E8F0");
+            SliderTrackPen = CreateFrozenPen(CreateFrozenBrush("#CBD5E1"), 0.8);
+            SliderFillBrush = CreateFrozenBrush("#2563EB");
+            SliderThumbBrush = CreateFrozenBrush("#FFFFFF");
+            SliderThumbBorderBrush = CreateFrozenBrush("#2563EB");
+            SliderThumbBorderPen = CreateFrozenPen(SliderThumbBorderBrush, 1.8);
+            SliderThumbHoverHaloBrush = CreateFrozenBrush(Color.FromArgb(50, 37, 99, 235));
+            SliderThumbPressedHaloBrush = CreateFrozenBrush(Color.FromArgb(90, 37, 99, 235));
+            SliderTickBrush = CreateFrozenBrush("#94A3B8");
+            SliderTickPen = CreateFrozenPen(SliderTickBrush, 1.0);
+            SliderTextBrush = CreateFrozenBrush("#334155");
         }
 
 

@@ -12,6 +12,16 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
         private (int Row, int Column, CellElement Element)? _hoveredElement;
         private (int Row, int Column, CellElement Element)? _pressedElement;
 
+        /// <summary>
+        /// Gets whether an interactive cell element is currently pressed or being dragged.
+        /// </summary>
+        public bool IsElementPressed => _pressedElement.HasValue;
+
+        /// <summary>
+        /// Gets the currently pressed element along with its row and column coordinates.
+        /// </summary>
+        public (int Row, int Column, CellElement Element)? PressedElement => _pressedElement;
+
         public CellInteractionManager(Spread spread) : base(spread)
         {
         }
