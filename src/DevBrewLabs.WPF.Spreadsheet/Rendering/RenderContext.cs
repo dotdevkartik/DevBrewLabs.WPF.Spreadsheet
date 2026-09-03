@@ -19,6 +19,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
         void DrawGeometry(DrawingColor? color, DrawingPen? pen, Geometry geometry);
         void DrawGeometry(Brush brush, Pen pen, Geometry geometry);
+        void DrawEllipse(Brush brush, Pen pen, Point center, double radiusX, double radiusY);
         void DrawGlyphRun(DrawingColor color, GlyphRun glyphRun);
         void DrawGlyphRun(Brush brush, GlyphRun glyphRun);
         void DrawLine(DrawingPen pen, Point point0, Point point1);
@@ -193,6 +194,13 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             if (_disposed || _drawingContext == null) return;
 
             _drawingContext.DrawRectangle(color, pen, rect);
+        }
+
+        public void DrawEllipse(Brush brush, Pen pen, Point center, double radiusX, double radiusY)
+        {
+            if (_disposed || _drawingContext == null) return;
+
+            _drawingContext.DrawEllipse(brush, pen, center, radiusX, radiusY);
         }
 
         public void DrawGlyphRun(DrawingColor color, GlyphRun glyphRun)

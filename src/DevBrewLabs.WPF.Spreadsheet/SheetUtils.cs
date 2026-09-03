@@ -93,6 +93,19 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public static Brush ProgressBarOverlayDarkTextBrush { get; }
         #endregion
 
+        #region Sparkline Defaults
+        public static Brush SparklineSeriesBrush { get; }
+        public static Brush SparklineAreaBrush { get; }
+        public static Brush SparklineNegativeBrush { get; }
+        public static Brush SparklineHighPointBrush { get; }
+        public static Brush SparklineLowPointBrush { get; }
+        public static Brush SparklineFirstPointBrush { get; }
+        public static Brush SparklineLastPointBrush { get; }
+        public static Brush SparklineMarkerBrush { get; }
+        public static Brush SparklineAxisBrush { get; }
+        public static Pen SparklineAxisPen { get; }
+        #endregion
+
         static SheetUtils()
         {
             var assembly = Assembly.GetExecutingAssembly();
@@ -166,6 +179,18 @@ namespace DevBrewLabs.WPF.Spreadsheet
             ProgressBarDangerBrush = CreateFrozenBrush("#EF4444");
             ProgressBarDarkTextBrush = CreateFrozenBrush("#27272A");
             ProgressBarOverlayDarkTextBrush = CreateFrozenBrush("#18181B");
+
+            // Sparkline Defaults
+            SparklineSeriesBrush = CreateFrozenBrush("#2563EB");
+            SparklineAreaBrush = CreateFrozenBrush(Color.FromArgb(40, 37, 99, 235));
+            SparklineNegativeBrush = CreateFrozenBrush("#EF4444");
+            SparklineHighPointBrush = CreateFrozenBrush("#107C41");
+            SparklineLowPointBrush = CreateFrozenBrush("#DC2626");
+            SparklineFirstPointBrush = CreateFrozenBrush("#6366F1");
+            SparklineLastPointBrush = CreateFrozenBrush("#0284C7");
+            SparklineMarkerBrush = CreateFrozenBrush("#1E293B");
+            SparklineAxisBrush = CreateFrozenBrush("#CBD5E1");
+            SparklineAxisPen = CreateFrozenPen(SparklineAxisBrush, 0.8);
         }
 
 

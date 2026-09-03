@@ -57,11 +57,17 @@ namespace DevBrewLabs.WPF.Spreadsheet.Styling
 
         public static WpfFontResources GetFontResources(DrawingFontFamily fontFamily, DrawingFontWeight weight, DrawingFontStyle style)
         {
-            return GetFontResources(fontFamily.FamilyName, weight, style);
+            string familyName = fontFamily?.FamilyName;
+            if (string.IsNullOrEmpty(familyName))
+                familyName = "Segoe UI";
+            return GetFontResources(familyName, weight, style);
         }
 
         public static WpfFontResources GetFontResources(string fontFamily, DrawingFontWeight weight, DrawingFontStyle style)
         {
+            if (string.IsNullOrEmpty(fontFamily))
+                fontFamily = "Segoe UI";
+
             var key = new FontCacheKey(fontFamily, weight, style);
 
             if (!_fontCache.TryGetValue(key, out WpfFontResources resources))

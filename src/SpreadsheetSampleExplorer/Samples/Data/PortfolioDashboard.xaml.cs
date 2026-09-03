@@ -2,14 +2,18 @@ using DevBrewLabs.Spreadsheet;
 using DevBrewLabs.Spreadsheet.Drawing;
 using DevBrewLabs.Spreadsheet.Formatters;
 using DevBrewLabs.Spreadsheet.Styling;
+using DevBrewLabs.WPF.Spreadsheet;
+using DevBrewLabs.WPF.Spreadsheet.CellTypes;
+using DevBrewLabs.WPF.Spreadsheet.Enums;
+using SpreadsheetSampleExplorer.Data;
+using SpreadsheetSampleExplorer.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Threading;
-using SpreadsheetSampleExplorer.Data;
-using SpreadsheetSampleExplorer.Models;
 
 namespace SpreadsheetSampleExplorer.Samples
 {
@@ -32,6 +36,16 @@ namespace SpreadsheetSampleExplorer.Samples
                 if (d > 0) return "+" + d.ToString("0.00") + "%";
                 return d.ToString("0.00") + "%";
             }
+            return value?.ToString();
+        }
+    }
+
+    public class SimplePercentageFormatter : IFormatter
+    {
+        public string Format(object value)
+        {
+            if (value is double d) return d.ToString("0.0") + "%";
+            if (value is int i) return i.ToString("0.0") + "%";
             return value?.ToString();
         }
     }
@@ -71,19 +85,79 @@ namespace SpreadsheetSampleExplorer.Samples
         private int _tickCount = 90;
 
         private List<StockData> _stocks = DataSource.GetStocks();
+        private List<double>[] _priceHistories;
 
         private CurrencyFormatter _currencyFormatter = new CurrencyFormatter();
         private PercentageFormatter _percentageFormatter = new PercentageFormatter();
         private TrendFormatter _trendFormatter = new TrendFormatter();
         private ValueTrendFormatter _valueTrendFormatter = new ValueTrendFormatter();
 
+        private SparklineCellType _gainSparkline;
+        private SparklineCellType _lossSparkline;
+
         public PortfolioDashboard()
         {
             InitializeComponent();
+            InitSparklines();
+            InitPriceHistories();
             SetupStyles();
             SetupDashboard();
             StartLiveFeed();
             Unloaded += (s, e) => _timer?.Stop();
+        }
+
+        private void InitSparklines()
+        {
+            // Upward / Gain Sparkline (Emerald Green with soft translucent area and crisp peak markers)
+            _gainSparkline = new SparklineCellType
+            {
+                Type = SparklineType.Area,
+                SeriesBrush = SheetUtils.CreateFrozenBrush("#16A34A"), // Emerald-600
+                AreaBrush = SheetUtils.CreateFrozenBrush(System.Windows.Media.Color.FromArgb(45, 22, 163, 74)),
+                HighPointBrush = SheetUtils.CreateFrozenBrush("#15803D"),
+                LowPointBrush = SheetUtils.CreateFrozenBrush("#86EFAC"),
+                LastPointBrush = SheetUtils.CreateFrozenBrush("#16A34A"),
+                ShowHighPoint = true,
+                ShowLowPoint = true,
+                ShowLastPoint = true,
+                LineThickness = 1.6,
+                IsReadOnly = true
+            };
+
+            // Downward / Loss Sparkline (Crimson Red with soft red area and contrasting markers)
+            _lossSparkline = new SparklineCellType
+            {
+                Type = SparklineType.Area,
+                SeriesBrush = SheetUtils.CreateFrozenBrush("#DC2626"), // Red-600
+                AreaBrush = SheetUtils.CreateFrozenBrush(System.Windows.Media.Color.FromArgb(45, 220, 38, 38)),
+                HighPointBrush = SheetUtils.CreateFrozenBrush("#FCA5A5"),
+                LowPointBrush = SheetUtils.CreateFrozenBrush("#991B1B"),
+                LastPointBrush = SheetUtils.CreateFrozenBrush("#DC2626"),
+                ShowHighPoint = true,
+                ShowLowPoint = true,
+                ShowLastPoint = true,
+                LineThickness = 1.6,
+                IsReadOnly = true
+            };
+        }
+
+        private void InitPriceHistories()
+        {
+            _priceHistories = new List<double>[_stocks.Count];
+            for (int i = 0; i < _stocks.Count; i++)
+            {
+                var stock = _stocks[i];
+                var list = new List<double>();
+                double p = stock.BasePrice * 0.985;
+                for (int t = 0; t < 10; t++)
+                {
+                    double jitter = (_random.NextDouble() - 0.48) * 0.012;
+                    p = Math.Round(p * (1.0 + jitter), 2);
+                    list.Add(p);
+                }
+                list.Add(stock.CurrentPrice);
+                _priceHistories[i] = list;
+            }
         }
 
         private void SetupStyles()
@@ -122,11 +196,11 @@ namespace SpreadsheetSampleExplorer.Samples
             var worksheet = spread.WorkBook.WorkSheets[0];
             worksheet.Name = "Terminal";
             worksheet.RowCount = 50;
-            worksheet.ColumnCount = 14;
+            worksheet.ColumnCount = 15;
 
             // Global Background
             for (int r = 0; r < 50; r++)
-                for (int c = 0; c < 14; c++)
+                for (int c = 0; c < 15; c++)
                     worksheet.Cells[r, c].StyleName = "CardWhite";
 
             // Row Heights
@@ -139,7 +213,7 @@ namespace SpreadsheetSampleExplorer.Samples
             worksheet.Rows[6].Height = 20; // Gap
             worksheet.Rows[7].Height = 35; // Section Header
             worksheet.Rows[8].Height = 30; // Col Header
-            for (int i = 0; i < 8; i++) worksheet.Rows[9 + i].Height = 30; // Data
+            for (int i = 0; i < 8; i++) worksheet.Rows[9 + i].Height = 32; // Data (32px gives sparklines beautiful breathing space)
             worksheet.Rows[17].Height = 35; // Total
             worksheet.Rows[18].Height = 20; // Gap
             worksheet.Rows[19].Height = 25; // Bottom Card Title
@@ -147,19 +221,20 @@ namespace SpreadsheetSampleExplorer.Samples
             worksheet.Rows[21].Height = 20; // Bottom Card Sub
 
             // Col Widths
-            worksheet.Columns[0].Width = 70;
-            worksheet.Columns[1].Width = 140;
-            worksheet.Columns[2].Width = 70;
-            worksheet.Columns[3].Width = 90;
-            worksheet.Columns[4].Width = 90;
-            worksheet.Columns[5].Width = 100;
-            worksheet.Columns[6].Width = 90;
-            worksheet.Columns[7].Width = 100;
-            worksheet.Columns[8].Width = 100;
-            worksheet.Columns[9].Width = 20; // Gap
-            worksheet.Columns[10].Width = 70;
-            worksheet.Columns[11].Width = 100;
-            worksheet.Columns[12].Width = 90;
+            worksheet.Columns[0].Width = 70;  // TICKER
+            worksheet.Columns[1].Width = 135; // COMPANY
+            worksheet.Columns[2].Width = 65;  // SHARES
+            worksheet.Columns[3].Width = 90;  // AVG COST ($)
+            worksheet.Columns[4].Width = 90;  // LIVE ($)
+            worksheet.Columns[5].Width = 100; // VALUE ($)
+            worksheet.Columns[6].Width = 85;  // DAY % CHG
+            worksheet.Columns[7].Width = 95;  // DAY P&L ($)
+            worksheet.Columns[8].Width = 95;  // TOTAL P&L ($)
+            worksheet.Columns[9].Width = 115; // 7D TREND (Sparkline)
+            worksheet.Columns[10].Width = 18; // Gap
+            worksheet.Columns[11].Width = 70; // TICKER
+            worksheet.Columns[12].Width = 95; // VALUE ($)
+            worksheet.Columns[13].Width = 90; // ALLOCATION
 
             // Header
             worksheet.AddSpan(0, 0, 1, 3);
@@ -183,12 +258,12 @@ namespace SpreadsheetSampleExplorer.Samples
             DrawCard(worksheet, 2, 6, 3, "TOTAL P&L", "=I18", null, "vs Total Invested");
             
             double totalInvested = _stocks.Sum(s => s.BasePrice * s.Shares);
-            DrawCard(worksheet, 2, 10, 3, "TOTAL INVESTED", totalInvested, "89.9%", "Invested Percentage");
+            DrawCard(worksheet, 2, 11, 3, "TOTAL INVESTED", totalInvested, "89.9%", "Invested Percentage");
             
             worksheet.Cells[3, 0].Formatter = _currencyFormatter;
             worksheet.Cells[3, 3].Formatter = _valueTrendFormatter;
             worksheet.Cells[3, 6].Formatter = _valueTrendFormatter;
-            worksheet.Cells[3, 10].Formatter = _currencyFormatter;
+            worksheet.Cells[3, 11].Formatter = _currencyFormatter;
             
             // Dynamic % change for cards based on formulas
             worksheet.Cells[4, 0].Formula = "=H18/(F18-H18)*100";
@@ -199,33 +274,34 @@ namespace SpreadsheetSampleExplorer.Samples
             worksheet.Cells[4, 3].Formatter = _percentageFormatter;
             worksheet.Cells[4, 3].StyleName = "CardSubValueGain";
             
-            worksheet.Cells[4, 6].Formula = "=I18/K4*100";
+            worksheet.Cells[4, 6].Formula = "=I18/L4*100";
             worksheet.Cells[4, 6].Formatter = _percentageFormatter;
             worksheet.Cells[4, 6].StyleName = "CardSubValueGain";
 
             // Section Headers
-            worksheet.AddSpan(7, 0, 1, 9);
-            worksheet.Cells[7, 0].Value = " HOLDINGS";
+            worksheet.AddSpan(7, 0, 1, 10);
+            worksheet.Cells[7, 0].Value = " HOLDINGS & PERFORMANCE";
             worksheet.Cells[7, 0].StyleName = "SectionHeader";
             
-            worksheet.AddSpan(7, 10, 1, 3);
-            worksheet.Cells[7, 10].Value = " ALLOCATION BY VALUE";
-            worksheet.Cells[7, 10].StyleName = "SectionHeader";
+            worksheet.AddSpan(7, 11, 1, 3);
+            worksheet.Cells[7, 11].Value = " ALLOCATION BY VALUE";
+            worksheet.Cells[7, 11].StyleName = "SectionHeader";
 
             // Col Headers (Holdings)
-            string[] hHeaders = { "TICKER", "COMPANY", "SHARES", "AVG COST ($)", "LIVE ($)", "VALUE ($)", "DAY % CHG", "DAY P&L ($)", "TOTAL P&L ($)" };
-            for(int i=0; i<9; i++) {
+            string[] hHeaders = { "TICKER", "COMPANY", "SHARES", "AVG COST ($)", "LIVE ($)", "VALUE ($)", "DAY % CHG", "DAY P&L ($)", "TOTAL P&L ($)", "7D TREND" };
+            for (int i = 0; i < 10; i++)
+            {
                 worksheet.Cells[8, i].Value = hHeaders[i];
                 worksheet.Cells[8, i].StyleName = i < 2 ? "ColHeaderLeft" : "ColHeader";
             }
             
             // Col Headers (Allocation)
-            worksheet.Cells[8, 10].Value = "TICKER";
-            worksheet.Cells[8, 10].StyleName = "ColHeaderLeft";
-            worksheet.Cells[8, 11].Value = "VALUE ($)";
-            worksheet.Cells[8, 11].StyleName = "ColHeader";
-            worksheet.Cells[8, 12].Value = "ALLOCATION";
+            worksheet.Cells[8, 11].Value = "TICKER";
+            worksheet.Cells[8, 11].StyleName = "ColHeaderLeft";
+            worksheet.Cells[8, 12].Value = "VALUE ($)";
             worksheet.Cells[8, 12].StyleName = "ColHeader";
+            worksheet.Cells[8, 13].Value = "ALLOCATION";
+            worksheet.Cells[8, 13].StyleName = "ColHeader";
 
             // Data
             for (int i = 0; i < _stocks.Count; i++)
@@ -259,22 +335,26 @@ namespace SpreadsheetSampleExplorer.Samples
                 worksheet.Cells[r, 6].Formula = $"=(E{excelRow}-D{excelRow})/D{excelRow}*100";
                 worksheet.Cells[r, 6].Formatter = _percentageFormatter;
                 
-                worksheet.Cells[r, 7].Formula = $"=C{excelRow}*(E{excelRow}-D{excelRow})"; // Actually Day P&L needs Open Price, but let's use Base Price to simulate "Previous Close".
+                worksheet.Cells[r, 7].Formula = $"=C{excelRow}*(E{excelRow}-D{excelRow})";
                 worksheet.Cells[r, 7].Formatter = _trendFormatter;
                 
                 worksheet.Cells[r, 8].Formula = $"=C{excelRow}*(E{excelRow}-D{excelRow})";
                 worksheet.Cells[r, 8].Formatter = _trendFormatter;
                 
+                // 7D Trend Sparkline Cell
+                worksheet.Cells[r, 9].CellType = (stock.CurrentPrice >= stock.BasePrice) ? _gainSparkline : _lossSparkline;
+                worksheet.Cells[r, 9].Value = _priceHistories[i].ToArray();
+
                 // Allocation Table
-                worksheet.Cells[r, 10].Value = stock.Ticker;
-                worksheet.Cells[r, 10].StyleName = "TickerStyle";
+                worksheet.Cells[r, 11].Value = stock.Ticker;
+                worksheet.Cells[r, 11].StyleName = "TickerStyle";
                 
-                worksheet.Cells[r, 11].Formula = $"=F{excelRow}";
-                worksheet.Cells[r, 11].Formatter = _currencyFormatter;
-                worksheet.Cells[r, 11].StyleName = "DataStyle";
+                worksheet.Cells[r, 12].Formula = $"=F{excelRow}";
+                worksheet.Cells[r, 12].Formatter = _currencyFormatter;
+                worksheet.Cells[r, 12].StyleName = "DataStyle";
                 
-                worksheet.Cells[r, 12].Formula = $"=F{excelRow}/F18*100";
-                worksheet.Cells[r, 12].Formatter = _percentageFormatter; // We can reuse percentage formatter but we need it without + sign maybe. Let's just use it, or create a generic one. We'll add a generic one later if needed. Wait, percentage formatter adds +. For allocation we just need "0.0%". Let's create an AllocationFormatter.
+                worksheet.Cells[r, 13].Formula = $"=F{excelRow}/F18*100";
+                worksheet.Cells[r, 13].Formatter = new SimplePercentageFormatter();
                 
                 UpdateRowStyles(worksheet, r, stock);
             }
@@ -309,25 +389,28 @@ namespace SpreadsheetSampleExplorer.Samples
             worksheet.Cells[17, 8].Formula = "=SUM(I10:I17)";
             worksheet.Cells[17, 8].Formatter = _trendFormatter;
             worksheet.Cells[17, 8].StyleName = "GainStyle";
+
+            worksheet.Cells[17, 9].Value = "—";
+            worksheet.Cells[17, 9].StyleName = "TotalRow";
             
             // Allocation Footer
-            worksheet.Cells[17, 10].Value = "Total";
-            worksheet.Cells[17, 10].StyleName = "TotalRowLeft";
+            worksheet.Cells[17, 11].Value = "Total";
+            worksheet.Cells[17, 11].StyleName = "TotalRowLeft";
             
-            worksheet.Cells[17, 11].Formula = "=F18";
-            worksheet.Cells[17, 11].Formatter = _currencyFormatter;
-            worksheet.Cells[17, 11].StyleName = "TotalRow";
-            
-            worksheet.Cells[17, 12].Value = 100.0;
-            worksheet.Cells[17, 12].Formatter = new SimplePercentageFormatter();
+            worksheet.Cells[17, 12].Formula = "=F18";
+            worksheet.Cells[17, 12].Formatter = _currencyFormatter;
             worksheet.Cells[17, 12].StyleName = "TotalRow";
+            
+            worksheet.Cells[17, 13].Value = 100.0;
+            worksheet.Cells[17, 13].Formatter = new SimplePercentageFormatter();
+            worksheet.Cells[17, 13].StyleName = "TotalRow";
             
             // Bottom Cards
             DrawCard(worksheet, 19, 0, 3, "TOP GAINER (DAY)", "MSFT", "+6.80%", null);
             DrawCard(worksheet, 19, 3, 3, "TOP LOSER (DAY)", "—", "—", null);
             DrawCard(worksheet, 19, 6, 3, "LARGEST POSITION", "MSFT", "26.1%", null);
-            DrawCard(worksheet, 19, 10, 2, "CASH (EST.)", "=I18", "10.1%", null);
-            DrawCard(worksheet, 19, 12, 1, "POSITIONS", "8", "Stocks", null);
+            DrawCard(worksheet, 19, 11, 2, "CASH (EST.)", "=I18", "10.1%", null);
+            DrawCard(worksheet, 19, 13, 1, "POSITIONS", "8", "Stocks", null);
             
             worksheet.Cells[20, 0].StyleName = "CardSubValueGain";
             worksheet.Cells[21, 0].StyleName = "CardSubValueGain";
@@ -335,7 +418,7 @@ namespace SpreadsheetSampleExplorer.Samples
             worksheet.Cells[20, 3].StyleName = "CardSubValueLoss";
             worksheet.Cells[21, 3].StyleName = "CardSubValueLoss";
             
-            worksheet.Cells[20, 10].Formatter = _currencyFormatter;
+            worksheet.Cells[20, 11].Formatter = _currencyFormatter;
             
             spread.SuspendUpdates = false;
         }
@@ -354,7 +437,7 @@ namespace SpreadsheetSampleExplorer.Samples
             ws.AddSpan(startRow + 2, startCol, 1, colSpan);
             if (sub1 != null && sub1.StartsWith("=")) ws.Cells[startRow + 2, startCol].Formula = sub1;
             else ws.Cells[startRow + 2, startCol].Value = sub1;
-            ws.Cells[startRow + 2, startCol].StyleName = "CardSubtext"; // Default, override later if needed
+            ws.Cells[startRow + 2, startCol].StyleName = "CardSubtext";
             
             ws.AddSpan(startRow + 3, startCol, 1, colSpan);
             ws.Cells[startRow + 3, startCol].Value = sub2;
@@ -370,7 +453,7 @@ namespace SpreadsheetSampleExplorer.Samples
             worksheet.Cells[row, 8].StyleName = targetStyle;
             
             // Re-apply allocation simple formatter
-            worksheet.Cells[row, 12].Formatter = new SimplePercentageFormatter();
+            worksheet.Cells[row, 13].Formatter = new SimplePercentageFormatter();
         }
 
         private void StartLiveFeed()
@@ -404,8 +487,20 @@ namespace SpreadsheetSampleExplorer.Samples
                 double pctChange = (_random.NextDouble() - 0.49) * 0.015;
                 stock.CurrentPrice = Math.Round(stock.CurrentPrice * (1 + pctChange), 2);
 
+                // Update live price history buffer for sparkline
+                var history = _priceHistories[index];
+                history.Add(stock.CurrentPrice);
+                if (history.Count > 16)
+                {
+                    history.RemoveAt(0);
+                }
+
                 int row = 9 + index;
                 worksheet.Cells[row, 4].Value = stock.CurrentPrice;
+
+                // Update live sparkline
+                worksheet.Cells[row, 9].CellType = (stock.CurrentPrice >= stock.BasePrice) ? _gainSparkline : _lossSparkline;
+                worksheet.Cells[row, 9].Value = history.ToArray();
 
                 UpdateRowStyles(worksheet, row, stock);
             }
@@ -425,7 +520,7 @@ namespace SpreadsheetSampleExplorer.Samples
             double maxLoss = 999;
             double maxValue = -1;
             
-            foreach(var s in _stocks)
+            foreach (var s in _stocks)
             {
                 double pct = (s.CurrentPrice - s.BasePrice) / s.BasePrice * 100;
                 double val = s.CurrentPrice * s.Shares;
@@ -449,22 +544,8 @@ namespace SpreadsheetSampleExplorer.Samples
             if (largest != null)
             {
                 worksheet.Cells[20, 6].Value = largest.Ticker;
-                // Allocation is calculated via formula, but for this summary block we will just leave the static layout or compute it.
-                // Let's just use formula in cell 21, 6 referencing the specific cell? Too complex.
-                // We'll compute it in C#:
-                double totalVal = _stocks.Sum(x => x.CurrentPrice * x.Shares);
-                double alloc = (maxValue / totalVal) * 100;
-                worksheet.Cells[21, 6].Value = alloc.ToString("0.0") + "%";
+                worksheet.Cells[21, 6].Value = (largest.CurrentPrice * largest.Shares / (double)worksheet.Cells[17, 5].Value * 100).ToString("0.0") + "%";
             }
-        }
-    }
-    
-    public class SimplePercentageFormatter : IFormatter
-    {
-        public string Format(object value)
-        {
-            if (value is double d) return d.ToString("0.0") + "%";
-            return value?.ToString();
         }
     }
 }

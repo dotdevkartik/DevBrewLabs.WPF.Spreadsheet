@@ -1,9 +1,8 @@
-<UserControl x:Class="SpreadsheetSampleExplorer.Samples.CellTypes"
+<UserControl x:Class="SpreadsheetSampleExplorer.Samples.BasicCellTypes"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:SpreadsheetSampleExplorer.Samples"
              xmlns:sheets="http://schemas.devbrewlabs.com/2026/wpf/spreadsheet"
              mc:Ignorable="d" 
              d:DesignHeight="550" d:DesignWidth="950">
@@ -19,10 +18,7 @@
                 <!-- Left: Feature Badges -->
                 <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
                     <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,0">
-                        <TextBlock Text="▼ Dropdown ComboBox" Foreground="#1D4ED8" FontSize="11" FontWeight="Medium"/>
-                    </Border>
-                    <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,0">
-                        <TextBlock Text="☑ Checkbox (3-State)" Foreground="#1D4ED8" FontSize="11" FontWeight="Medium"/>
+                        <TextBlock Text="🔤 Formatted Text" Foreground="#1D4ED8" FontSize="11" FontWeight="Medium"/>
                     </Border>
                     <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,0">
                         <TextBlock Text="🔢 Number Spinner" Foreground="#1D4ED8" FontSize="11" FontWeight="Medium"/>
@@ -30,31 +26,28 @@
                     <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,0">
                         <TextBlock Text="📅 Date Picker" Foreground="#1D4ED8" FontSize="11" FontWeight="Medium"/>
                     </Border>
-                    <Border Background="#FEF3C7" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,0">
-                        <TextBlock Text="⭐ Star Rating (Custom)" Foreground="#B45309" FontSize="11" FontWeight="Medium"/>
+                    <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,0">
+                        <TextBlock Text="▼ Dropdown ComboBox" Foreground="#1D4ED8" FontSize="11" FontWeight="Medium"/>
+                    </Border>
+                    <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,0">
+                        <TextBlock Text="☑ Checkbox (3-State)" Foreground="#1D4ED8" FontSize="11" FontWeight="Medium"/>
                     </Border>
                     <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,0">
                         <TextBlock Text="🔘 Action Button" Foreground="#1D4ED8" FontSize="11" FontWeight="Medium"/>
-                    </Border>
-                    <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,0">
-                        <TextBlock Text="📊 Progress Bar" Foreground="#1D4ED8" FontSize="11" FontWeight="Medium"/>
-                    </Border>
-                    <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,0">
-                        <TextBlock Text="🔗 Hyperlink" Foreground="#1D4ED8" FontSize="11" FontWeight="Medium"/>
                     </Border>
                 </StackPanel>
 
                 <!-- Right: Interactive Status Notification -->
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
                     <Border Background="#F4F4F5" BorderBrush="#D4D4D8" BorderThickness="1" CornerRadius="4" Padding="8,3">
-                        <TextBlock x:Name="statusTextBlock" Text="Ready (Interact with any button, rating star, or checkbox)" FontSize="11" FontWeight="SemiBold" Foreground="#18181B"/>
+                        <TextBlock x:Name="statusTextBlock" Text="Ready (Interact with dropdowns, spinners, checkboxes, or buttons)" FontSize="11" FontWeight="SemiBold" Foreground="#18181B"/>
                     </Border>
                 </StackPanel>
             </DockPanel>
         </Border>
 
         <!-- Main Spreadsheet Container -->
-        <Border Grid.Row="1" BorderThickness="1" BorderBrush="#E4E4E7" >
+        <Border Grid.Row="1" BorderThickness="1" BorderBrush="#E4E4E7">
             <sheets:Spread x:Name="spread"/>
         </Border>
     </Grid>

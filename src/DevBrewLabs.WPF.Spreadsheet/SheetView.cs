@@ -91,7 +91,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             _viewPort = new ViewPort(this);
             HeadersVisibility = HeadersVisibility.Both;
             _selection = new CellRange(0, 0);
-            AutoSizeRows = true;
+            AutoSizeRows = false;
             AutoSizeColumns = false;
         }
 

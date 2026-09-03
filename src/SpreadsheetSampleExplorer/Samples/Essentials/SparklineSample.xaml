@@ -1,0 +1,51 @@
+<UserControl x:Class="SpreadsheetSampleExplorer.Samples.SparklineSample"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:sheets="http://schemas.devbrewlabs.com/2026/wpf/spreadsheet"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="1150">
+    <Grid Margin="2">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Top Control & Action Bar -->
+        <Border Grid.Row="0" Background="#FAFAFA" BorderBrush="#E4E4E7" BorderThickness="1" Padding="12,10" Margin="0,0,0,6">
+            <DockPanel LastChildFill="False">
+                <!-- Left: Live Trend Pattern Simulator Buttons & Options -->
+                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="⚡ Patterns:" FontWeight="SemiBold" FontSize="11" Foreground="#3F3F46" VerticalAlignment="Center" Margin="0,0,8,0"/>
+
+                    <Button x:Name="btnBullish" Content="📈 Bullish" Padding="8,3" FontSize="11" Margin="0,0,5,0" Click="OnPatternClicked" Background="#ECFDF5" BorderBrush="#A7F3D0" Foreground="#047857" FontWeight="Medium" Cursor="Hand"/>
+                    <Button x:Name="btnBearish" Content="📉 Bearish" Padding="8,3" FontSize="11" Margin="0,0,5,0" Click="OnPatternClicked" Background="#FEF2F2" BorderBrush="#FECACA" Foreground="#B91C1C" FontWeight="Medium" Cursor="Hand"/>
+                    <Button x:Name="btnCyclical" Content="🌊 Cyclical" Padding="8,3" FontSize="11" Margin="0,0,5,0" Click="OnPatternClicked" Background="#EFF6FF" BorderBrush="#BFDBFE" Foreground="#1D4ED8" FontWeight="Medium" Cursor="Hand"/>
+                    <Button x:Name="btnVolatile" Content="⚡ Volatile" Padding="8,3" FontSize="11" Margin="0,0,5,0" Click="OnPatternClicked" Background="#FFFBEB" BorderBrush="#FDE68A" Foreground="#B45309" FontWeight="Medium" Cursor="Hand"/>
+                    <Button x:Name="btnRandomize" Content="🎲 Random" Padding="8,3" FontSize="11" Margin="0,0,14,0" Click="OnPatternClicked" Background="#F4F4F5" BorderBrush="#D4D4D8" Foreground="#27272A" FontWeight="Medium" Cursor="Hand"/>
+
+                    <Border Width="1" Background="#E4E4E7" Margin="0,2,14,2"/>
+
+                    <!-- Options Checkboxes -->
+                    <CheckBox x:Name="chkHighLowPoints" Content="Peak Dots" IsChecked="True" VerticalAlignment="Center" Margin="0,0,12,0" Checked="OnOptionChanged" Unchecked="OnOptionChanged" FontWeight="Medium" FontSize="11"/>
+                    <CheckBox x:Name="chkShowMarkers" Content="All Markers" IsChecked="False" VerticalAlignment="Center" Margin="0,0,12,0" Checked="OnOptionChanged" Unchecked="OnOptionChanged" FontWeight="Medium" FontSize="11"/>
+                    <CheckBox x:Name="chkZeroAxis" Content="Zero Axis" IsChecked="True" VerticalAlignment="Center" Margin="0,0,12,0" Checked="OnOptionChanged" Unchecked="OnOptionChanged" FontWeight="Medium" FontSize="11"/>
+                    <CheckBox x:Name="chkThickLines" Content="Thick Lines" IsChecked="False" VerticalAlignment="Center" Margin="0,0,12,0" Checked="OnOptionChanged" Unchecked="OnOptionChanged" FontWeight="Medium" FontSize="11"/>
+                </StackPanel>
+
+                <!-- Right: Notification / Status Badge -->
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Background="#F0FDF4" BorderBrush="#BBF7D0" BorderThickness="1" CornerRadius="4" Padding="8,3">
+                        <TextBlock x:Name="statusTextBlock" Text="✨ Sparklines rendered in-cell at 36px height (Line, Area, Column, Win/Loss)" FontSize="11" FontWeight="SemiBold" Foreground="#15803D"/>
+                    </Border>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- Main Spreadsheet Container -->
+        <Border Grid.Row="1" BorderThickness="1" BorderBrush="#E4E4E7">
+            <sheets:Spread x:Name="spread"/>
+        </Border>
+    </Grid>
+</UserControl>

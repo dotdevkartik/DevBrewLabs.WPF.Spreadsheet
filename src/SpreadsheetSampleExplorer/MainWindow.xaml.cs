@@ -48,12 +48,39 @@ namespace SpreadsheetSampleExplorer
             );
 
             _samplesSideBar.RegisterSample(
-                "CellTypes",
-                "Cell Types",
-                "Demonstration of Checkbox, Button, ComboBox, and Text cell types.",
+                "BasicCellTypes",
+                "Basic Cell Types",
+                "Standard data entry controls: Text, Spinners, Dropdowns, Date Pickers, Checkboxes, and Buttons.",
                 "ESSENTIALS",
                 "M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z",
-                typeof(CellTypes)
+                typeof(BasicCellTypes)
+            );
+
+            _samplesSideBar.RegisterSample(
+                "AdvancedCellTypes",
+                "Advanced Cell Types",
+                "Rich visual indicators: Progress Bars, Auto-Status Thresholds, and Interactive Hyperlinks.",
+                "ESSENTIALS",
+                "M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z",
+                typeof(AdvancedCellTypes)
+            );
+
+            _samplesSideBar.RegisterSample(
+                "CustomCellTypes",
+                "Custom Cell Types",
+                "Build user-defined cell types and cell elements with interactive hit-testing (e.g. Star Ratings).",
+                "ESSENTIALS",
+                "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z",
+                typeof(CustomCellTypes)
+            );
+
+            _samplesSideBar.RegisterSample(
+                "Sparklines",
+                "Sparkline Micro-Charts",
+                "In-cell micro-charts: Line, Column, Win/Loss, and Area sparklines with interactive marker options.",
+                "ESSENTIALS",
+                "M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z",
+                typeof(SparklineSample)
             );
 
             _samplesSideBar.RegisterSample(
