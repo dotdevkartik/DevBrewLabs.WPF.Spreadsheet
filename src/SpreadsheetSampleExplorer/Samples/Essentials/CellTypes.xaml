@@ -36,6 +36,12 @@
                     <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,0">
                         <TextBlock Text="🔘 Action Button" Foreground="#1D4ED8" FontSize="11" FontWeight="Medium"/>
                     </Border>
+                    <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,0">
+                        <TextBlock Text="📊 Progress Bar" Foreground="#1D4ED8" FontSize="11" FontWeight="Medium"/>
+                    </Border>
+                    <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,0">
+                        <TextBlock Text="🔗 Hyperlink" Foreground="#1D4ED8" FontSize="11" FontWeight="Medium"/>
+                    </Border>
                 </StackPanel>
 
                 <!-- Right: Interactive Status Notification -->

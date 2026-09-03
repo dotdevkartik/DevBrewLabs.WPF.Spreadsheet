@@ -4,6 +4,7 @@ using DevBrewLabs.Spreadsheet.Formatters;
 using DevBrewLabs.WPF.Spreadsheet.Elements;
 using DevBrewLabs.WPF.Spreadsheet.Rendering;
 using DevBrewLabs.WPF.Spreadsheet.Rendering.Text;
+using DevBrewLabs.WPF.Spreadsheet.Styling;
 using System;
 using System.Collections.Generic;
 using System.Windows;
@@ -229,7 +230,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
             if (vAlign == CellVerticalAlignment.Auto)
                 vAlign = CellVerticalAlignment.Center;
 
-            var foreColor = GetDrawingColor(overrideForeground ?? Foreground) ?? style?.ForeColor ?? DrawingColor.FromArgb(255, 17, 24, 39);
+            var foreBrush = overrideForeground ?? Foreground ?? (style != null ? WpfResourceCache.GetBrush(style.ForeColor) : SheetUtils.ButtonForegroundBrush);
 
             renderContext.DrawText(
                 displayText,
@@ -238,20 +239,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
                 style != null ? style.FontSize : 11,
                 style != null ? style.FontWeight : DrawingFontWeight.Normal,
                 style != null ? style.FontStyle : DrawingFontStyle.Normal,
-                foreColor,
+                foreBrush,
                 hAlign,
                 vAlign,
                 style != null ? style.TextTrimming : CellTextTrimming.None,
                 style?.AllowMultiLineText == true);
-        }
-
-        private static DrawingColor? GetDrawingColor(Brush brush)
-        {
-            if (brush is SolidColorBrush scb)
-            {
-                return new DrawingColor(scb.Color.R, scb.Color.G, scb.Color.B, scb.Color.A);
-            }
-            return null;
         }
 
         public override bool SupportsEditing => false;

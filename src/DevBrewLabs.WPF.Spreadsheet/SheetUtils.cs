@@ -1,3 +1,4 @@
+using DevBrewLabs.Spreadsheet.Drawing;
 using System.Reflection;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -75,6 +76,23 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public static Brush ButtonDisabledForegroundBrush { get; }
         #endregion
 
+        #region Hyperlink Defaults
+        public static Brush HyperlinkBrush { get; }
+        public static Brush HyperlinkHoverBrush { get; }
+        public static Brush HyperlinkVisitedBrush { get; }
+        public static Brush HyperlinkVisitedHoverBrush { get; }
+        #endregion
+
+        #region ProgressBar Defaults
+        public static Brush ProgressBarTrackBrush { get; }
+        public static Brush ProgressBarFillBrush { get; }
+        public static Brush ProgressBarSuccessBrush { get; }
+        public static Brush ProgressBarWarningBrush { get; }
+        public static Brush ProgressBarDangerBrush { get; }
+        public static Brush ProgressBarDarkTextBrush { get; }
+        public static Brush ProgressBarOverlayDarkTextBrush { get; }
+        #endregion
+
         static SheetUtils()
         {
             var assembly = Assembly.GetExecutingAssembly();
@@ -133,7 +151,23 @@ namespace DevBrewLabs.WPF.Spreadsheet
             ButtonDisabledBorderPen = CreateFrozenPen(ButtonDisabledBorderBrush, 1.0);
             ButtonForegroundBrush = CreateFrozenBrush("#111827");
             ButtonDisabledForegroundBrush = CreateFrozenBrush("#9CA3AF");
+
+            // Hyperlink Defaults (Excel standard: #0563C1, Deep Navy Hover: #002060, Followed: #954F72, Deep Plum Hover: #5A243F)
+            HyperlinkBrush = CreateFrozenBrush("#0563C1");
+            HyperlinkHoverBrush = CreateFrozenBrush("#002060");
+            HyperlinkVisitedBrush = CreateFrozenBrush("#954F72");
+            HyperlinkVisitedHoverBrush = CreateFrozenBrush("#5A243F");
+
+            // ProgressBar Defaults
+            ProgressBarTrackBrush = CreateFrozenBrush("#E5E7EB");
+            ProgressBarFillBrush = CreateFrozenBrush("#107C41");
+            ProgressBarSuccessBrush = CreateFrozenBrush("#107C41");
+            ProgressBarWarningBrush = CreateFrozenBrush("#F59E0B");
+            ProgressBarDangerBrush = CreateFrozenBrush("#EF4444");
+            ProgressBarDarkTextBrush = CreateFrozenBrush("#27272A");
+            ProgressBarOverlayDarkTextBrush = CreateFrozenBrush("#18181B");
         }
+
 
         #region Frozen Resource Helpers
 
@@ -157,13 +191,6 @@ namespace DevBrewLabs.WPF.Spreadsheet
             if (pen.CanFreeze) pen.Freeze();
             return pen;
         }
-
-        public static Pen CreateFrozenPen(Color color, double thickness)
-        {
-            var brush = CreateFrozenBrush(color);
-            return CreateFrozenPen(brush, thickness);
-        }
-
         #endregion
     }
 }

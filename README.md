@@ -7,7 +7,7 @@
 <p align="center">
   <a href="https://dotnet.microsoft.com/"><img src="https://img.shields.io/badge/.NET-10.0_%7C_9.0_%7C_8.0_%7C_4.7.2-512BD4.svg?style=flat-square&logo=dotnet" alt="Target Frameworks" /></a>
   <a href="https://dotnet.microsoft.com/"><img src="https://img.shields.io/badge/Platform-WPF-0078D7.svg?style=flat-square&logo=windows" alt="Platform WPF" /></a>
-  <a href="https://github.com/kartikdeepsagar/AlphaX.WPF.Sheets"><img src="https://img.shields.io/badge/Tests-141%20Passed-107C41.svg?style=flat-square" alt="Tests Status" /></a>
+  <a href="https://github.com/dotdevkartik/DevBrewLabs.WPF.Spreadsheet"><img src="https://img.shields.io/badge/Tests-158%20Passed-107C41.svg?style=flat-square" alt="Tests Status" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg?style=flat-square" alt="MIT License" /></a>
 </p>
 
@@ -52,6 +52,8 @@ This project solves those limitations by pairing a **platform-agnostic core data
   - `ComboBoxCellType`: Dropdown selection lists with custom items source, display/value mappings, and search/selection popup.
   - `ButtonCellType`: Push buttons with hover/pressed states and command binding.
   - `DateCellType`: Formatted date rendering with interactive calendar picker popup dropdowns.
+  - `ProgressBarCellType`: Scaled progress bars with customizable track/fill brushes, percent labels, and dynamic auto-color thresholds.
+  - `HyperlinkCellType`: Interactive links with hover styling, Hand cursor, visited tracking, underline modes, and browser/command dispatch.
 - **Interactive Cell Sub-Elements (`CellElement`)**: Lightweight visual and clickable sub-elements inside cells with independent bounding boxes, hover states, mouse events, and cursor switching.
 - **Cell Merging & Spanning**: Arbitrary row and column span merging (`SpanManager`) with automatic layout recalculation and boundary clipping.
 - **Flyweight Style Architecture**: Style palette pooling (`StylePalette`) sharing brush and font definitions across millions of cells.
@@ -378,7 +380,7 @@ public class ProgressBarCellType : BaseCellType
 │   ├── DevBrewLabs.Spreadsheet/             # Core platform-agnostic spreadsheet model (ChunkedArray, Styles, Spans, Data)
 │   ├── DevBrewLabs.Spreadsheet.CalcEngine/  # Multi-sheet formula evaluation, token parser, and dependency DAG graph
 │   ├── DevBrewLabs.WPF.Spreadsheet/         # Main WPF Spread control, DrawingGroup render engine, editors, and UI managers
-│   ├── DevBrewLabs.WPF.Spreadsheet.Tests/   # NUnit unit test suite (125+ automated tests)
+│   ├── DevBrewLabs.WPF.Spreadsheet.Tests/   # NUnit unit test suite (155+ automated tests)
 │   ├── SpreadsheetSampleExplorer/           # Interactive sample explorer showcasing all features and benchmarks
 │   └── DevBrewLabs.WPF.Spreadsheet.sln      # Main Visual Studio Solution
 ├── docs/
