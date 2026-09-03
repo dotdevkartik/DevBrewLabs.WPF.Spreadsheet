@@ -1,4 +1,4 @@
-﻿using DevBrewLabs.Spreadsheet.Styling;
+using DevBrewLabs.Spreadsheet.Styling;
 
 namespace DevBrewLabs.Spreadsheet
 {
@@ -8,6 +8,7 @@ namespace DevBrewLabs.Spreadsheet
         /// Adds a new named style object.
         /// </summary>
         /// <param name="name"></param>
+        /// <param name="style"></param>
         /// <returns></returns>
         void AddNamedStyle(string name, CellStyle style);
         /// <summary>

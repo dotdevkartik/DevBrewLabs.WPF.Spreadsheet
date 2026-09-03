@@ -5,6 +5,7 @@ using DevBrewLabs.WPF.Spreadsheet.Elements;
 using DevBrewLabs.WPF.Spreadsheet.Enums;
 using DevBrewLabs.WPF.Spreadsheet.Rendering;
 using DevBrewLabs.WPF.Spreadsheet.Rendering.Text;
+using DevBrewLabs.WPF.Spreadsheet.Styling;
 using DevBrewLabs.WPF.Spreadsheet.UI.Editors;
 using System;
 using System.Collections.Generic;
@@ -180,13 +181,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
             checkGeometry.Freeze();
 
             var markBrush = CheckMarkBrush ?? SheetUtils.CheckBoxCheckMarkBrush;
-            var markPen = new Pen(markBrush, Math.Max(1.4, 1.8 * zoom))
-            {
-                StartLineCap = PenLineCap.Round,
-                EndLineCap = PenLineCap.Round,
-                LineJoin = PenLineJoin.Round
-            };
-            if (markPen.CanFreeze) markPen.Freeze();
+            var markPen = WpfResourceCache.GetPen(markBrush, Math.Max(1.4, 1.8 * zoom), PenLineCap.Round, PenLineJoin.Round);
 
             renderContext.DrawGeometry(null, markPen, checkGeometry);
         }
@@ -205,12 +200,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
             dashGeometry.Freeze();
 
             var markBrush = CheckMarkBrush ?? SheetUtils.CheckBoxCheckMarkBrush;
-            var dashPen = new Pen(markBrush, Math.Max(1.5, 2.0 * zoom))
-            {
-                StartLineCap = PenLineCap.Round,
-                EndLineCap = PenLineCap.Round
-            };
-            if (dashPen.CanFreeze) dashPen.Freeze();
+            var dashPen = WpfResourceCache.GetPen(markBrush, Math.Max(1.5, 2.0 * zoom), PenLineCap.Round, PenLineJoin.Round);
 
             renderContext.DrawGeometry(null, dashPen, dashGeometry);
         }

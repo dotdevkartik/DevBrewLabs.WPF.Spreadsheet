@@ -1,3 +1,4 @@
+using System;
 using DevBrewLabs.Spreadsheet;
 using DevBrewLabs.WPF.Spreadsheet.Rendering.Text;
 using System.Collections.Generic;
@@ -11,6 +12,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Styling
     {
         private static readonly Dictionary<DrawingColor, Brush> _brushCache = new Dictionary<DrawingColor, Brush>();
         private static readonly Dictionary<DrawingPen, Pen> _penCache = new Dictionary<DrawingPen, Pen>();
+        private static readonly Dictionary<BrushPenKey, Pen> _brushPenCache = new Dictionary<BrushPenKey, Pen>();
         private static readonly Dictionary<FontCacheKey, WpfFontResources> _fontCache = new Dictionary<FontCacheKey, WpfFontResources>();
 
         public static Brush GetBrush(DrawingColor color)
@@ -35,13 +37,37 @@ namespace DevBrewLabs.WPF.Spreadsheet.Styling
             return pen;
         }
 
+        public static Pen GetPen(Brush brush, double thickness, PenLineCap lineCap = PenLineCap.Flat, PenLineJoin lineJoin = PenLineJoin.Miter)
+        {
+            if (brush == null) return null;
+            var key = new BrushPenKey(brush, thickness, lineCap, lineJoin);
+            if (!_brushPenCache.TryGetValue(key, out Pen pen))
+            {
+                pen = new Pen(brush, thickness)
+                {
+                    StartLineCap = lineCap,
+                    EndLineCap = lineCap,
+                    LineJoin = lineJoin
+                };
+                if (pen.CanFreeze) pen.Freeze();
+                _brushPenCache[key] = pen;
+            }
+            return pen;
+        }
+
         public static WpfFontResources GetFontResources(DrawingFontFamily fontFamily, DrawingFontWeight weight, DrawingFontStyle style)
         {
-            return GetFontResources(fontFamily.FamilyName, weight, style);
+            string familyName = fontFamily?.FamilyName;
+            if (string.IsNullOrEmpty(familyName))
+                familyName = "Segoe UI";
+            return GetFontResources(familyName, weight, style);
         }
 
         public static WpfFontResources GetFontResources(string fontFamily, DrawingFontWeight weight, DrawingFontStyle style)
         {
+            if (string.IsNullOrEmpty(fontFamily))
+                fontFamily = "Segoe UI";
+
             var key = new FontCacheKey(fontFamily, weight, style);
 
             if (!_fontCache.TryGetValue(key, out WpfFontResources resources))
@@ -95,6 +121,47 @@ namespace DevBrewLabs.WPF.Spreadsheet.Styling
                     return FontStyles.Oblique;
                 default:
                     return FontStyles.Normal;
+            }
+        }
+    }
+
+    internal readonly struct BrushPenKey : IEquatable<BrushPenKey>
+    {
+        public Brush Brush { get; }
+        public double Thickness { get; }
+        public PenLineCap LineCap { get; }
+        public PenLineJoin LineJoin { get; }
+
+        public BrushPenKey(Brush brush, double thickness, PenLineCap lineCap = PenLineCap.Flat, PenLineJoin lineJoin = PenLineJoin.Miter)
+        {
+            Brush = brush;
+            Thickness = thickness;
+            LineCap = lineCap;
+            LineJoin = lineJoin;
+        }
+
+        public bool Equals(BrushPenKey other)
+        {
+            return Equals(Brush, other.Brush) &&
+                   Thickness.Equals(other.Thickness) &&
+                   LineCap == other.LineCap &&
+                   LineJoin == other.LineJoin;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is BrushPenKey other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int hash = (Brush != null ? Brush.GetHashCode() : 0);
+                hash = (hash * 397) ^ Thickness.GetHashCode();
+                hash = (hash * 397) ^ (int)LineCap;
+                hash = (hash * 397) ^ (int)LineJoin;
+                return hash;
             }
         }
     }

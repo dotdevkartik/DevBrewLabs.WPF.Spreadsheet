@@ -1,4 +1,4 @@
-﻿using DevBrewLabs.WPF.Spreadsheet.Rendering;
+using DevBrewLabs.WPF.Spreadsheet.Rendering;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -8,8 +8,6 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 {
     internal abstract class InteractionLayer : Canvas
     {
-        private SurfaceBase _ownerRegion;
-
         protected SheetView SheetView { get; private set; }
 
         public InteractionLayer(SheetView view)

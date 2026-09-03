@@ -18,14 +18,18 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         private class TestWpfCommand : ICommand
         {
             public bool Executed { get; private set; }
-            public object ExecutedParameter { get; private set; }
+            public object? ExecutedParameter { get; private set; }
             public bool CanExecuteReturn { get; set; } = true;
 
-            public event EventHandler CanExecuteChanged;
+            public event EventHandler? CanExecuteChanged
+            {
+                add { }
+                remove { }
+            }
 
-            public bool CanExecute(object parameter) => CanExecuteReturn;
+            public bool CanExecute(object? parameter) => CanExecuteReturn;
 
-            public void Execute(object parameter)
+            public void Execute(object? parameter)
             {
                 Executed = true;
                 ExecutedParameter = parameter;

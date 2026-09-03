@@ -1,3 +1,4 @@
+using DevBrewLabs.Spreadsheet.Drawing;
 using System.Reflection;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -34,6 +35,13 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public static Brush CheckBoxPressedGlowBrush { get; }
         #endregion
 
+        #region ComboBox Defaults
+        public static Brush ComboBoxDropDownArrowBrush { get; }
+        public static Brush ComboBoxDropDownHoverArrowBrush { get; }
+        public static Brush ComboBoxDropDownHoverBackground { get; }
+        public static Brush ComboBoxDropDownPressedBackground { get; }
+        #endregion
+
         #region DatePicker Defaults
         public static Brush DatePickerIconBrush { get; }
         public static Pen DatePickerIconPen { get; }
@@ -68,6 +76,36 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public static Brush ButtonDisabledForegroundBrush { get; }
         #endregion
 
+        #region Hyperlink Defaults
+        public static Brush HyperlinkBrush { get; }
+        public static Brush HyperlinkHoverBrush { get; }
+        public static Brush HyperlinkVisitedBrush { get; }
+        public static Brush HyperlinkVisitedHoverBrush { get; }
+        #endregion
+
+        #region ProgressBar Defaults
+        public static Brush ProgressBarTrackBrush { get; }
+        public static Brush ProgressBarFillBrush { get; }
+        public static Brush ProgressBarSuccessBrush { get; }
+        public static Brush ProgressBarWarningBrush { get; }
+        public static Brush ProgressBarDangerBrush { get; }
+        public static Brush ProgressBarDarkTextBrush { get; }
+        public static Brush ProgressBarOverlayDarkTextBrush { get; }
+        #endregion
+
+        #region Sparkline Defaults
+        public static Brush SparklineSeriesBrush { get; }
+        public static Brush SparklineAreaBrush { get; }
+        public static Brush SparklineNegativeBrush { get; }
+        public static Brush SparklineHighPointBrush { get; }
+        public static Brush SparklineLowPointBrush { get; }
+        public static Brush SparklineFirstPointBrush { get; }
+        public static Brush SparklineLastPointBrush { get; }
+        public static Brush SparklineMarkerBrush { get; }
+        public static Brush SparklineAxisBrush { get; }
+        public static Pen SparklineAxisPen { get; }
+        #endregion
+
         static SheetUtils()
         {
             var assembly = Assembly.GetExecutingAssembly();
@@ -89,6 +127,12 @@ namespace DevBrewLabs.WPF.Spreadsheet
             CheckBoxCheckMarkBrush = Brushes.White;
             CheckBoxHoverGlowBrush = CreateFrozenBrush(Color.FromArgb(24, 16, 124, 65));
             CheckBoxPressedGlowBrush = CreateFrozenBrush(Color.FromArgb(50, 16, 124, 65));
+
+            // ComboBox Defaults
+            ComboBoxDropDownArrowBrush = CreateFrozenBrush(Color.FromRgb(100, 105, 115));
+            ComboBoxDropDownHoverArrowBrush = CreateFrozenBrush(Color.FromRgb(17, 24, 39));
+            ComboBoxDropDownHoverBackground = CreateFrozenBrush("#E5E7EB");
+            ComboBoxDropDownPressedBackground = CreateFrozenBrush("#D1D5DB");
 
             // DatePicker Defaults
             DatePickerIconBrush = CreateFrozenBrush(Color.FromRgb(100, 105, 115));
@@ -120,7 +164,35 @@ namespace DevBrewLabs.WPF.Spreadsheet
             ButtonDisabledBorderPen = CreateFrozenPen(ButtonDisabledBorderBrush, 1.0);
             ButtonForegroundBrush = CreateFrozenBrush("#111827");
             ButtonDisabledForegroundBrush = CreateFrozenBrush("#9CA3AF");
+
+            // Hyperlink Defaults (Excel standard: #0563C1, Deep Navy Hover: #002060, Followed: #954F72, Deep Plum Hover: #5A243F)
+            HyperlinkBrush = CreateFrozenBrush("#0563C1");
+            HyperlinkHoverBrush = CreateFrozenBrush("#002060");
+            HyperlinkVisitedBrush = CreateFrozenBrush("#954F72");
+            HyperlinkVisitedHoverBrush = CreateFrozenBrush("#5A243F");
+
+            // ProgressBar Defaults
+            ProgressBarTrackBrush = CreateFrozenBrush("#E5E7EB");
+            ProgressBarFillBrush = CreateFrozenBrush("#107C41");
+            ProgressBarSuccessBrush = CreateFrozenBrush("#107C41");
+            ProgressBarWarningBrush = CreateFrozenBrush("#F59E0B");
+            ProgressBarDangerBrush = CreateFrozenBrush("#EF4444");
+            ProgressBarDarkTextBrush = CreateFrozenBrush("#27272A");
+            ProgressBarOverlayDarkTextBrush = CreateFrozenBrush("#18181B");
+
+            // Sparkline Defaults
+            SparklineSeriesBrush = CreateFrozenBrush("#2563EB");
+            SparklineAreaBrush = CreateFrozenBrush(Color.FromArgb(40, 37, 99, 235));
+            SparklineNegativeBrush = CreateFrozenBrush("#EF4444");
+            SparklineHighPointBrush = CreateFrozenBrush("#107C41");
+            SparklineLowPointBrush = CreateFrozenBrush("#DC2626");
+            SparklineFirstPointBrush = CreateFrozenBrush("#6366F1");
+            SparklineLastPointBrush = CreateFrozenBrush("#0284C7");
+            SparklineMarkerBrush = CreateFrozenBrush("#1E293B");
+            SparklineAxisBrush = CreateFrozenBrush("#CBD5E1");
+            SparklineAxisPen = CreateFrozenPen(SparklineAxisBrush, 0.8);
         }
+
 
         #region Frozen Resource Helpers
 
@@ -144,13 +216,6 @@ namespace DevBrewLabs.WPF.Spreadsheet
             if (pen.CanFreeze) pen.Freeze();
             return pen;
         }
-
-        public static Pen CreateFrozenPen(Color color, double thickness)
-        {
-            var brush = CreateFrozenBrush(color);
-            return CreateFrozenPen(brush, thickness);
-        }
-
         #endregion
     }
 }

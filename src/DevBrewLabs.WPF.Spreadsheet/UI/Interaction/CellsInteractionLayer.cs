@@ -3,6 +3,7 @@ using DevBrewLabs.Spreadsheet.Utils;
 using DevBrewLabs.WPF.Spreadsheet.CellTypes;
 using DevBrewLabs.WPF.Spreadsheet.Enums;
 using DevBrewLabs.WPF.Spreadsheet.Rendering;
+using DevBrewLabs.WPF.Spreadsheet.Styling;
 using DevBrewLabs.WPF.Spreadsheet.UI.Editors;
 using DevBrewLabs.WPF.Spreadsheet.UI.Managers;
 using System;
@@ -766,7 +767,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             context.DrawRectangle(SheetView.Spread.SelectionBorderPen.Brush, null, handleRect);
 
             // Give the handle a subtle white border so it pops out over the grid lines
-            context.DrawRectangle(null, new Pen(Brushes.White, 1), handleRect);
+            context.DrawRectangle(null, WpfResourceCache.GetPen(Brushes.White, 1), handleRect);
 
             context.Dispose();
         }

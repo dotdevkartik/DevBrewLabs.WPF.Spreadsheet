@@ -13,7 +13,6 @@ namespace DevBrewLabs.Spreadsheet
         private int _rowCount;
         private int _columnCount;
         private Worksheet _workSheet;
-        private CellRange _cellRange;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private readonly Dictionary<long, Cell> _cellCollection;

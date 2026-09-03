@@ -230,7 +230,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
             bool startingFired = false;
             bool endingFired = false;
             bool endedFired = false;
-            object endingNewValue = null;
+            object? endingNewValue = null;
 
             spread.CellEditStarting += (s, e) =>
             {

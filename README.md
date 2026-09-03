@@ -7,7 +7,7 @@
 <p align="center">
   <a href="https://dotnet.microsoft.com/"><img src="https://img.shields.io/badge/.NET-10.0_%7C_9.0_%7C_8.0_%7C_4.7.2-512BD4.svg?style=flat-square&logo=dotnet" alt="Target Frameworks" /></a>
   <a href="https://dotnet.microsoft.com/"><img src="https://img.shields.io/badge/Platform-WPF-0078D7.svg?style=flat-square&logo=windows" alt="Platform WPF" /></a>
-  <a href="https://github.com/kartikdeepsagar/AlphaX.WPF.Sheets"><img src="https://img.shields.io/badge/Tests-125%20Passed-107C41.svg?style=flat-square" alt="Tests Status" /></a>
+  <a href="https://github.com/dotdevkartik/DevBrewLabs.WPF.Spreadsheet"><img src="https://img.shields.io/badge/Tests-158%20Passed-107C41.svg?style=flat-square" alt="Tests Status" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg?style=flat-square" alt="MIT License" /></a>
 </p>
 
@@ -24,7 +24,7 @@ This project solves those limitations by pairing a **platform-agnostic core data
 ### Key Highlights
 - **Engineered for Scale**: Block-allocated chunked arrays (`ChunkedArray<T>`) prevent Large Object Heap (LOH) fragmentation when hosting millions of data points.
 - **Immediate-Mode WPF Rendering**: Directly draws cells, borders, and text via `DrawingGroup` and `GlyphRun` pipelines rather than instantiating WPF visual tree elements.
-- **Interactive Cell Sub-Elements**: Full hit-testing and event routing for in-cell controls (buttons, rating stars, number spinners, checkboxes, date pickers) without WPF control tree penalties.
+- **Interactive Cell Sub-Elements**: Full hit-testing and event routing for in-cell controls (buttons, rating stars, number spinners, checkboxes, date pickers, dropdown lists) without WPF control tree penalties.
 - **Multi-Sheet Formula Dependency Graph**: Built-in formula engine with cross-sheet referencing, automatic dependency resolution, and real-time reactive recalculation.
 - **Clean Separation of Concerns**: Headless core (`DevBrewLabs.Spreadsheet`), calculation engine (`DevBrewLabs.Spreadsheet.CalcEngine`), and presentation layer (`DevBrewLabs.WPF.Spreadsheet`).
 
@@ -49,14 +49,17 @@ This project solves those limitations by pairing a **platform-agnostic core data
   - `TextCellType`: High-speed formatted text with alignment, multiline, and trimming options.
   - `NumberCellType`: Numeric formatting with integrated increment/decrement spinners and min/max limits.
   - `CheckBoxCellType`: Two-state and three-state interactive checkboxes.
+  - `ComboBoxCellType`: Dropdown selection lists with custom items source, display/value mappings, and search/selection popup.
   - `ButtonCellType`: Push buttons with hover/pressed states and command binding.
   - `DateCellType`: Formatted date rendering with interactive calendar picker popup dropdowns.
+  - `ProgressBarCellType`: Scaled progress bars with customizable track/fill brushes, percent labels, and dynamic auto-color thresholds.
+  - `HyperlinkCellType`: Interactive links with hover styling, Hand cursor, visited tracking, underline modes, and browser/command dispatch.
 - **Interactive Cell Sub-Elements (`CellElement`)**: Lightweight visual and clickable sub-elements inside cells with independent bounding boxes, hover states, mouse events, and cursor switching.
 - **Cell Merging & Spanning**: Arbitrary row and column span merging (`SpanManager`) with automatic layout recalculation and boundary clipping.
 - **Flyweight Style Architecture**: Style palette pooling (`StylePalette`) sharing brush and font definitions across millions of cells.
 
 ### ✏️ Editing, Selection & Workflow
-- **In-Place Editors**: Floating cell editors (`TextCellEditor`, `NumericCellEditor`, `DateCellEditor`) positioned precisely over active cells.
+- **In-Place Editors**: Floating cell editors (`TextCellEditor`, `NumericCellEditor`, `DateCellEditor`, `ComboBoxCellEditor`) positioned precisely over active cells.
 - **Formula Bar Component**: Standalone `FormulaTextBox` control that links to the active spreadsheet selection with formula autocompletion suggestions.
 - **Rich Selection Model**: Multi-cell range selection, whole-row/whole-column selection, range drag-and-drop, and Excel-style fill handle.
 - **Undo / Redo Stack**: Comprehensive `UndoRedoManager` tracking cell value changes, range pastes, dimension resizing, and span modifications.
@@ -377,7 +380,7 @@ public class ProgressBarCellType : BaseCellType
 │   ├── DevBrewLabs.Spreadsheet/             # Core platform-agnostic spreadsheet model (ChunkedArray, Styles, Spans, Data)
 │   ├── DevBrewLabs.Spreadsheet.CalcEngine/  # Multi-sheet formula evaluation, token parser, and dependency DAG graph
 │   ├── DevBrewLabs.WPF.Spreadsheet/         # Main WPF Spread control, DrawingGroup render engine, editors, and UI managers
-│   ├── DevBrewLabs.WPF.Spreadsheet.Tests/   # NUnit unit test suite (125+ automated tests)
+│   ├── DevBrewLabs.WPF.Spreadsheet.Tests/   # NUnit unit test suite (155+ automated tests)
 │   ├── SpreadsheetSampleExplorer/           # Interactive sample explorer showcasing all features and benchmarks
 │   └── DevBrewLabs.WPF.Spreadsheet.sln      # Main Visual Studio Solution
 ├── docs/

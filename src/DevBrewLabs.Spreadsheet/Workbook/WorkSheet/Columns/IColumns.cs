@@ -19,7 +19,7 @@ namespace DevBrewLabs.Spreadsheet
         /// <summary>
         /// Gets the column with specific column name.
         /// </summary>
-        /// <param name="columnName"></param>
+        /// <param name="address"></param>
         /// <returns></returns>
         IColumn this[string address] { get; }
         /// <summary>

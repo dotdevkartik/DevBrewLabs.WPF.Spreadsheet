@@ -1,5 +1,6 @@
 using DevBrewLabs.Spreadsheet;
 using DevBrewLabs.Spreadsheet.CalcEngine;
+using DevBrewLabs.Spreadsheet.Core;
 using DevBrewLabs.Spreadsheet.Formatters;
 using DevBrewLabs.WPF.Spreadsheet.CellTypes;
 using DevBrewLabs.WPF.Spreadsheet.Components;
@@ -74,7 +75,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             var formatter = workSheet.GetCellFormatter(editRow, editColumn, sheetRow, sheetColumn);
             var value = workSheet.GetValue(editRow, editColumn);
             var formula = workSheet.GetFormula(editRow, editColumn);
-            var formattedText = formatter?.Format(value) ?? value?.ToString() ?? string.Empty;
+            string formattedText = formatter?.Format(value) ?? value?.ToString() ?? string.Empty;
 
             var context = new EditorContext
             {
@@ -226,6 +227,12 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             {
                 if (newValue is string strVal)
                 {
+                    if (cellChangedAction.OldState.Value != null && 
+                        cellChangedAction.OldState.Value.Equals(DataTypeConverter.ConvertType(newValue)))
+                    {
+                        return true;
+                    }
+
                     workSheet.SetRawValue(row, col, strVal);
                 }
                 else

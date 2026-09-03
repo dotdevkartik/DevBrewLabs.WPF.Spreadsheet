@@ -19,6 +19,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
         void DrawGeometry(DrawingColor? color, DrawingPen? pen, Geometry geometry);
         void DrawGeometry(Brush brush, Pen pen, Geometry geometry);
+        void DrawEllipse(Brush brush, Pen pen, Point center, double radiusX, double radiusY);
         void DrawGlyphRun(DrawingColor color, GlyphRun glyphRun);
         void DrawGlyphRun(Brush brush, GlyphRun glyphRun);
         void DrawLine(DrawingPen pen, Point point0, Point point1);
@@ -26,7 +27,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
         void DrawRectangle(DrawingColor? color, DrawingPen? pen, Rect rect);
         void DrawRectangle(Brush color, Pen pen, Rect rect);
         void DrawRoundedRectangle(Brush brush, Pen pen, Rect rect, int radiusX, int radiusY);
-        void DrawText(string text, Rect bounds, DrawingFontFamily fontFamily, double fontSize, DrawingFontWeight fontWeight, DrawingFontStyle fontStyle, DrawingColor foreColor, CellHorizontalAlignment horizontalAlignment = CellHorizontalAlignment.Left, CellVerticalAlignment verticalAlignment = CellVerticalAlignment.Bottom, CellTextTrimming textTrimming = CellTextTrimming.None, bool allowMultiLineText = false);
+        void DrawText(string text, Rect bounds, DrawingFontFamily fontFamily, double fontSize, DrawingFontWeight fontWeight, DrawingFontStyle fontStyle, DrawingColor foreColor, CellHorizontalAlignment horizontalAlignment = CellHorizontalAlignment.Left, CellVerticalAlignment verticalAlignment = CellVerticalAlignment.Bottom, CellTextTrimming textTrimming = CellTextTrimming.None, bool allowMultiLineText = false, bool underline = false);
+        void DrawText(string text, Rect bounds, DrawingFontFamily fontFamily, double fontSize, DrawingFontWeight fontWeight, DrawingFontStyle fontStyle, Brush foreBrush, CellHorizontalAlignment horizontalAlignment = CellHorizontalAlignment.Left, CellVerticalAlignment verticalAlignment = CellVerticalAlignment.Bottom, CellTextTrimming textTrimming = CellTextTrimming.None, bool allowMultiLineText = false, bool underline = false);
         Rect GetCellRect(int row, int col);
         void Pop();
         void PushClip(Geometry clipGeometry);
@@ -68,7 +70,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
         public double PixelPerDip => SheetUtils.PixelPerDip;
         public double TextPadding { get; }
 
-        public RenderContext(DrawingContext context, SheetView view, double textPadding = 0)
+        public RenderContext(DrawingContext context, SheetView view, double textPadding = 5)
         {
             _drawingContext = context;
             View = view;
@@ -194,6 +196,13 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             _drawingContext.DrawRectangle(color, pen, rect);
         }
 
+        public void DrawEllipse(Brush brush, Pen pen, Point center, double radiusX, double radiusY)
+        {
+            if (_disposed || _drawingContext == null) return;
+
+            _drawingContext.DrawEllipse(brush, pen, center, radiusX, radiusY);
+        }
+
         public void DrawGlyphRun(DrawingColor color, GlyphRun glyphRun)
         {
             if (_disposed || _drawingContext == null) return;
@@ -219,7 +228,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             CellHorizontalAlignment horizontalAlignment = CellHorizontalAlignment.Left,
             CellVerticalAlignment verticalAlignment = CellVerticalAlignment.Bottom,
             CellTextTrimming textTrimming = CellTextTrimming.None,
-            bool allowMultiLineText = false)
+            bool allowMultiLineText = false,
+            bool underline = false)
         {
             if (_disposed || _drawingContext == null) return;
 
@@ -235,7 +245,40 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                 horizontalAlignment,
                 verticalAlignment,
                 textTrimming,
-                allowMultiLineText);
+                allowMultiLineText,
+                underline);
+        }
+
+        public void DrawText(
+            string text,
+            Rect bounds,
+            DrawingFontFamily fontFamily,
+            double fontSize,
+            DrawingFontWeight fontWeight,
+            DrawingFontStyle fontStyle,
+            Brush foreBrush,
+            CellHorizontalAlignment horizontalAlignment = CellHorizontalAlignment.Left,
+            CellVerticalAlignment verticalAlignment = CellVerticalAlignment.Bottom,
+            CellTextTrimming textTrimming = CellTextTrimming.None,
+            bool allowMultiLineText = false,
+            bool underline = false)
+        {
+            if (_disposed || _drawingContext == null) return;
+
+            TextRenderer.DrawText(
+                this,
+                text,
+                bounds,
+                fontFamily,
+                fontSize,
+                fontWeight,
+                fontStyle,
+                foreBrush,
+                horizontalAlignment,
+                verticalAlignment,
+                textTrimming,
+                allowMultiLineText,
+                underline);
         }
 
         public void DrawLine(DrawingPen pen, Point point0, Point point1)

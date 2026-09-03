@@ -1,7 +1,9 @@
 using DevBrewLabs.Spreadsheet;
 using DevBrewLabs.Spreadsheet.Drawing;
 using DevBrewLabs.Spreadsheet.Utils;
+using System;
 using System.Windows;
+using System.Windows.Media;
 
 namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
 {
@@ -15,11 +17,12 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
             double fontSize,
             DrawingFontWeight fontWeight,
             DrawingFontStyle fontStyle,
-            DrawingColor foreColor,
+            Brush foreBrush,
             CellHorizontalAlignment horizontalAlignment = CellHorizontalAlignment.Left,
             CellVerticalAlignment verticalAlignment = CellVerticalAlignment.Bottom,
             CellTextTrimming textTrimming = CellTextTrimming.None,
-            bool allowMultiLineText = false)
+            bool allowMultiLineText = false,
+            bool underline = false)
         {
             if (string.IsNullOrEmpty(text))
                 return;
@@ -129,12 +132,51 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
                     
                     if (glyphRun != null)
                     {
-                        renderContext.DrawGlyphRun(foreColor, glyphRun);
+                        renderContext.DrawGlyphRun(foreBrush, glyphRun);
+                    }
+
+                    if (underline && layout.Width > 0)
+                    {
+                        double underlineY = PixelSnapper.Snap(baselineOrigin.Y + Math.Max(1.5, 2.0 * renderContext.ZoomFactor), renderContext.PixelPerDip);
+                        double penThickness = Math.Max(1.0, PixelSnapper.Snap(1.0 * renderContext.ZoomFactor, renderContext.PixelPerDip));
+                        var underlinePen = Styling.WpfResourceCache.GetPen(foreBrush, penThickness);
+                        renderContext.DrawLine(underlinePen, new Point(x, underlineY), new Point(x + layout.Width, underlineY));
                     }
                 }
 
                 currentY += layout.Height;
             }
+        }
+
+        public static void DrawText(
+            RenderContext renderContext,
+            string text,
+            Rect bounds,
+            DrawingFontFamily fontFamily,
+            double fontSize,
+            DrawingFontWeight fontWeight,
+            DrawingFontStyle fontStyle,
+            DrawingColor foreColor,
+            CellHorizontalAlignment horizontalAlignment = CellHorizontalAlignment.Left,
+            CellVerticalAlignment verticalAlignment = CellVerticalAlignment.Bottom,
+            CellTextTrimming textTrimming = CellTextTrimming.None,
+            bool allowMultiLineText = false,
+            bool underline = false)
+        {
+            DrawText(
+                renderContext,
+                text,
+                bounds,
+                fontFamily,
+                fontSize,
+                fontWeight,
+                fontStyle,
+                Styling.WpfResourceCache.GetBrush(foreColor),
+                horizontalAlignment,
+                verticalAlignment,
+                textTrimming,
+                allowMultiLineText,
+                underline);
         }
     }
 }
