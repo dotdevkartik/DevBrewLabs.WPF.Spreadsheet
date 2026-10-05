@@ -18,7 +18,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Commands
         public override void Execute(object parameter)
         {
             if (!(parameter is int sheetIndex)) return;
-            var sourceSheet = (Worksheet)Spread.WorkBook.WorkSheets[sheetIndex];
+            var sourceSheet = Spread.WorkBook.WorkSheets[sheetIndex];
             string baseName = $"{sourceSheet.Name} (Copy)";
             string newName = baseName;
             int counter = 2;
@@ -26,7 +26,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Commands
             {
                 try
                 {
-                    ((Worksheets)Spread.WorkBook.WorkSheets).VerifySheetName(newName);
+                    Spread.WorkBook.WorkSheets.VerifySheetName(newName);
                     break;
                 }
                 catch
@@ -34,7 +34,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Commands
                     newName = $"{baseName} {counter++}";
                 }
             }
-            var newSheet = (Worksheet)Spread.WorkBook.WorkSheets.AddSheet(newName);
+
+            var newSheet = Spread.WorkBook.WorkSheets.AddSheet(newName);
             newSheet.RowCount = sourceSheet.RowCount;
             newSheet.ColumnCount = sourceSheet.ColumnCount;
             newSheet.DefaultRowHeight = sourceSheet.DefaultRowHeight;

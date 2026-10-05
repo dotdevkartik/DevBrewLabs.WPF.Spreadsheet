@@ -33,7 +33,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
 
         public override void OnSpin(ISheetView view, int row, int col, SpinDirection direction)
         {
-            var worksheet = view?.WorkSheet as Worksheet;
+            var worksheet = view?.WorkSheet;
             if (worksheet == null) return;
 
             object currentObj = worksheet.GetValue(row, col);

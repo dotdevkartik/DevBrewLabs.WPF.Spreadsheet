@@ -123,7 +123,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         {
             var spread = new Spread();
             var sheetView = spread.Sheets.ActiveSheet;
-            var worksheet = (Worksheet)sheetView.WorkSheet;
+            var worksheet = sheetView.WorkSheet;
 
             var cellType = new CheckBoxCellType();
             worksheet.Columns[1].CellType = cellType;
@@ -143,7 +143,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         {
             var spread = new Spread();
             var sheetView = spread.Sheets.ActiveSheet;
-            var worksheet = (Worksheet)sheetView.WorkSheet;
+            var worksheet = sheetView.WorkSheet;
 
             var cellType = new CheckBoxCellType();
             worksheet.Columns[1].CellType = cellType;
@@ -162,7 +162,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         {
             var spread = new Spread();
             var sheetView = spread.Sheets.ActiveSheet;
-            var worksheet = (Worksheet)sheetView.WorkSheet;
+            var worksheet = sheetView.WorkSheet;
 
             var cellType = new CheckBoxCellType();
             worksheet.Columns[1].CellType = cellType;
@@ -187,7 +187,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         {
             var spread = new Spread();
             var sheetView = (SheetView)spread.Sheets.ActiveSheet;
-            var worksheet = (Worksheet)sheetView.WorkSheet;
+            var worksheet = sheetView.WorkSheet;
 
             var cellType = new CheckBoxCellType();
             worksheet.Columns[0].CellType = cellType;
@@ -221,7 +221,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         {
             var spread = new Spread();
             var sheetView = spread.Sheets.ActiveSheet;
-            var worksheet = (Worksheet)sheetView.WorkSheet;
+            var worksheet = sheetView.WorkSheet;
 
             var cellType = new CheckBoxCellType();
             worksheet.Columns[1].CellType = cellType;
@@ -266,7 +266,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         {
             var spread = new Spread();
             var sheetView = spread.Sheets.ActiveSheet;
-            var worksheet = (Worksheet)sheetView.WorkSheet;
+            var worksheet = sheetView.WorkSheet;
 
             var cellType = new CheckBoxCellType();
             worksheet.Columns[1].CellType = cellType;

@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace DevBrewLabs.Spreadsheet
 {
-    internal abstract class SheetDimensionCollection<T> : IDisposable where T : class
+    internal abstract class SheetDimensionCollection<T> : IDimensionCollection<T>, IDisposable where T : class
     {
         private SortedDictionary<int, T> _collection;
 

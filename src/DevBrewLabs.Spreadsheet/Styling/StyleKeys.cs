@@ -1,6 +1,6 @@
 namespace DevBrewLabs.Spreadsheet
 {
-    internal static class StyleKeys
+    public static class StyleKeys
     {
         public static string DefaultRowHeaderStyleKey => "Default_Row_Header_Style";
         public static string DefaultColumnHeaderStyleKey => "Default_Column_Header_Style";

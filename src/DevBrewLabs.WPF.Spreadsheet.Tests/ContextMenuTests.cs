@@ -205,7 +205,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         {
             var spread = new Spread();
             var sheetView = (SheetView)spread.Sheets.ActiveSheet;
-            var ws = (Worksheet)spread.WorkBook.WorkSheets.ActiveSheet;
+            var ws = spread.WorkBook.WorkSheets.ActiveSheet;
 
             spread.SelectRow(2);
             var menu = spread.ContextMenuManager.CreateRowHeaderContextMenu(sheetView);
@@ -224,7 +224,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         {
             var spread = new Spread();
             var sheetView = (SheetView)spread.Sheets.ActiveSheet;
-            var ws = (Worksheet)spread.WorkBook.WorkSheets.ActiveSheet;
+            var ws = spread.WorkBook.WorkSheets.ActiveSheet;
 
             spread.SelectColumn(1);
             var menu = spread.ContextMenuManager.CreateColumnHeaderContextMenu(sheetView);

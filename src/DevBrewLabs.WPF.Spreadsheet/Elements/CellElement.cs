@@ -81,10 +81,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.Elements
 
         private static BaseCellType GetCellType(ISheetView view, int row, int col)
         {
-            var worksheet = view?.WorkSheet as Worksheet;
+            var worksheet = view?.WorkSheet;
             if (worksheet == null) return null;
 
-            var columns = worksheet.Columns as Columns;
+            var columns = worksheet.Columns;
             var sheetColumn = columns?.GetItem(col);
             return (worksheet.GetCellType(row, col) ?? sheetColumn?.CellType) as BaseCellType;
         }

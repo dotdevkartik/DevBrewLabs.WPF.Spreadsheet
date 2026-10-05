@@ -397,8 +397,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
 
         private void UpdateValueFromMouse(SheetView sheetView, int row, int col, Point mousePoint)
         {
-            var worksheet = sheetView.WorkSheet as Worksheet;
-            var viewPort = sheetView.ViewPort as ViewPort;
+            var worksheet = sheetView.WorkSheet;
+            var viewPort = sheetView.ViewPort;
             if (worksheet == null || viewPort == null) return;
 
             var cellRect = viewPort.GetCellRect(row, col);

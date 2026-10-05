@@ -35,7 +35,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         private SheetViewHost _sheetViewHost;
         private SheetTabControl _sheetTabControl;
         private UndoRedoManager _undoRedoManager;
-        private Workbook _workBook;
+        private IWorkbook _workBook;
         private WorksheetChangeListener _changeListener;
 
         #region Dependency Properties
@@ -990,7 +990,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
                         break;
 
                     case Key.A:
-                        SelectionManager.SelectRange(activeSheetView,((Cells)activeSheetView.WorkSheet.Cells).AsCellRange());
+                        SelectionManager.SelectRange(activeSheetView, activeSheetView.WorkSheet.Cells.AsCellRange());
                         break;
 
                     case Key.V:

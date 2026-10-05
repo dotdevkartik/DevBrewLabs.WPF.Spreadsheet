@@ -138,7 +138,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void HyperlinkCellType_OnClick_FiresClickAndNavigateEvents()
         {
             var spread = new Spread();
-            var sheet = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var sheet = spread.WorkBook.WorkSheets[0];
             var cellType = new HyperlinkCellType { OpenUrlOnClick = false }; // Suppress actual browser launch
             sheet.SetCellType(0, 0, cellType);
             sheet.SetValue(0, 0, "https://github.com/dotdevkartik");
@@ -169,7 +169,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void HyperlinkCellType_OnClick_ExecutesCommand()
         {
             var spread = new Spread();
-            var sheet = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var sheet = spread.WorkBook.WorkSheets[0];
             var command = new TestWpfCommand();
             var cellType = new HyperlinkCellType
             {
@@ -193,7 +193,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void HyperlinkCellType_TrackVisited_MaintainsVisitedState()
         {
             var spread = new Spread();
-            var sheet = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var sheet = spread.WorkBook.WorkSheets[0];
             var cellType = new HyperlinkCellType { OpenUrlOnClick = false, TrackVisited = true };
             sheet.SetCellType(0, 0, cellType);
             sheet.SetValue(0, 0, "https://docs.devbrewlabs.com");
@@ -240,7 +240,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void HyperlinkElement_GetBounds_ConstrainedToText_NotFullCell()
         {
             var spread = new Spread();
-            var sheet = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var sheet = spread.WorkBook.WorkSheets[0];
             var cellType = new HyperlinkCellType { OpenUrlOnClick = false };
             sheet.SetCellType(0, 0, cellType);
             sheet.SetValue(0, 0, "Link");

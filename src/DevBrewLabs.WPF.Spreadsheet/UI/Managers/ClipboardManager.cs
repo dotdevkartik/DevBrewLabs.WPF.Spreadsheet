@@ -65,7 +65,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 {
                     for (int c = 0; c < range.ColumnCount; c++)
                     {
-                        var ws = (Worksheet)concreteSheetView.WorkSheet;
+                        var ws = concreteSheetView.WorkSheet;
                         ws.SetValue(range.TopRow + r, range.LeftColumn + c, null);
                         ws.SetFormula(range.TopRow + r, range.LeftColumn + c, null);
                     }

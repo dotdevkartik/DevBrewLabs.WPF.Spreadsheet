@@ -92,7 +92,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         {
             var spread = new Spread();
             var sheetView = spread.Sheets.ActiveSheet;
-            var worksheet = (Worksheet)sheetView.WorkSheet;
+            var worksheet = sheetView.WorkSheet;
 
             var cellType = new NumberCellType { ShowSpinners = true, Step = 5, Minimum = 0, Maximum = 100 };
             worksheet.Columns[1].CellType = cellType;
@@ -109,7 +109,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         {
             var spread = new Spread();
             var sheetView = spread.Sheets.ActiveSheet;
-            var worksheet = (Worksheet)sheetView.WorkSheet;
+            var worksheet = sheetView.WorkSheet;
 
             var cellType = new NumberCellType { ShowSpinners = true, Step = 5, Minimum = 0, Maximum = 100 };
             worksheet.Columns[1].CellType = cellType;
@@ -126,7 +126,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         {
             var spread = new Spread();
             var sheetView = spread.Sheets.ActiveSheet;
-            var worksheet = (Worksheet)sheetView.WorkSheet;
+            var worksheet = sheetView.WorkSheet;
 
             var cellType = new NumberCellType { ShowSpinners = true, Step = 5, Minimum = 0, Maximum = 22, SpinWrap = false };
             worksheet.Columns[1].CellType = cellType;
@@ -143,7 +143,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         {
             var spread = new Spread();
             var sheetView = spread.Sheets.ActiveSheet;
-            var worksheet = (Worksheet)sheetView.WorkSheet;
+            var worksheet = sheetView.WorkSheet;
 
             var cellType = new NumberCellType { ShowSpinners = true, Step = 5, Minimum = 18, Maximum = 100, SpinWrap = false };
             worksheet.Columns[1].CellType = cellType;
@@ -160,7 +160,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         {
             var spread = new Spread();
             var sheetView = spread.Sheets.ActiveSheet;
-            var worksheet = (Worksheet)sheetView.WorkSheet;
+            var worksheet = sheetView.WorkSheet;
 
             var cellType = new NumberCellType { ShowSpinners = true, Step = 5, Minimum = 0, Maximum = 20, SpinWrap = true };
             worksheet.Columns[1].CellType = cellType;
@@ -177,7 +177,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         {
             var spread = new Spread();
             var sheetView = spread.Sheets.ActiveSheet;
-            var worksheet = (Worksheet)sheetView.WorkSheet;
+            var worksheet = sheetView.WorkSheet;
 
             var cellType = new NumberCellType { ShowSpinners = true, Step = 5, Minimum = 0, Maximum = 20, SpinWrap = true };
             worksheet.Columns[1].CellType = cellType;
@@ -194,7 +194,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         {
             var spread = new Spread();
             var sheetView = spread.Sheets.ActiveSheet;
-            var worksheet = (Worksheet)sheetView.WorkSheet;
+            var worksheet = sheetView.WorkSheet;
 
             var cellType = new NumberCellType { ShowSpinners = true, Step = 1, Minimum = 0, Maximum = 10 };
             worksheet.Columns[1].CellType = cellType;
@@ -242,7 +242,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         {
             var spread = new Spread();
             var sheetView = spread.Sheets.ActiveSheet;
-            var worksheet = (Worksheet)sheetView.WorkSheet;
+            var worksheet = sheetView.WorkSheet;
 
             var cellType = new NumberCellType { ShowSpinners = true, Step = 10, Minimum = -100, Maximum = 100 };
             worksheet.Columns[1].CellType = cellType;

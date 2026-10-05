@@ -31,6 +31,11 @@ namespace DevBrewLabs.Spreadsheet
             _workSheet = parent.WorkSheet;
         }
 
+        public CellRange AsCellRange()
+        {
+            return new CellRange(Row, Column);
+        }
+
         public void Dispose()
         {
             Value = null;

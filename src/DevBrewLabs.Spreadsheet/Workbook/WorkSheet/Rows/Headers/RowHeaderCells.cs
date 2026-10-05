@@ -334,5 +334,10 @@ namespace DevBrewLabs.Spreadsheet
         {
             return _rowHeaders.IsCovered(row, column);
         }
+
+        public CellRange AsCellRange()
+        {
+            return new CellRange(Row, Column, RowCount, ColumnCount);
+        }
     }
 }

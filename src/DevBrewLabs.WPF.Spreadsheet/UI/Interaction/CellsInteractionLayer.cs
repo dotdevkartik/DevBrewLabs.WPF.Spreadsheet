@@ -370,7 +370,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                     {
                         for (int column = SheetView.Selection.LeftColumn; column <= SheetView.Selection.RightColumn; column++)
                         {
-                            var ws = (Worksheet)SheetView.WorkSheet;
+                            var ws = SheetView.WorkSheet;
                             ws.SetValue(row, column, null);
                             ws.SetFormula(row, column, null);
                         }
@@ -387,10 +387,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                     if (editingManager.IsEditing)
                         return;
 
-                    var activeWs = SheetView.WorkSheet as Worksheet;
+                    var activeWs = SheetView.WorkSheet;
                     if (activeWs != null)
                     {
-                        var activeColItem = ((Columns)activeWs.Columns)?.GetItem(SheetView.ActiveColumn);
+                        var activeColItem = activeWs.Columns?.GetItem(SheetView.ActiveColumn);
                         var activeType = (activeWs.GetCellType(SheetView.ActiveRow, SheetView.ActiveColumn) ?? activeColItem?.CellType) as CheckBoxCellType;
                         if (activeType != null)
                         {
@@ -425,11 +425,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
         private void ToggleSelectedCheckBoxes()
         {
             var sheetView = SheetView;
-            var worksheet = sheetView?.WorkSheet as Worksheet;
+            var worksheet = sheetView?.WorkSheet;
             if (worksheet == null) return;
 
-            var columns = worksheet.Columns as Columns;
-            var rows = worksheet.Rows as Rows;
+            var columns = worksheet.Columns;
+            var rows = worksheet.Rows;
             var selection = sheetView.Selection;
 
             var compositeAction = new CompositeSheetAction();

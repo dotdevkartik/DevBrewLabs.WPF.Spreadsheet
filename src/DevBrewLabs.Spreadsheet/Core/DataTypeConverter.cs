@@ -2,7 +2,7 @@ using System;
 
 namespace DevBrewLabs.Spreadsheet.Core
 {
-    internal class DataTypeConverter
+    public class DataTypeConverter
     {
         public static object ConvertType(object value)
         {

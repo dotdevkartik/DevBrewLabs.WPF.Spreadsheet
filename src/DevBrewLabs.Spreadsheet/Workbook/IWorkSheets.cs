@@ -80,5 +80,6 @@ namespace DevBrewLabs.Spreadsheet
         /// <param name="index"></param>
         /// <returns></returns>
         IWorksheet GetSheet(int index);
+        void VerifySheetName(string name, IWorksheet currentSheet = null);
     }
 }
