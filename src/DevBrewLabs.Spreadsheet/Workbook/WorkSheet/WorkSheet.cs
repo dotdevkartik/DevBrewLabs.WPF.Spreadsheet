@@ -454,15 +454,13 @@ namespace DevBrewLabs.Spreadsheet
             var colData = _dataStore.GetColumnData(column, true);
             colData.SetRowSpan(dataRow, rowSpan);
 
-            if (rowSpan > 1)
+            _spanManager.RemoveSpan(row, column);
+
+            int colSpan = Math.Max(1, GetColumnSpan(row, column));
+            if (rowSpan > 1 || colSpan > 1)
             {
-                int colSpan = Math.Max(1, GetColumnSpan(row, column));
-                _spanManager.AddSpan(row, column, rowSpan, colSpan);
-                ClearCoveredCells(row, column, rowSpan, colSpan);
-            }
-            else
-            {
-                _spanManager.RemoveSpan(row, column);
+                _spanManager.AddSpan(row, column, Math.Max(1, rowSpan), colSpan);
+                ClearCoveredCells(row, column, Math.Max(1, rowSpan), colSpan);
             }
         }
 
@@ -484,15 +482,13 @@ namespace DevBrewLabs.Spreadsheet
             var colData = _dataStore.GetColumnData(column, true);
             colData.SetColumnSpan(dataRow, columnSpan);
 
-            if (columnSpan > 1)
+            _spanManager.RemoveSpan(row, column);
+
+            int rowSpan = Math.Max(1, GetRowSpan(row, column));
+            if (columnSpan > 1 || rowSpan > 1)
             {
-                int rowSpan = Math.Max(1, GetRowSpan(row, column));
-                _spanManager.AddSpan(row, column, rowSpan, columnSpan);
-                ClearCoveredCells(row, column, rowSpan, columnSpan);
-            }
-            else
-            {
-                _spanManager.RemoveSpan(row, column);
+                _spanManager.AddSpan(row, column, rowSpan, Math.Max(1, columnSpan));
+                ClearCoveredCells(row, column, rowSpan, Math.Max(1, columnSpan));
             }
         }
 
@@ -501,6 +497,7 @@ namespace DevBrewLabs.Spreadsheet
             if (rowCount <= 1 && columnCount <= 1)
                 return;
 
+            _spanManager.RemoveSpan(row, column);
             _spanManager.AddSpan(row, column, rowCount, columnCount);
 
             int dataRow = _dataStore.GetDataRowIndex(row);
@@ -651,16 +648,18 @@ namespace DevBrewLabs.Spreadsheet
         {
             if (string.IsNullOrEmpty(value))
             {
-                Cells[row, column].Value = null;
+                SetFormula(row, column, null);
+                SetValue(row, column, null);
                 return;
             }
 
             if (value.StartsWith("="))
             {
-                Cells[row, column].Formula = value;
+                SetFormula(row, column, value);
             }
             else
             {
+                SetFormula(row, column, null);
                 SetValue(row, column, DataTypeConverter.ConvertType(value));
             }
         }
@@ -1049,26 +1048,31 @@ namespace DevBrewLabs.Spreadsheet
 
                     if (result != null && result.Kind == CalcValueKind.Error)
                     {
-                        switch (((Error)result.Value).Code)
+                        if (result.Value is Error evalisError)
                         {
-                            case ErrorCode.Value:
-                                return "#VALUE!";
+                            switch (evalisError.Code)
+                            {
+                                case ErrorCode.Value:
+                                    return "#VALUE!";
 
-                            case ErrorCode.DivideByZero:
-                                return "#DIV/0!";
+                                case ErrorCode.DivideByZero:
+                                    return "#DIV/0!";
 
-                            case ErrorCode.Name:
-                                return "#NAME?";
+                                case ErrorCode.Name:
+                                    return "#NAME?";
 
-                            case ErrorCode.Null:
-                                return "#NULL!";
+                                case ErrorCode.Null:
+                                    return "#NULL!";
 
-                            case ErrorCode.Syntax:
-                                return "#SYNTAX!";
+                                case ErrorCode.Syntax:
+                                    return "#SYNTAX!";
 
-                            default:
-                                return "#N/A";
+                                default:
+                                    return "#N/A";
+                            }
                         }
+
+                        return result.Value?.ToString() ?? "#ERROR!";
                     }
 
                     return result?.Value;

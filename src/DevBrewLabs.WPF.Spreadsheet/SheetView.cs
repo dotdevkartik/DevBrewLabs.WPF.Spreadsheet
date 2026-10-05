@@ -124,8 +124,18 @@ namespace DevBrewLabs.WPF.Spreadsheet
             Spread.SuspendUpdates = true;
             try
             {
+                string[,] oldFormulas = new string[range.RowCount, range.ColumnCount];
+                for (int r = 0; r < range.RowCount; r++)
+                {
+                    for (int c = 0; c < range.ColumnCount; c++)
+                    {
+                        oldFormulas[r, c] = WorkSheet.GetFormula(range.TopRow + r, range.LeftColumn + c);
+                    }
+                }
+
                 var pasteAction = new ClipboardPasteAction { SheetView = this };
                 pasteAction.OldState.Value = WorkSheet.GetData(range.TopRow, range.LeftColumn, range.RowCount, range.ColumnCount);
+                pasteAction.OldState.Formulas = oldFormulas;
                 pasteAction.OldState.Row = range.TopRow;
                 pasteAction.OldState.Column = range.LeftColumn;
                 pasteAction.OldState.Selection = Selection.Clone();
@@ -143,6 +153,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
                 }
 
                 pasteAction.NewState.Value = emptyData;
+                pasteAction.NewState.Formulas = new string[range.RowCount, range.ColumnCount];
                 pasteAction.NewState.Row = range.TopRow;
                 pasteAction.NewState.Column = range.LeftColumn;
                 pasteAction.NewState.Selection = Selection.Clone();
@@ -377,7 +388,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
 
             for (int row = 0; row < cellsData.GetLength(0); row++)
             {
-                object value = cellsData[row, column];
+                object value = cellsData[row, 0];
 
                 if(value == null)
                 {

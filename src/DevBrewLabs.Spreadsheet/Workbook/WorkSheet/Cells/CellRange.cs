@@ -210,8 +210,7 @@ namespace DevBrewLabs.Spreadsheet
 
         public bool Intersects(CellRange range)
         {
-            return TopRow <= range.TopRow || BottomRow >= range.BottomRow
-                || LeftColumn <= range.LeftColumn || RightColumn >= range.RightColumn;
+            return IntersectsWith(range);
         }
 
         public bool IntersectsWith(CellRange range)

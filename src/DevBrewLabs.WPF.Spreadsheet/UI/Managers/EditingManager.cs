@@ -218,6 +218,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
             var workSheet = view.WorkSheet;
             var cellChangedAction = new CellChangedAction { SheetView = view };
+            cellChangedAction.OldState.Formula = workSheet.GetFormula(row, col);
             cellChangedAction.OldState.Value = workSheet.GetValue(row, col);
             cellChangedAction.OldState.Row = row;
             cellChangedAction.OldState.Column = col;
@@ -228,7 +229,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             {
                 if (newValue is string strVal)
                 {
-                    if (cellChangedAction.OldState.Value != null && 
+                    if (string.IsNullOrEmpty(cellChangedAction.OldState.Formula) &&
+                        !strVal.StartsWith("=") &&
+                        cellChangedAction.OldState.Value != null && 
                         cellChangedAction.OldState.Value.Equals(DataTypeConverter.ConvertType(newValue)))
                     {
                         valueChanged = false;
@@ -271,6 +274,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 if (view.AutoSizeColumns)
                     view.AutoSizeColumn(col);
 
+                cellChangedAction.NewState.Formula = workSheet.GetFormula(row, col);
                 cellChangedAction.NewState.Value = workSheet.GetValue(row, col);
                 cellChangedAction.NewState.Row = row;
                 cellChangedAction.NewState.Column = col;

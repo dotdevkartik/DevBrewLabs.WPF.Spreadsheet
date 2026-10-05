@@ -67,6 +67,11 @@ namespace DevBrewLabs.Spreadsheet
                 return null;
         }
 
+        internal bool RemoveItem(int index)
+        {
+            return _collection != null && _collection.Remove(index);
+        }
+
         /// <summary>
         /// Adds a new item of type T at the provided index.
         /// </summary>

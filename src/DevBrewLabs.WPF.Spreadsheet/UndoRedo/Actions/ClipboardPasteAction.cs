@@ -25,6 +25,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         private void Execute(CellEditState state)
         {
             var data = (object[,])state.Value;
+            var formulas = state.Formulas;
 
             SheetView.Spread.SuspendUpdates = true;
 
@@ -32,8 +33,34 @@ namespace DevBrewLabs.WPF.Spreadsheet
             {
                 for (int column = 0; column < data.GetLength(1); column++)
                 {
-                    var value = data[row, column];
-                    SheetView.WorkSheet.SetValue(state.Row + row, state.Column + column, value);
+                    int r = state.Row + row;
+                    int c = state.Column + column;
+                    string formula = formulas != null ? formulas[row, column] : null;
+
+                    if (!string.IsNullOrEmpty(formula))
+                    {
+                        SheetView.WorkSheet.SetFormula(r, c, formula);
+                    }
+                    else
+                    {
+                        SheetView.WorkSheet.SetFormula(r, c, null);
+                        var value = data[row, column];
+                        if (value is string strVal)
+                        {
+                            try
+                            {
+                                SheetView.WorkSheet.SetRawValue(r, c, strVal);
+                            }
+                            catch
+                            {
+                                SheetView.WorkSheet.SetValue(r, c, strVal);
+                            }
+                        }
+                        else
+                        {
+                            SheetView.WorkSheet.SetValue(r, c, value);
+                        }
+                    }
                 }
             }
 

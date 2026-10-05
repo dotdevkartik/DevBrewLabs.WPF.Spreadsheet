@@ -488,6 +488,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
                 if (index <= 0)
                     return 0;
 
+                if (_items == null || !_items.HasItems)
+                {
+                    return index * _defaultSize();
+                }
+
                 EnsureCapacity(index + 1);
 
                 while (_lastCalculated < index)
@@ -529,21 +534,19 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
                     _locations[0] = 0;
             }
 
-            private void EnsureCapacity(int requiredCapacity = 0)
+            private void EnsureCapacity(int requiredCapacity)
             {
-                int count = Math.Max(_count() + 1, requiredCapacity);
-
                 if (_locations == null)
                 {
-                    _locations = new double[Math.Max(16, count)];
+                    _locations = new double[Math.Max(16, requiredCapacity)];
                 }
 
-                if (_locations.Length >= count)
+                if (_locations.Length >= requiredCapacity)
                     return;
 
                 int size = _locations.Length;
 
-                while (size < count)
+                while (size < requiredCapacity)
                     size *= 2;
 
                 Array.Resize(ref _locations, size);

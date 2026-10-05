@@ -8,5 +8,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public int Column { get; set; }
         public CellRange Selection { get; set; }
         public object Value { get; set; }
+        public string Formula { get; set; }
+        public string[,] Formulas { get; set; }
     }
 }
