@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DevBrewLabs.WPF.Spreadsheet\DevBrewLabs.WPF.Spreadsheet.csproj" />
+    <ProjectReference Include="..\DevBrewLabs.Spreadsheet\DevBrewLabs.Spreadsheet.csproj" />
   </ItemGroup>
 
 </Project>
