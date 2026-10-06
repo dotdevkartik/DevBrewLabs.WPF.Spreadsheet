@@ -1,15 +1,11 @@
 # DevBrewLabs.Spreadsheet
 
-<p align="center">
-  <b>A high-performance, virtualized WPF spreadsheet and calculation engine built for massive scale, rich cell interactions, and deep extensibility.</b>
-</p>
+> **A high-performance, virtualized WPF spreadsheet and calculation engine built for massive scale, rich cell interactions, and deep extensibility.**
 
-<p align="center">
-  <a href="https://dotnet.microsoft.com/"><img src="https://img.shields.io/badge/.NET-10.0_%7C_9.0_%7C_8.0_%7C_4.7.2-512BD4.svg?style=flat-square&logo=dotnet" alt="Target Frameworks" /></a>
-  <a href="https://dotnet.microsoft.com/"><img src="https://img.shields.io/badge/Platform-WPF-0078D7.svg?style=flat-square&logo=windows" alt="Platform WPF" /></a>
-  <a href="https://github.com/dotdevkartik/DevBrewLabs.WPF.Spreadsheet"><img src="https://img.shields.io/badge/Tests-158%20Passed-107C41.svg?style=flat-square" alt="Tests Status" /></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg?style=flat-square" alt="MIT License" /></a>
-</p>
+![Target Frameworks](https://img.shields.io/badge/.NET-10.0_%7C_9.0_%7C_8.0_%7C_4.7.2-512BD4?style=flat-square&logo=dotnet)
+![Platform WPF](https://img.shields.io/badge/Platform-WPF-0078D7?style=flat-square&logo=windows)
+![Tests Status](https://img.shields.io/badge/Tests-185%20Passed-107C41?style=flat-square)
+[![MIT License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](https://github.com/dotdevkartik/DevBrewLabs.WPF.Spreadsheet/blob/main/LICENSE)
 
 ---
 
@@ -19,7 +15,7 @@
 
 This project solves those limitations by pairing a **platform-agnostic core data engine** with an **immediate-mode DirectWrite/GlyphRun WPF renderer**. It eliminates per-cell visual element overhead, allowing millions of cells to render, scroll, and recalculate with sub-second performance and smooth 60 FPS responsiveness.
 
-![DevBrewLabs.Spreadsheet Real-Time Financial Dashboard](docs/images/01_portfolio_dashboard.png)
+![DevBrewLabs.Spreadsheet Real-Time Financial Dashboard](https://raw.githubusercontent.com/dotdevkartik/DevBrewLabs.WPF.Spreadsheet/main/docs/images/01_portfolio_dashboard.png)
 
 ### Key Highlights
 - **Engineered for Scale**: Block-allocated chunked arrays (`ChunkedArray<T>`) prevent Large Object Heap (LOH) fragmentation when hosting millions of data points.
@@ -71,17 +67,17 @@ This project solves those limitations by pairing a **platform-agnostic core data
 
 | Real-Time Financial Dashboard | Interactive Cell Types & Elements |
 | :---: | :---: |
-| ![Portfolio Dashboard](docs/images/01_portfolio_dashboard.png) | ![Cell Types](docs/images/02_cell_types.png) |
+| ![Portfolio Dashboard](https://raw.githubusercontent.com/dotdevkartik/DevBrewLabs.WPF.Spreadsheet/main/docs/images/01_portfolio_dashboard.png) | ![Cell Types](https://raw.githubusercontent.com/dotdevkartik/DevBrewLabs.WPF.Spreadsheet/main/docs/images/02_cell_types.png) |
 | *Streaming live market updates, custom KPI cards, and trend formatters* | *Star ratings, action buttons, 3-state checkboxes, and spinners* |
 
 | Extreme Scale (1,000,000 Rows) | Multi-Sheet Formula Dependencies |
 | :---: | :---: |
-| ![Performance Benchmark](docs/images/05_performance_virtualization.png) | ![Multi-Sheet Formulas](docs/images/03_formulas_multisheet.png) |
+| ![Performance Benchmark](https://raw.githubusercontent.com/dotdevkartik/DevBrewLabs.WPF.Spreadsheet/main/docs/images/05_performance_virtualization.png) | ![Multi-Sheet Formulas](https://raw.githubusercontent.com/dotdevkartik/DevBrewLabs.WPF.Spreadsheet/main/docs/images/03_formulas_multisheet.png) |
 | *10,000,000 cells virtualized with sub-second engine load time* | *Cross-sheet formulas with real-time recalculation graph* |
 
 | Excel-Style AutoFilter | Hierarchical Spanning & Reporting |
 | :---: | :---: |
-| ![Excel-like AutoFilter](docs/images/04_autofilter.png) | ![Cell Spanning](docs/images/06_cell_spanning.png) |
+| ![Excel-like AutoFilter](https://raw.githubusercontent.com/dotdevkartik/DevBrewLabs.WPF.Spreadsheet/main/docs/images/04_autofilter.png) | ![Cell Spanning](https://raw.githubusercontent.com/dotdevkartik/DevBrewLabs.WPF.Spreadsheet/main/docs/images/06_cell_spanning.png) |
 | *Dynamic column header dropdown filtering and predicate evaluation* | *Multi-level merged headers and executive reporting structures* |
 
 ---
