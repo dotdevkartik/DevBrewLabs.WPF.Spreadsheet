@@ -33,10 +33,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
         {
             if (view == null) yield break;
 
-            var workSheet = view.WorkSheet as Worksheet;
+            var workSheet = view.WorkSheet;
             if (workSheet == null) yield break;
 
-            var columns = workSheet.Columns as Columns;
+            var columns = workSheet.Columns;
             var sheetColumn = columns?.GetItem(col);
 
             // 1. Sheet Features (e.g. AutoFilter header button)
@@ -90,14 +90,14 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
         {
             if (view == null) return null;
 
-            var workSheet = view.WorkSheet as Worksheet;
+            var workSheet = view.WorkSheet;
             if (workSheet == null) return null;
 
-            var viewPort = view.ViewPort as ViewPort;
+            var viewPort = view.ViewPort;
             if (viewPort == null) return null;
 
-            var rows = workSheet.Rows as Rows;
-            var columns = workSheet.Columns as Columns;
+            var rows = workSheet.Rows;
+            var columns = workSheet.Columns;
             if (rows == null || columns == null) return null;
 
             var viewRange = viewPort.ViewRange;

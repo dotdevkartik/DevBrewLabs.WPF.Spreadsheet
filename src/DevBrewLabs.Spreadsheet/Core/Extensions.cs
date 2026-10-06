@@ -46,15 +46,5 @@ namespace DevBrewLabs.Spreadsheet
             }
             return index - 1;
         }
-
-        public static CellRange AsCellRange(this Cells cells)
-        {
-            return new CellRange(cells.Row, cells.Column, cells.RowCount, cells.ColumnCount);
-        }
-
-        public static CellRange AsCellRange(this Cell cell)
-        {
-            return new CellRange(cell.Row, cell.Column);
-        }
     }
 }

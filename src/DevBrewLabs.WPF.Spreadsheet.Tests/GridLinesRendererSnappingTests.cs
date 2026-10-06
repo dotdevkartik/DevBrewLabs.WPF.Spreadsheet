@@ -118,7 +118,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         {
             var spread = new Spread();
             var activeSheet = (SheetView)spread.Sheets.ActiveSheet;
-            var worksheet = (Worksheet)activeSheet.WorkSheet;
+            var worksheet = activeSheet.WorkSheet;
 
             // Merge cells B2:D4 (rows 1..3, cols 1..3)
             worksheet.AddSpan(1, 1, 3, 3);
@@ -136,7 +136,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         {
             var spread = new Spread();
             var activeSheet = (SheetView)spread.Sheets.ActiveSheet;
-            var worksheet = (Worksheet)activeSheet.WorkSheet;
+            var worksheet = activeSheet.WorkSheet;
 
             // Hide row 2 and column 2
             worksheet.Rows[2].IsHidden = true;

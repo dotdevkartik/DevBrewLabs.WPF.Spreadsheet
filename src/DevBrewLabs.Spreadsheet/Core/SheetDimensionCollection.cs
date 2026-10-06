@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace DevBrewLabs.Spreadsheet
 {
-    internal abstract class SheetDimensionCollection<T> : IDisposable where T : class
+    internal abstract class SheetDimensionCollection<T> : IDimensionCollection<T>, IDisposable where T : class
     {
         private SortedDictionary<int, T> _collection;
 
@@ -65,6 +65,11 @@ namespace DevBrewLabs.Spreadsheet
             }
             else
                 return null;
+        }
+
+        internal bool RemoveItem(int index)
+        {
+            return _collection != null && _collection.Remove(index);
         }
 
         /// <summary>

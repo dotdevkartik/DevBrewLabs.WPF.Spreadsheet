@@ -41,7 +41,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void ComboBoxCellType_GetElements_ReturnsComboBoxDropDownButton()
         {
             var spread = new Spread();
-            var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var ws = spread.WorkBook.WorkSheets[0];
             var cellType = new ComboBoxCellType();
             ws.SetCellType(0, 0, cellType);
 
@@ -148,7 +148,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void ComboBoxCellEditor_StartEdit_SyncsSelectionAndValue()
         {
             var spread = new Spread();
-            var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var ws = spread.WorkBook.WorkSheets[0];
             var items = new[] { "North", "South", "East", "West" };
 
             var cellType = new ComboBoxCellType { ItemsSource = items };
@@ -178,7 +178,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void ComboBoxCellEditor_ComplexObject_CommitsSelectedValue()
         {
             var spread = new Spread();
-            var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var ws = spread.WorkBook.WorkSheets[0];
             var items = new List<PriorityItem>
             {
                 new PriorityItem { Id = 10, Name = "Bronze" },
@@ -240,7 +240,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void ComboBoxCellEditor_Typing_DoesNotAutoSelectOrMutateTypedText()
         {
             var spread = new Spread();
-            var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var ws = spread.WorkBook.WorkSheets[0];
             var items = new[] { "Banana Split", "Banana Bread", "Blueberry" };
 
             var cellType = new ComboBoxCellType { ItemsSource = items, IsEditable = true, ShowSuggestions = true };
@@ -263,7 +263,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void ComboBoxCellEditor_DirectTyping_InEditableMode_SavesCustomTypedValue()
         {
             var spread = new Spread();
-            var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var ws = spread.WorkBook.WorkSheets[0];
             var items = new[] { "Apple", "Banana", "Cherry" };
 
             var cellType = new ComboBoxCellType { ItemsSource = items, IsEditable = true };
@@ -286,7 +286,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void ComboBoxCellEditor_DirectTyping_InEditableMode_SavesMatchedItemValue()
         {
             var spread = new Spread();
-            var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var ws = spread.WorkBook.WorkSheets[0];
             var items = new List<PriorityItem>
             {
                 new PriorityItem { Id = 1, Name = "Low" },
@@ -354,7 +354,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void ComboBoxDropDownButton_OnClick_BeginsEdit()
         {
             var spread = new Spread();
-            var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var ws = spread.WorkBook.WorkSheets[0];
             var cellType = new ComboBoxCellType { ItemsSource = new[] { "Alpha", "Beta" } };
             ws.SetCellType(0, 0, cellType);
 
@@ -369,7 +369,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void ComboBoxCellEditor_NonEditable_TypeAhead_JumpsToMatchingItem_WithoutFilteringList()
         {
             var spread = new Spread();
-            var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var ws = spread.WorkBook.WorkSheets[0];
             var items = new[] { "Alpha", "Beta", "Gamma", "Delta" };
 
             var cellType = new ComboBoxCellType { ItemsSource = items, IsEditable = false, ShowSuggestions = true };

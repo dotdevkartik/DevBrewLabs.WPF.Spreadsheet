@@ -256,13 +256,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
             var sheetView = view as SheetView;
             if (sheetView == null) return false;
 
-            var worksheet = sheetView.WorkSheet as Worksheet;
+            var worksheet = sheetView.WorkSheet;
             if (worksheet == null) return false;
 
-            var columns = worksheet.Columns as Columns;
-            var rows = worksheet.Rows as Rows;
-            var sheetCol = columns?.GetItem(col);
-            var sheetRow = rows?.GetItem(row);
+            var sheetCol = worksheet.Columns?.GetItem(col);
+            var sheetRow = worksheet.Rows?.GetItem(row);
 
             bool locked = worksheet.GetLocked(row, col) ||
                 (sheetRow != null && sheetRow.Locked) ||

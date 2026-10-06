@@ -1,6 +1,6 @@
 namespace DevBrewLabs.Spreadsheet
 {
-    public interface IRows
+    public interface IRows : IDimensionCollection<IRow>
     {
         /// <summary>
         /// Gets the row present at the provided index.

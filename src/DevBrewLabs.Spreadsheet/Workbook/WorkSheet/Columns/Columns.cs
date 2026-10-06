@@ -54,12 +54,12 @@ namespace DevBrewLabs.Spreadsheet
 
         public override void Insert(int index, int count)
         {
-            
+            throw new System.NotImplementedException("Column insertion is not yet implemented.");
         }
 
         public override void Remove(int index, int count)
         {
-            
+            throw new System.NotImplementedException("Column removal is not yet implemented.");
         }
     }
 }

@@ -286,8 +286,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Components
                 return;
 
             var sheet = _currentSheet.WorkSheet;
-            var columns = (Columns)sheet.Columns;
-            var rows = (Rows)sheet.Rows;
+            var columns = sheet.Columns;
+            var rows = sheet.Rows;
 
             double zoom = _currentSheet.ZoomFactor > 0 ? _currentSheet.ZoomFactor : 1.0;
 

@@ -65,7 +65,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 {
                     for (int c = 0; c < range.ColumnCount; c++)
                     {
-                        var ws = (Worksheet)concreteSheetView.WorkSheet;
+                        var ws = concreteSheetView.WorkSheet;
                         ws.SetValue(range.TopRow + r, range.LeftColumn + c, null);
                         ws.SetFormula(range.TopRow + r, range.LeftColumn + c, null);
                     }
@@ -173,8 +173,20 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
             try
             {
+                int pasteRows = data.GetLength(0);
+                int pasteCols = data.GetLength(1);
+                string[,] oldFormulas = new string[pasteRows, pasteCols];
+                for (int r = 0; r < pasteRows; r++)
+                {
+                    for (int c = 0; c < pasteCols; c++)
+                    {
+                        oldFormulas[r, c] = concreteSheetView.WorkSheet.GetFormula(activeRow + r, activeColumn + c);
+                    }
+                }
+
                 var pasteAction = new ClipboardPasteAction() { SheetView = concreteSheetView };
-                pasteAction.OldState.Value = concreteSheetView.WorkSheet.GetData(activeRow, activeColumn, data.GetLength(0), data.GetLength(1));
+                pasteAction.OldState.Value = concreteSheetView.WorkSheet.GetData(activeRow, activeColumn, pasteRows, pasteCols);
+                pasteAction.OldState.Formulas = oldFormulas;
                 pasteAction.OldState.Row = activeRow;
                 pasteAction.OldState.Column = activeColumn;
                 pasteAction.OldState.Selection = concreteSheetView.Selection.Clone();
@@ -209,7 +221,17 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
                 _spread.SelectionManager.SelectRange(sheetView, activeRow, activeColumn, data.GetLength(0), data.GetLength(1));
 
+                string[,] newFormulas = new string[pasteRows, pasteCols];
+                for (int r = 0; r < pasteRows; r++)
+                {
+                    for (int c = 0; c < pasteCols; c++)
+                    {
+                        newFormulas[r, c] = concreteSheetView.WorkSheet.GetFormula(activeRow + r, activeColumn + c);
+                    }
+                }
+
                 pasteAction.NewState.Value = data;
+                pasteAction.NewState.Formulas = newFormulas;
                 pasteAction.NewState.Row = activeRow;
                 pasteAction.NewState.Column = activeColumn;
                 pasteAction.NewState.Selection = concreteSheetView.Selection.Clone();
@@ -296,13 +318,12 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 {
                     return action();
                 }
-                catch (COMException) when (i < MaxClipboardRetries - 1)
+                catch (Exception ex) when (ex is COMException || ex is ExternalException)
                 {
-                    Thread.Sleep(ClipboardRetryDelayMs);
-                }
-                catch (ExternalException) when (i < MaxClipboardRetries - 1)
-                {
-                    Thread.Sleep(ClipboardRetryDelayMs);
+                    if (i < MaxClipboardRetries - 1)
+                    {
+                        Thread.Sleep(ClipboardRetryDelayMs);
+                    }
                 }
             }
             return default(T);
@@ -317,13 +338,12 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                     action();
                     return;
                 }
-                catch (COMException) when (i < MaxClipboardRetries - 1)
+                catch (Exception ex) when (ex is COMException || ex is ExternalException)
                 {
-                    Thread.Sleep(ClipboardRetryDelayMs);
-                }
-                catch (ExternalException) when (i < MaxClipboardRetries - 1)
-                {
-                    Thread.Sleep(ClipboardRetryDelayMs);
+                    if (i < MaxClipboardRetries - 1)
+                    {
+                        Thread.Sleep(ClipboardRetryDelayMs);
+                    }
                 }
             }
         }

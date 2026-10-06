@@ -421,15 +421,7 @@ Contributions are welcome! Whether you are optimizing low-level rendering perfor
 
 ## Roadmap
 
-- [x] Multi-sheet calculation engine with dependency graph
-- [x] Immediate-mode DirectWrite/GlyphRun text rendering
-- [x] In-cell interactive `CellElement` sub-elements and hit-testing
-- [x] Multi-range natural sorting and Excel-style AutoFilter
-- [x] Stack-based Undo/Redo manager
-- [ ] Excel OpenXML (.xlsx) import and export support
-- [ ] Conditional formatting rules engine (color scales, data bars, icon sets)
-- [ ] Cell comments and rich tooltip annotations
-- [ ] Built-in sparkline micro-charts
+For our versioned roadmap flow and upcoming release milestones, see [ROADMAP.md](ROADMAP.md).
 
 ---
 

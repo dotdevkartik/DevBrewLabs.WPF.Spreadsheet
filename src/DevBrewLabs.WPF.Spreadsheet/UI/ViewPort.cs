@@ -1,6 +1,5 @@
 using DevBrewLabs.Spreadsheet;
 using System;
-using System.Collections.Generic;
 using System.Windows;
 
 namespace DevBrewLabs.WPF.Spreadsheet.UI
@@ -9,9 +8,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
     {
         private Rect _actualBounds;
         private SheetView _sheetView;
-        private Worksheet _workSheet;
-        private Rows _rows;
-        private Columns _columns;
+        private IWorksheet _workSheet;
+        private IRows _rows;
+        private IColumns _columns;
         private CellRange _viewRange;
         private LocationCache<IRow> _rowLocCache;
         private LocationCache<IColumn> _colLocCache;
@@ -26,9 +25,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
         internal ViewPort(SheetView sheetView)
         {
             _sheetView = sheetView;
-            _workSheet = (Worksheet)sheetView.WorkSheet;
-            _rows = _workSheet.Rows.As<Rows>();
-            _columns = _workSheet.Columns.As<Columns>();
+            _workSheet = sheetView.WorkSheet;
+            _rows = _workSheet.Rows;
+            _columns = _workSheet.Columns;
             _viewRange = new CellRange(0, 0, 0, 0);
 
             _rowLocCache = new LocationCache<IRow>(
@@ -36,28 +35,28 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
                 () => _workSheet.DefaultRowHeight,
                 _rows,
                 row => row.Height,
-                row => ((Row)row).Visible);
+                row => row.Visible);
 
             _colLocCache = new LocationCache<IColumn>(
                 () => _workSheet.ColumnCount,
                 () => _workSheet.DefaultColumnWidth,
                 _columns,
                 column => column.Width,
-                column => ((Column)column).Visible);
+                column => (column.Visible));
 
             _headerRowLocCache = new LocationCache<IRow>(
                 () => _workSheet.ColumnHeaders.RowCount,
                 () => _workSheet.ColumnHeaders.DefaultRowHeight,
-                _workSheet.ColumnHeaders.Rows as ColumnHeaderRows,
+                _workSheet.ColumnHeaders.Rows,
                 row => row.Height,
-                row => ((Row)row).Visible);
+                row => row.Visible);
 
             _headerColLocCache = new LocationCache<IColumn>(
                 () => _workSheet.RowHeaders.ColumnCount,
                 () => _workSheet.RowHeaders.DefaultColumnWidth,
-                _workSheet.RowHeaders.Columns as RowHeaderColumns,
+                _workSheet.RowHeaders.Columns,
                 column => column.Width,
-                column => ((Column)column).Visible);
+                column => column.Visible);
         }
 
         /// <summary>
@@ -463,7 +462,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
         {
             private readonly Func<int> _count;
             private readonly Func<double> _defaultSize;
-            private readonly SheetDimensionCollection<T> _items;
+            private readonly IDimensionCollection<T> _items;
             private readonly Func<T, double> _getSize;
             private readonly Func<T, bool> _isVisible;
 
@@ -473,7 +472,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
             public LocationCache(
                 Func<int> count,
                 Func<double> defaultSize,
-                SheetDimensionCollection<T> items,
+                IDimensionCollection<T> items,
                 Func<T, double> getSize,
                 Func<T, bool> isVisible)
             {
@@ -488,6 +487,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
             {
                 if (index <= 0)
                     return 0;
+
+                if (_items == null || !_items.HasItems)
+                {
+                    return index * _defaultSize();
+                }
 
                 EnsureCapacity(index + 1);
 
@@ -530,21 +534,19 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI
                     _locations[0] = 0;
             }
 
-            private void EnsureCapacity(int requiredCapacity = 0)
+            private void EnsureCapacity(int requiredCapacity)
             {
-                int count = Math.Max(_count() + 1, requiredCapacity);
-
                 if (_locations == null)
                 {
-                    _locations = new double[Math.Max(16, count)];
+                    _locations = new double[Math.Max(16, requiredCapacity)];
                 }
 
-                if (_locations.Length >= count)
+                if (_locations.Length >= requiredCapacity)
                     return;
 
                 int size = _locations.Length;
 
-                while (size < count)
+                while (size < requiredCapacity)
                     size *= 2;
 
                 Array.Resize(ref _locations, size);

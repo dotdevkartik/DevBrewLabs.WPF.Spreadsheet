@@ -30,12 +30,12 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
 
         protected override SpreadHitTestResult HitTestCore(Point hitPoint)
         {
-            var workSheet = (Worksheet)SheetView.WorkSheet;
+            var workSheet = SheetView.WorkSheet;
             var viewPort = SheetView.ViewPort;
 
             var hitTestInfo = new SpreadHitTestResult() { Element = SheetElement.RowHeader, Sheet = SheetView, ActualHitTestPoint = hitPoint };
-            var rows = workSheet.Rows.As<Rows>();
-            var columns = workSheet.RowHeaders.Columns.As<RowHeaderColumns>();
+            var rows = workSheet.Rows;
+            var columns = workSheet.RowHeaders.Columns;
             var viewRange = SheetView.ViewPort.ViewRange;
 
             double zoom = SheetView != null && SheetView.ZoomFactor > 0 ? SheetView.ZoomFactor : 1.0;

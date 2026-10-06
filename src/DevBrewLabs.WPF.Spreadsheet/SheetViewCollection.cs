@@ -21,31 +21,31 @@ namespace DevBrewLabs.WPF.Spreadsheet
         {
             _spread = spread;
             _sheetViewStore = new Dictionary<IWorksheet, ISheetView>();
-            var workSheets = (Worksheets)_spread.WorkBook.WorkSheets;
-            WeakEventManager<Worksheets, WorksheetAddedEventArgs>.AddHandler(workSheets, "SheetAdded", OnSheetAdded);
-            WeakEventManager<Worksheets, WorksheetRemovedEventArgs>.AddHandler(workSheets, "SheetRemoved", OnSheetRemoved);
-            WeakEventManager<Worksheets, WorksheetEventArgs>.AddHandler(workSheets, "ActiveSheetChanged", OnActiveSheetChanged);
+            var workSheets = _spread.WorkBook.WorkSheets;
+            WeakEventManager<IWorksheets, WorksheetAddedEventArgs>.AddHandler(workSheets, "SheetAdded", OnSheetAdded);
+            WeakEventManager<IWorksheets, WorksheetRemovedEventArgs>.AddHandler(workSheets, "SheetRemoved", OnSheetRemoved);
+            WeakEventManager<IWorksheets, WorksheetEventArgs>.AddHandler(workSheets, "ActiveSheetChanged", OnActiveSheetChanged);
         }
 
         ~SheetViewCollection()
         {
-            var workSheets = (Worksheets)_spread.WorkBook.WorkSheets;
-            WeakEventManager<Worksheets, WorksheetAddedEventArgs>.RemoveHandler(workSheets, "SheetAdded", OnSheetAdded);
-            WeakEventManager<Worksheets, WorksheetRemovedEventArgs>.RemoveHandler(workSheets, "SheetRemoved", OnSheetRemoved);
-            WeakEventManager<Worksheets, WorksheetEventArgs>.RemoveHandler(workSheets, "ActiveSheetChanged", OnActiveSheetChanged);
+            var workSheets = _spread.WorkBook.WorkSheets;
+            WeakEventManager<IWorksheets, WorksheetAddedEventArgs>.RemoveHandler(workSheets, "SheetAdded", OnSheetAdded);
+            WeakEventManager<IWorksheets, WorksheetRemovedEventArgs>.RemoveHandler(workSheets, "SheetRemoved", OnSheetRemoved);
+            WeakEventManager<IWorksheets, WorksheetEventArgs>.RemoveHandler(workSheets, "ActiveSheetChanged", OnActiveSheetChanged);
         }
 
         private void OnSheetAdded(object sender, WorksheetAddedEventArgs e)
         {
-            var sheetView = new SheetView(_spread, e.AddedSheet.As<Worksheet>());
-            _sheetViewStore.Add((Worksheet)e.AddedSheet, sheetView);
+            var sheetView = new SheetView(_spread, e.AddedSheet);
+            _sheetViewStore.Add(e.AddedSheet, sheetView);
             OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, sheetView));
         }
 
         private void OnSheetRemoved(object sender, WorksheetRemovedEventArgs e)
         {
-            var sheetView = _sheetViewStore[(Worksheet)e.RemovedSheet];
-            _sheetViewStore.Remove((Worksheet)e.RemovedSheet);
+            var sheetView = _sheetViewStore[e.RemovedSheet];
+            _sheetViewStore.Remove(e.RemovedSheet);
 
             if (_spread.WorkBook.WorkSheets.Count == 0)
             {
@@ -58,7 +58,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         private void OnActiveSheetChanged(object sender, WorksheetEventArgs e)
         {
             var args = new SheetViewEventArgs() { OldSheetView = ActiveSheet };
-            ActiveSheet = _sheetViewStore[(Worksheet)e.Worksheet];
+            ActiveSheet = _sheetViewStore[e.Worksheet];
             args.NewSheetView = ActiveSheet;
             ActiveSheetChanged?.Invoke(this, args);
         }

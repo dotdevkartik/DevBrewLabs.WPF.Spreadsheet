@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace DevBrewLabs.Spreadsheet
 {
-    internal class Workbook : IWorkbook
+    public class Workbook : IWorkbook
     {
         private WorkbookAdapter _dataProvider;
         private IChangeListener _changeListener;
@@ -66,7 +66,7 @@ namespace DevBrewLabs.Spreadsheet
             AddNamedStyle(StyleKeys.DefaultTopLeftStyleKey, topLeftStyle);
         }
 
-        internal Workbook(string name, IChangeListener updateProvider) : this(name)
+        public Workbook(string name, IChangeListener updateProvider) : this(name)
         {
             if(updateProvider == null)
                 throw new ArgumentNullException(nameof(updateProvider));

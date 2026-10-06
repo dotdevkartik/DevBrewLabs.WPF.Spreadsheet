@@ -19,7 +19,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void Rows_IsRowVisible_ReflectsVisibilityCorrectly()
         {
             var spread = new Spread();
-            var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var ws = spread.WorkBook.WorkSheets[0];
 
             // Default unconfigured row
             Assert.That(ws.Rows.IsRowVisible(0), Is.True);
@@ -49,7 +49,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void Columns_IsColumnVisible_ReflectsVisibilityCorrectly()
         {
             var spread = new Spread();
-            var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var ws = spread.WorkBook.WorkSheets[0];
 
             Assert.That(ws.Columns.IsColumnVisible(0), Is.True);
 
@@ -64,7 +64,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void ViewPort_GetRowLocation_CalculatesCorrectOffset_WithFilteredRows()
         {
             var spread = new Spread();
-            var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var ws = spread.WorkBook.WorkSheets[0];
             var view = (SheetView)spread.Sheets.ActiveSheet;
             var viewPort = (ViewPort)view.ViewPort;
 
@@ -90,7 +90,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void RowResizeManager_Resize_UpdatesTargetRowHeight()
         {
             var spread = new Spread();
-            var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var ws = spread.WorkBook.WorkSheets[0];
             var view = (SheetView)spread.Sheets.ActiveSheet;
             var manager = (RowResizeManager)spread.RowResizeManager;
 
@@ -118,7 +118,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void RowResizeManager_Resize_ClampsResizeLineAtZeroSizeWhenDraggedAbove()
         {
             var spread = new Spread();
-            var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var ws = spread.WorkBook.WorkSheets[0];
             var view = (SheetView)spread.Sheets.ActiveSheet;
             var manager = (RowResizeManager)spread.RowResizeManager;
 
@@ -150,7 +150,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void RowResizeManager_Resize_ClampsResizeLineAtBottomBoundWhenDraggedBeyond()
         {
             var spread = new Spread();
-            var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var ws = spread.WorkBook.WorkSheets[0];
             var view = (SheetView)spread.Sheets.ActiveSheet;
             var manager = (RowResizeManager)spread.RowResizeManager;
 
@@ -182,7 +182,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void RowResizeManager_EndResize_UnhidesManuallyHiddenRow()
         {
             var spread = new Spread();
-            var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var ws = spread.WorkBook.WorkSheets[0];
             var view = (SheetView)spread.Sheets.ActiveSheet;
             var manager = (RowResizeManager)spread.RowResizeManager;
 
@@ -213,7 +213,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void RowResizeManager_EndResize_UnhidesFilteredRow()
         {
             var spread = new Spread();
-            var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var ws = spread.WorkBook.WorkSheets[0];
             var view = (SheetView)spread.Sheets.ActiveSheet;
             var manager = (RowResizeManager)spread.RowResizeManager;
 
@@ -244,7 +244,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void ColumnResizeManager_Resize_UpdatesTargetColumnWidth()
         {
             var spread = new Spread();
-            var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var ws = spread.WorkBook.WorkSheets[0];
             var view = (SheetView)spread.Sheets.ActiveSheet;
             var manager = (ColumnResizeManager)spread.ColumnResizeManager;
 
@@ -272,7 +272,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void ColumnResizeManager_Resize_ClampsResizeLineAtZeroSizeWhenDraggedLeft()
         {
             var spread = new Spread();
-            var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var ws = spread.WorkBook.WorkSheets[0];
             var view = (SheetView)spread.Sheets.ActiveSheet;
             var manager = (ColumnResizeManager)spread.ColumnResizeManager;
 
@@ -304,7 +304,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void ColumnResizeManager_Resize_ClampsResizeLineAtRightBoundWhenDraggedBeyond()
         {
             var spread = new Spread();
-            var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var ws = spread.WorkBook.WorkSheets[0];
             var view = (SheetView)spread.Sheets.ActiveSheet;
             var manager = (ColumnResizeManager)spread.ColumnResizeManager;
 
@@ -336,7 +336,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void RowHeadersSurface_HitTest_ConsecutiveHiddenRows_UnhidesLastHiddenRowFirst()
         {
             var spread = new Spread();
-            var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var ws = spread.WorkBook.WorkSheets[0];
             var view = (SheetView)spread.Sheets.ActiveSheet;
             var surface = new RowHeadersSurface(view);
 
@@ -367,7 +367,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void RowHeadersSurface_HitTest_ConsecutiveHiddenRowsAtTop_UnhidesLastHiddenRowFirst()
         {
             var spread = new Spread();
-            var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var ws = spread.WorkBook.WorkSheets[0];
             var view = (SheetView)spread.Sheets.ActiveSheet;
             var surface = new RowHeadersSurface(view);
 
@@ -391,7 +391,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void ColumnHeadersSurface_HitTest_ConsecutiveHiddenColumns_UnhidesLastHiddenColumnFirst()
         {
             var spread = new Spread();
-            var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var ws = spread.WorkBook.WorkSheets[0];
             var view = (SheetView)spread.Sheets.ActiveSheet;
             var surface = new ColumnHeadersSurface(view);
 
@@ -421,7 +421,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void AutoFilter_AppliesAndClearsVisibility()
         {
             var spread = new Spread();
-            var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var ws = spread.WorkBook.WorkSheets[0];
 
             ws.SetValue(0, 0, "Name");
             ws.SetValue(1, 0, "Alice");

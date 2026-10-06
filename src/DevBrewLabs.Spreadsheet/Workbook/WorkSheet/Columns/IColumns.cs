@@ -1,6 +1,6 @@
 namespace DevBrewLabs.Spreadsheet
 {
-    public interface IColumns
+    public interface IColumns : IDimensionCollection<IColumn>
     {
         /// <summary>
         /// Gets the column present at the provided index.

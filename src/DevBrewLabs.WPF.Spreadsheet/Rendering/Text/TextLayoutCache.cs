@@ -77,6 +77,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
 
     internal static class TextLayoutCache
     {
+        private const int MaxCacheSize = 4096;
         private static readonly ConcurrentDictionary<TextLayoutCacheKey, TextLayout> _cache = new ConcurrentDictionary<TextLayoutCacheKey, TextLayout>();
 
         public static TextLayout GetOrCreate(
@@ -95,6 +96,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
             if (_cache.TryGetValue(key, out var cachedLayout))
             {
                 return cachedLayout;
+            }
+
+            if (_cache.Count >= MaxCacheSize)
+            {
+                _cache.Clear();
             }
 
             var fontResources = Styling.WpfResourceCache.GetFontResources(fontFamily, fontWeight, fontStyle);

@@ -42,12 +42,12 @@ namespace DevBrewLabs.Spreadsheet
 
         public override void Insert(int index, int count)
         {
-
+            throw new System.NotImplementedException("Row insertion is not yet implemented.");
         }
 
         public override void Remove(int index, int count)
         {
-            
+            throw new System.NotImplementedException("Row removal is not yet implemented.");
         }
     }
 }

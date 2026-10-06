@@ -46,7 +46,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 return;
             }
 
-            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => _spread.Refresh()));
+            _spread.Dispatcher.BeginInvoke(new Action(() => _spread.Refresh()));
         }
 
         public void CellChanged(CellChangedEventArgs args)
@@ -68,7 +68,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 return;
             }
 
-            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => _spread.Invalidate()));
+            _spread.Dispatcher.BeginInvoke(new Action(() => _spread.Invalidate()));
         }
 
         public void RangeChanged(RangeChangedEventArgs args)
@@ -85,7 +85,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 return;
             }
 
-            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => _spread.Invalidate()));
+            _spread.Dispatcher.BeginInvoke(new Action(() => _spread.Invalidate()));
         }
 
         public void ColumnChanged(ColumnChangedEventArgs args)
@@ -127,7 +127,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 return;
             }
 
-            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => _spread.Refresh()));
+            _spread.Dispatcher.BeginInvoke(new Action(() => _spread.Refresh()));
         }
 
         public void RowChanged(RowChangedEventArgs args)
@@ -169,7 +169,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 return;
             }
 
-            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => _spread.Refresh()));
+            _spread.Dispatcher.BeginInvoke(new Action(() => _spread.Refresh()));
         }
 
         private bool CanInvalidate()
@@ -186,7 +186,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
             if (!CanInvalidate()) return;
 
-            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => _spread.Refresh()));
+            _spread.Dispatcher.BeginInvoke(new Action(() => _spread.Refresh()));
         }
     }
 }

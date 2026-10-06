@@ -24,7 +24,15 @@ namespace DevBrewLabs.WPF.Spreadsheet
 
         private void Execute(CellEditState state)
         {
-            SheetView.WorkSheet.SetValue(state.Row, state.Column, state.Value);
+            if (!string.IsNullOrEmpty(state.Formula))
+            {
+                SheetView.WorkSheet.SetFormula(state.Row, state.Column, state.Formula);
+            }
+            else
+            {
+                SheetView.WorkSheet.SetFormula(state.Row, state.Column, null);
+                SheetView.WorkSheet.SetValue(state.Row, state.Column, state.Value);
+            }
             var selection = state.Selection;
             SheetView.ActiveRow = state.Row;
             SheetView.ActiveColumn = state.Column;

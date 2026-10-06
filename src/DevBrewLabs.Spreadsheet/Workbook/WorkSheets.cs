@@ -87,7 +87,7 @@ namespace DevBrewLabs.Spreadsheet
         /// <param name="name"></param>
         /// <param name="currentSheet"></param>
         /// <exception cref="ArgumentException"></exception>
-        internal void VerifySheetName(string name, IWorksheet currentSheet = null)
+        public void VerifySheetName(string name, IWorksheet currentSheet = null)
         {
             if (string.IsNullOrEmpty(name))
             {

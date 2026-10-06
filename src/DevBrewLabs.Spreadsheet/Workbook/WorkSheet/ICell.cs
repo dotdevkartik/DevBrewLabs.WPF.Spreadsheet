@@ -51,5 +51,11 @@ namespace DevBrewLabs.Spreadsheet
         /// Gets the parent range containing the cell.
         /// </summary>
         IRange ParentRange { get; }
+        
+        /// <summary>
+        /// Gets this object as cell range
+        /// </summary>
+        /// <returns></returns>
+        CellRange AsCellRange();
     }
 }

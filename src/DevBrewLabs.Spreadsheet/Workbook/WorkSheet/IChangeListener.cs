@@ -2,7 +2,7 @@ using DevBrewLabs.Spreadsheet.Filtering;
 
 namespace DevBrewLabs.Spreadsheet
 {
-    internal interface IChangeListener
+    public interface IChangeListener
     {
         void OnWorksheetChanged(WorksheetChangedEventArgs args);
         void CellChanged(CellChangedEventArgs args);

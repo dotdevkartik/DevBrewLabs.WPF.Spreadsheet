@@ -139,7 +139,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void NonEditableCellTypes_DoNotStartEditing()
         {
             var spread = new Spread();
-            var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var ws = spread.WorkBook.WorkSheets[0];
 
             ws.SetCellType(0, 0, new ButtonCellType());
             ws.SetCellType(0, 1, new CheckBoxCellType());
@@ -155,7 +155,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void NumberCellType_CreatesNumericCellEditor()
         {
             var spread = new Spread();
-            var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var ws = spread.WorkBook.WorkSheets[0];
             ws.SetCellType(0, 0, new NumberCellType());
             ws.SetValue(0, 0, 123.45);
 
@@ -169,7 +169,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void DateCellType_CreatesDateCellEditor_AndSupportsEditing()
         {
             var spread = new Spread();
-            var ws = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var ws = spread.WorkBook.WorkSheets[0];
             var dateCellType = new DateCellType();
             ws.SetCellType(0, 0, dateCellType);
             ws.SetValue(0, 0, "2026-08-26");

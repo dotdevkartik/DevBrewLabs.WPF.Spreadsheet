@@ -285,16 +285,6 @@ namespace DevBrewLabs.Spreadsheet
             return cell;
         }
 
-        internal IEnumerable<KeyValuePair<int, object>> GetCellValues(int column)
-        {
-            for (int row = Row; row < Row + RowCount; row++)
-            {
-                var val = _workSheet.GetValue(row, column);
-                if (val != null)
-                    yield return new KeyValuePair<int, object>(row, val);
-            }
-        }
-
         private Cells GetRange(int row, int column, int rowCount, int columnCount)
         {
             return new Cells(this, row, column, rowCount, columnCount);
@@ -429,6 +419,11 @@ namespace DevBrewLabs.Spreadsheet
         public void SetRawValue(int row, int column, string value)
         {
             _workSheet.SetRawValue(row, column, value);
+        }
+
+        public CellRange AsCellRange()
+        {
+            return new CellRange(Row, Column, RowCount, ColumnCount);
         }
 
         public CellRange GetSpanCellRange(int row, int column)

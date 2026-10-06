@@ -13,6 +13,6 @@ namespace DevBrewLabs.Spreadsheet
 
         public object OldValue { get; }
         public object NewValue { get; }
-        internal SheetRegion Region { get; }
+        public SheetRegion Region { get; }
     }
 }

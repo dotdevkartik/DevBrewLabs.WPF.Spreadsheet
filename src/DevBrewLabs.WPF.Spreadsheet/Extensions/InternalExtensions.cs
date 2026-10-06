@@ -1,6 +1,5 @@
 using DevBrewLabs.Spreadsheet;
 using DevBrewLabs.Spreadsheet.Formatters;
-using DevBrewLabs.WPF.Spreadsheet.UI.Interaction;
 using System.Windows;
 
 namespace DevBrewLabs.WPF.Spreadsheet

@@ -1,4 +1,5 @@
 using DevBrewLabs.Spreadsheet;
+using DevBrewLabs.Spreadsheet.CalcEngine;
 using DevBrewLabs.Spreadsheet.Utils;
 using DevBrewLabs.WPF.Spreadsheet.Rendering;
 using DevBrewLabs.WPF.Spreadsheet.Rendering.Text;
@@ -12,10 +13,10 @@ namespace DevBrewLabs.WPF.Spreadsheet
     {
         private HeadersVisibility _headersVisibility;
         private ViewPort _viewPort;
-        private Worksheet _workSheet;
-        private Rows _rows;
-        private Cells _cells;
-        private Columns _columns;
+        private IWorksheet _workSheet;
+        private IRows _rows;
+        private IRange _cells;
+        private IColumns _columns;
         private double _zoomFactor = 1.0;
         private CellRange _selection;
         private CellsSurface _cellsSurface;
@@ -70,7 +71,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public bool AutoSizeColumns { get; set; }
         #endregion
 
-        public SheetView(Spread spread, Worksheet worksheet)
+        public SheetView(Spread spread, IWorksheet worksheet)
         {
             Spread = spread;
 
@@ -80,9 +81,9 @@ namespace DevBrewLabs.WPF.Spreadsheet
             _topLeftSurface = new TopLeftSurface(this);
 
             _workSheet = worksheet;
-            _rows = (Rows)_workSheet.Rows;
-            _columns = (Columns)_workSheet.Columns;
-            _cells = (Cells)_workSheet.Cells;
+            _rows = _workSheet.Rows;
+            _columns = _workSheet.Columns;
+            _cells = _workSheet.Cells;
             _zoomFactor = 1.0;
             GridLineVisibility = GridLineVisibility.Both;
             SelectionMode = SelectionMode.CellRange;
@@ -123,8 +124,18 @@ namespace DevBrewLabs.WPF.Spreadsheet
             Spread.SuspendUpdates = true;
             try
             {
+                string[,] oldFormulas = new string[range.RowCount, range.ColumnCount];
+                for (int r = 0; r < range.RowCount; r++)
+                {
+                    for (int c = 0; c < range.ColumnCount; c++)
+                    {
+                        oldFormulas[r, c] = WorkSheet.GetFormula(range.TopRow + r, range.LeftColumn + c);
+                    }
+                }
+
                 var pasteAction = new ClipboardPasteAction { SheetView = this };
                 pasteAction.OldState.Value = WorkSheet.GetData(range.TopRow, range.LeftColumn, range.RowCount, range.ColumnCount);
+                pasteAction.OldState.Formulas = oldFormulas;
                 pasteAction.OldState.Row = range.TopRow;
                 pasteAction.OldState.Column = range.LeftColumn;
                 pasteAction.OldState.Selection = Selection.Clone();
@@ -135,13 +146,14 @@ namespace DevBrewLabs.WPF.Spreadsheet
                 {
                     for (int c = 0; c < range.ColumnCount; c++)
                     {
-                        var ws = (Worksheet)WorkSheet;
+                        var ws = WorkSheet;
                         ws.SetValue(range.TopRow + r, range.LeftColumn + c, null);
                         ws.SetFormula(range.TopRow + r, range.LeftColumn + c, null);
                     }
                 }
 
                 pasteAction.NewState.Value = emptyData;
+                pasteAction.NewState.Formulas = new string[range.RowCount, range.ColumnCount];
                 pasteAction.NewState.Row = range.TopRow;
                 pasteAction.NewState.Column = range.LeftColumn;
                 pasteAction.NewState.Selection = Selection.Clone();
@@ -372,29 +384,33 @@ namespace DevBrewLabs.WPF.Spreadsheet
         {
             var sheetColumn = _columns.GetItem(column);
             var width = 0;
-            var cellValues = _cells.GetCellValues(column);
+            var cellsData = _workSheet.GetData(0, column, _workSheet.RowCount, 1);
 
-            foreach(var cellValue in cellValues)
+            for (int row = 0; row < cellsData.GetLength(0); row++)
             {
-                if(cellValue.Value != null)
+                object value = cellsData[row, 0];
+
+                if(value == null)
                 {
-                    var sheetRow = _rows.GetItem(cellValue.Key);
-                    var formatter = _workSheet.GetCellFormatter(cellValue.Key, column, sheetRow, sheetColumn);
-                    string text = formatter != null ? formatter.Format(cellValue.Value) : cellValue.Value.ToString();
+                    continue;
+                }
 
-                    if (string.IsNullOrEmpty(text))
-                        continue;
+                var sheetRow = _rows.GetItem(row);
+                var formatter = _workSheet.GetCellFormatter(row, column, sheetRow, sheetColumn);
+                string text = formatter != null ? formatter.Format(value) : value.ToString();
 
-                    IStyle style = _workSheet.GetCellStyle(cellValue.Key, column, sheetRow, sheetColumn);
-                    string[] lines = style.AllowMultiLineText
-                     ? TextUtils.GetLines(text)
-                     : new[] { TextUtils.NormalizeToSingleLine(text) };
+                if (string.IsNullOrEmpty(text))
+                    continue;
 
-                    foreach (string line in lines)
-                    {
-                        var textWidth = TextMeasurer.MeasureWidth(line, style.FontSize, style != null ? Styling.WpfResourceCache.GetFontResources(style).GlyphMetrics : null);
-                        width = Math.Max(width, (int)Math.Ceiling(textWidth) + 11);
-                    }
+                IStyle style = _workSheet.GetCellStyle(row, column, sheetRow, sheetColumn);
+                string[] lines = style.AllowMultiLineText
+                 ? TextUtils.GetLines(text)
+                 : new[] { TextUtils.NormalizeToSingleLine(text) };
+
+                foreach (string line in lines)
+                {
+                    var textWidth = TextMeasurer.MeasureWidth(line, style.FontSize, style != null ? Styling.WpfResourceCache.GetFontResources(style).GlyphMetrics : null);
+                    width = Math.Max(width, (int)Math.Ceiling(textWidth) + 11);
                 }
             }
 

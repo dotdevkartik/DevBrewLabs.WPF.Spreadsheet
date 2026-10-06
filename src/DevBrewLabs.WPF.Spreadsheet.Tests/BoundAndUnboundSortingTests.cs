@@ -31,7 +31,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void IsBound_ReturnsTrue_WhenBoundToValidList()
         {
             var spread = new Spread();
-            var sheet = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var sheet = spread.WorkBook.WorkSheets[0];
 
             Assert.That(sheet.IsBound, Is.False);
 
@@ -52,7 +52,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void BoundSorting_SortsByColumnAscending_WithoutMutatingUnderlyingObjects()
         {
             var spread = new Spread();
-            var sheet = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var sheet = spread.WorkBook.WorkSheets[0];
 
             var list = new List<TestCustomer>
             {
@@ -92,7 +92,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void MultiLevelBoundSorting_SortsCorrectly()
         {
             var spread = new Spread();
-            var sheet = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var sheet = spread.WorkBook.WorkSheets[0];
 
             var list = new List<TestCustomer>
             {
@@ -135,7 +135,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void HybridSorting_KeepsUnboundValuesAttachedToBoundRecords()
         {
             var spread = new Spread();
-            var sheet = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var sheet = spread.WorkBook.WorkSheets[0];
 
             var list = new List<TestCustomer>
             {
@@ -170,7 +170,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void UnboundSorting_Sorts2DArrayCorrectly()
         {
             var spread = new Spread();
-            var sheet = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var sheet = spread.WorkBook.WorkSheets[0];
 
             sheet.RowCount = 4;
             sheet.ColumnCount = 2;
@@ -203,7 +203,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void SubRangeBoundSorting_OnlySortsSelectedRowSlice()
         {
             var spread = new Spread();
-            var sheet = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var sheet = spread.WorkBook.WorkSheets[0];
 
             var list = new List<TestCustomer>
             {
@@ -238,7 +238,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Tests
         public void BoundaryClamping_SortRangeExceedingCollectionCount_ClampsSafely()
         {
             var spread = new Spread();
-            var sheet = (Worksheet)spread.WorkBook.WorkSheets[0];
+            var sheet = spread.WorkBook.WorkSheets[0];
 
             var list = new List<TestCustomer>
             {

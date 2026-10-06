@@ -39,7 +39,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             if (IsEditing || sheetView == null)
                 return;
 
-            var workSheet = (Worksheet)sheetView.WorkSheet;
+            var workSheet = sheetView.WorkSheet;
             if (workSheet == null)
                 return;
 
@@ -47,8 +47,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             int editRow = anchor != default ? anchor.TopRow : row;
             int editColumn = anchor != default ? anchor.LeftColumn : column;
 
-            var sheetColumn = ((Columns)workSheet.Columns).GetItem(editColumn);
-            var sheetRow = ((Rows)workSheet.Rows).GetItem(editRow);
+            var sheetColumn = workSheet.Columns.GetItem(editColumn);
+            var sheetRow = workSheet.Rows.GetItem(editRow);
 
             bool locked = workSheet.GetLocked(editRow, editColumn) ||
                 (sheetRow != null && sheetRow.Locked) ||
@@ -131,18 +131,18 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 return;
 
             var sheetView = _editingView;
-            var workSheet = sheetView.WorkSheet as Worksheet;
+            var workSheet = sheetView.WorkSheet;
             if (workSheet == null)
                 return;
 
             double zoom = sheetView.ZoomFactor > 0 ? sheetView.ZoomFactor : 1.0;
-            var viewPort = sheetView.ViewPort.As<ViewPort>();
+            var viewPort = sheetView.ViewPort;
 
             var cellRect = viewPort.GetCellRect(_activeRow, _activeColumn);
             cellRect.X -= viewPort.LeftColumnLocation;
             cellRect.Y -= viewPort.TopRowLocation;
 
-            var sheetColumn = ((Columns)workSheet.Columns).GetItem(_activeColumn);
+            var sheetColumn = workSheet.Columns.GetItem(_activeColumn);
             var cellType = (workSheet.GetCellType(_activeRow, _activeColumn) ?? sheetColumn?.CellType) as BaseCellType ?? TextCellType.Default;
 
             var scaledCellRect = new Rect(
@@ -216,8 +216,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 return false;
             }
 
-            var workSheet = (Worksheet)view.WorkSheet;
+            var workSheet = view.WorkSheet;
             var cellChangedAction = new CellChangedAction { SheetView = view };
+            cellChangedAction.OldState.Formula = workSheet.GetFormula(row, col);
             cellChangedAction.OldState.Value = workSheet.GetValue(row, col);
             cellChangedAction.OldState.Row = row;
             cellChangedAction.OldState.Column = col;
@@ -228,7 +229,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             {
                 if (newValue is string strVal)
                 {
-                    if (cellChangedAction.OldState.Value != null && 
+                    if (string.IsNullOrEmpty(cellChangedAction.OldState.Formula) &&
+                        !strVal.StartsWith("=") &&
+                        cellChangedAction.OldState.Value != null && 
                         cellChangedAction.OldState.Value.Equals(DataTypeConverter.ConvertType(newValue)))
                     {
                         valueChanged = false;
@@ -271,6 +274,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 if (view.AutoSizeColumns)
                     view.AutoSizeColumn(col);
 
+                cellChangedAction.NewState.Formula = workSheet.GetFormula(row, col);
                 cellChangedAction.NewState.Value = workSheet.GetValue(row, col);
                 cellChangedAction.NewState.Row = row;
                 cellChangedAction.NewState.Column = col;

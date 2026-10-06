@@ -194,9 +194,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
 
         public virtual void OnClick(ISheetView view, int row, int col)
         {
-            var worksheet = view?.WorkSheet as Worksheet;
-            var sheetCol = ((Columns)worksheet?.Columns)?.GetItem(col);
-            var sheetRow = ((Rows)worksheet?.Rows)?.GetItem(row);
+            var worksheet = view?.WorkSheet;
+            var sheetCol = worksheet?.Columns?.GetItem(col);
+            var sheetRow = worksheet?.Rows?.GetItem(row);
 
             bool locked = (worksheet?.GetLocked(row, col) == true) ||
                 (sheetRow != null && sheetRow.Locked) ||

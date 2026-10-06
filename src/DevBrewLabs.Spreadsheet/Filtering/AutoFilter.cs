@@ -100,9 +100,13 @@ namespace DevBrewLabs.Spreadsheet.Filtering
             for (int r = _range.TopRow + 1; r <= _range.BottomRow; r++)
             {
                 var row = rowsCol.GetItem(r) as Row;
-                if (row != null && row.IsFilteredOut)
+                if (row != null)
                 {
                     row.IsFilteredOut = false;
+                    if (row.Height == _worksheet.DefaultRowHeight && row.Visible)
+                    {
+                        rowsCol.RemoveItem(r);
+                    }
                 }
             }
 
@@ -148,6 +152,10 @@ namespace DevBrewLabs.Spreadsheet.Filtering
                 else if (rowObj != null)
                 {
                     if (rowObj.IsFilteredOut) rowObj.IsFilteredOut = false;
+                    if (rowObj.Height == _worksheet.DefaultRowHeight && rowObj.Visible)
+                    {
+                        rowsCol.RemoveItem(r);
+                    }
                 }
             }
 
@@ -192,6 +200,10 @@ namespace DevBrewLabs.Spreadsheet.Filtering
             else if (rowObj != null)
             {
                 if (rowObj.IsFilteredOut) { rowObj.IsFilteredOut = false; changed = true; }
+                if (rowObj.Height == _worksheet.DefaultRowHeight && rowObj.Visible)
+                {
+                    rowsCol.RemoveItem(row);
+                }
             }
             if (changed)
             {
