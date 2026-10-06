@@ -17,7 +17,7 @@
 
   <PropertyGroup>
     <PackageId>DevBrewLabs.WPF.Spreadsheet</PackageId>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <Authors>DevBrewLabs</Authors>
     <Company>DevBrewLabs</Company>
     <Description>High-performance virtualized WPF spreadsheet and grid component.</Description>
@@ -29,6 +29,7 @@
     <PackageTags>excel;spread;sheet;spreadsheet;grid;datagrid;speed;virtual;wpf grid;cells;columns;rows;</PackageTags>
     <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
     <SignAssembly>False</SignAssembly>
+    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
   </PropertyGroup>
 
   <ItemGroup>
@@ -36,8 +37,20 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DevBrewLabs.Spreadsheet\DevBrewLabs.Spreadsheet.csproj" />
+    <ProjectReference Include="..\DevBrewLabs.Spreadsheet\DevBrewLabs.Spreadsheet.csproj" PrivateAssets="all" />
+    <PackageReference Include="DevBrewLabs.Evalis" Version="1.0.1" />
   </ItemGroup>
+
+  <Target Name="CopyProjectReferencesToPackage">
+    <ItemGroup>
+      <BuildOutputInPackage Include="$(OutputPath)DevBrewLabs.Spreadsheet.dll" />
+      <BuildOutputInPackage Include="$(OutputPath)DevBrewLabs.Spreadsheet.pdb" Condition="Exists('$(OutputPath)DevBrewLabs.Spreadsheet.pdb')" />
+      <BuildOutputInPackage Include="$(OutputPath)DevBrewLabs.Spreadsheet.xml" Condition="Exists('$(OutputPath)DevBrewLabs.Spreadsheet.xml')" />
+      <BuildOutputInPackage Include="$(OutputPath)DevBrewLabs.Spreadsheet.CalcEngine.dll" />
+      <BuildOutputInPackage Include="$(OutputPath)DevBrewLabs.Spreadsheet.CalcEngine.pdb" Condition="Exists('$(OutputPath)DevBrewLabs.Spreadsheet.CalcEngine.pdb')" />
+      <BuildOutputInPackage Include="$(OutputPath)DevBrewLabs.Spreadsheet.CalcEngine.xml" Condition="Exists('$(OutputPath)DevBrewLabs.Spreadsheet.CalcEngine.xml')" />
+    </ItemGroup>
+  </Target>
 
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
