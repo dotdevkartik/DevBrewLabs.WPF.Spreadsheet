@@ -1,0 +1,275 @@
+<UserControl x:Class="SpreadsheetSampleExplorer.Samples.DynamicGridSample"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:sheets="http://schemas.devbrewlabs.com/2026/wpf/spreadsheet"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="1100">
+
+    <UserControl.Resources>
+        <!-- Flat Toolbar Button Base -->
+        <Style x:Key="FlatToolbarButton" TargetType="Button">
+            <Setter Property="Background" Value="#F8FAFC"/>
+            <Setter Property="BorderBrush" Value="#CBD5E1"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="#1E293B"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Padding" Value="9,4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#E2E8F0"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#94A3B8"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#CBD5E1"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Opacity" Value="0.4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Indigo Action Button -->
+        <Style x:Key="IndigoActionButton" TargetType="Button" BasedOn="{StaticResource FlatToolbarButton}">
+            <Setter Property="Background" Value="#EFF6FF"/>
+            <Setter Property="BorderBrush" Value="#BFDBFE"/>
+            <Setter Property="Foreground" Value="#1D4ED8"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#DBEAFE"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#93C5FD"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#BFDBFE"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Opacity" Value="0.4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Rose Action Button -->
+        <Style x:Key="RoseActionButton" TargetType="Button" BasedOn="{StaticResource FlatToolbarButton}">
+            <Setter Property="Background" Value="#FEF2F2"/>
+            <Setter Property="BorderBrush" Value="#FECACA"/>
+            <Setter Property="Foreground" Value="#DC2626"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#FEE2E2"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#FCA5A5"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#FECACA"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Opacity" Value="0.4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Emerald Action Button -->
+        <Style x:Key="EmeraldActionButton" TargetType="Button" BasedOn="{StaticResource FlatToolbarButton}">
+            <Setter Property="Background" Value="#ECFDF5"/>
+            <Setter Property="BorderBrush" Value="#A7F3D0"/>
+            <Setter Property="Foreground" Value="#047857"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#D1FAE5"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#6EE7B7"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#A7F3D0"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Opacity" Value="0.4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Toolbar ComboBox Style -->
+        <Style x:Key="ToolbarComboBox" TargetType="ComboBox">
+            <Setter Property="Height" Value="26"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Background" Value="#F8FAFC"/>
+            <Setter Property="BorderBrush" Value="#CBD5E1"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="6,2"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="2">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Tier 1: Unified Formula Bar with Live Cell Name/Address Box -->
+        <Border Grid.Row="0" Background="#FAFAFA" BorderBrush="#E4E4E7" BorderThickness="1" CornerRadius="4" Padding="6,4" Margin="0,0,0,6">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Name / Address Box (Excel Style) -->
+                <Border Grid.Column="0" Background="#F1F5F9" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="3" Padding="8,3" Margin="0,0,6,0" VerticalAlignment="Center" MinWidth="85">
+                    <TextBlock x:Name="txtCellAddress" Text="A1" FontWeight="Bold" FontSize="11" FontFamily="Consolas, Segoe UI" Foreground="#334155" HorizontalAlignment="Center"/>
+                </Border>
+
+                <!-- Linked Formula Text Box -->
+                <sheets:FormulaTextBox Grid.Column="1" Spread="{Binding ElementName=spreadMain}" VerticalAlignment="Center"/>
+
+                <!-- Live Selection Info Badge -->
+                <Border Grid.Column="2" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="3" Padding="8,3" Margin="6,0,0,0" VerticalAlignment="Center">
+                    <TextBlock x:Name="txtContextInfo" Text="⚡ Auto-remapping active" FontSize="11" FontWeight="Medium" Foreground="#64748B"/>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- Tier 2: Categorized Action Ribbon with Enhanced Input Controls -->
+        <Border Grid.Row="1" Background="#FAFAFA" BorderBrush="#E4E4E7" BorderThickness="1" CornerRadius="4" Padding="8,6" Margin="0,0,0,6">
+            <DockPanel LastChildFill="False">
+                <WrapPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                    
+                    <!-- Group 1: Structure (Row & Col Operations) -->
+                    <StackPanel Orientation="Vertical" Margin="0,0,10,0">
+                        <TextBlock Text="STRUCTURE" FontSize="9" FontWeight="Bold" Foreground="#94A3B8" Margin="1,0,0,3"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Button x:Name="btnInsertRow" Content="➕ Row" Style="{StaticResource IndigoActionButton}" Margin="0,0,3,0" ToolTip="Insert row above selection (Remaps formulas)" Click="btnInsertRow_Click"/>
+                            <Button x:Name="btnDeleteRow" Content="➖ Row" Style="{StaticResource RoseActionButton}" Margin="0,0,6,0" ToolTip="Delete selected row (#REF! on deleted references)" Click="btnDeleteRow_Click"/>
+                            <Button x:Name="btnInsertCol" Content="➕ Col" Style="{StaticResource IndigoActionButton}" Margin="0,0,3,0" ToolTip="Insert column before selection" Click="btnInsertCol_Click"/>
+                            <Button x:Name="btnDeleteCol" Content="➖ Col" Style="{StaticResource RoseActionButton}" ToolTip="Delete selected column" Click="btnDeleteCol_Click"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Divider -->
+                    <Border Width="1" Background="#E2E8F0" Margin="0,2,10,2"/>
+
+                    <!-- Group 2: Auto-Fill & Sequence Generation -->
+                    <StackPanel Orientation="Vertical" Margin="0,0,10,0">
+                        <TextBlock Text="AUTO-FILL SERIES" FontSize="9" FontWeight="Bold" Foreground="#94A3B8" Margin="1,0,0,3"/>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <ComboBox x:Name="cmbFillCount" Style="{StaticResource ToolbarComboBox}" Width="92" SelectedIndex="1" Margin="0,0,5,0" ToolTip="Number of rows to extend sequence">
+                                <ComboBoxItem Content="+1 Row"/>
+                                <ComboBoxItem Content="+3 Rows"/>
+                                <ComboBoxItem Content="+5 Rows"/>
+                                <ComboBoxItem Content="+10 Rows"/>
+                            </ComboBox>
+                            <CheckBox x:Name="chkCtrlCopy" Content="Ctrl (Copy)" FontWeight="Medium" FontSize="11" VerticalAlignment="Center" Margin="0,0,6,0" ToolTip="When checked, duplicates values instead of extending sequences"/>
+                            <Button x:Name="btnAutoFill" Content="✨ Fill Series" Style="{StaticResource EmeraldActionButton}" ToolTip="Extend current selection into subsequent rows" Click="btnAutoFill_Click"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Divider -->
+                    <Border Width="1" Background="#E2E8F0" Margin="0,2,10,2"/>
+
+                    <!-- Group 3: Clear Engine -->
+                    <StackPanel Orientation="Vertical" Margin="0,0,10,0">
+                        <TextBlock Text="CLEAR ENGINE" FontSize="9" FontWeight="Bold" Foreground="#94A3B8" Margin="1,0,0,3"/>
+                        <StackPanel Orientation="Horizontal">
+                            <ComboBox x:Name="cmbClearMode" Style="{StaticResource ToolbarComboBox}" Width="100" SelectedIndex="0" Margin="0,0,4,0" ToolTip="Choose what data layer to clear">
+                                <ComboBoxItem Content="Values &amp; Data"/>
+                                <ComboBoxItem Content="Formulas Only"/>
+                                <ComboBoxItem Content="Styles &amp; Colors"/>
+                                <ComboBoxItem Content="Clear All"/>
+                            </ComboBox>
+                            <Button x:Name="btnClear" Content="Clear" Style="{StaticResource RoseActionButton}" ToolTip="Clear target layer from selected cells or sheet" Click="btnClear_Click"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Divider -->
+                    <Border Width="1" Background="#E2E8F0" Margin="0,2,10,2"/>
+
+                    <!-- Group 4: History & Reset -->
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock Text="HISTORY" FontSize="9" FontWeight="Bold" Foreground="#94A3B8" Margin="1,0,0,3"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Button x:Name="btnUndo" Content="↶ Undo" Style="{StaticResource FlatToolbarButton}" Margin="0,0,3,0" ToolTip="Undo previous operation" Click="btnUndo_Click"/>
+                            <Button x:Name="btnRedo" Content="↷ Redo" Style="{StaticResource FlatToolbarButton}" Margin="0,0,6,0" ToolTip="Redo undone operation" Click="btnRedo_Click"/>
+                            <Button x:Name="btnReset" Content="↺ Reset Data" Style="{StaticResource FlatToolbarButton}" ToolTip="Reset worksheet to default sample data" Click="btnReset_Click"/>
+                        </StackPanel>
+                    </StackPanel>
+                </WrapPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- Tier 3: Main Spread View -->
+        <Border Grid.Row="2" BorderThickness="1" BorderBrush="#E4E4E7" CornerRadius="4" Background="White">
+            <sheets:Spread x:Name="spreadMain" AllowFiltering="True" AllowColumnResize="True" AllowRowResize="True"/>
+        </Border>
+
+        <!-- Tier 4: Feature Guidance & Quick Reference Footer -->
+        <Border Grid.Row="3" Background="#F0FDF4" BorderBrush="#BBF7D0" BorderThickness="1" CornerRadius="4" Padding="10,6" Margin="0,6,0,0">
+            <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="#166534">
+                <Bold>💡 Interactive Pro-Tips:</Bold> 
+                • <Bold>Drag-Fill Handle:</Bold> Click any cell or range and drag the green corner handle down or right to auto-fill numbers, dates, months, or relative formulas. Hold <Bold>Ctrl</Bold> to replicate without incrementing.
+                • <Bold>Live Formula Remapping:</Bold> Insert or delete rows/columns above or to the left of formulas: notice how `=C1+D1+E1` automatically updates its row anchors in real-time.
+                • <Bold>Context Menus &amp; Keys:</Bold> Right-click any cell, row header, or column header for instant insert/delete/cut/copy options. Use <Bold>Shift+Arrows</Bold>, <Bold>Shift+Enter</Bold>, <Bold>Shift+Tab</Bold>, <Bold>Ctrl+A</Bold>, and <Bold>Delete</Bold>.
+            </TextBlock>
+        </Border>
+    </Grid>
+</UserControl>

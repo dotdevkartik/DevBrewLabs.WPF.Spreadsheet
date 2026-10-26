@@ -139,6 +139,15 @@ namespace SpreadsheetSampleExplorer
             );
 
             _samplesSideBar.RegisterSample(
+                "DynamicGrid",
+                "Dynamic Grid & Auto-Fill",
+                "Row/column insert & delete with formula remapping, drag-fill handle series, and multi-tier merged headers.",
+                "DATA & CALCULATIONS",
+                "M3 3v18h18V3H3zm8 16H5v-6h6v6zm0-8H5V5h6v6zm8 8h-6v-6h6v6zm0-8h-6V5h6v6z",
+                typeof(DynamicGridSample)
+            );
+
+            _samplesSideBar.RegisterSample(
                 "PortfolioDashboard",
                 "Portfolio Dashboard",
                 "Industry-grade mesmerising dashboard with custom formatters, spanning, and live streams.",

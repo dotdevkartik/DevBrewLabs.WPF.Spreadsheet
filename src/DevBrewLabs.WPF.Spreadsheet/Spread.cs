@@ -667,6 +667,16 @@ namespace DevBrewLabs.WPF.Spreadsheet
         }
 
         /// <summary>
+        /// Gets whether an undo operation can be performed.
+        /// </summary>
+        public bool CanUndo => _undoRedoManager.CanUndo;
+
+        /// <summary>
+        /// Gets whether a redo operation can be performed.
+        /// </summary>
+        public bool CanRedo => _undoRedoManager.CanRedo;
+
+        /// <summary>
         /// Undo last operation.
         /// </summary>
         public void Undo()

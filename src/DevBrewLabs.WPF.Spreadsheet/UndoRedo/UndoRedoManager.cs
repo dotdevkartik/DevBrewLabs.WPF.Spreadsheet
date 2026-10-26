@@ -13,6 +13,9 @@ namespace DevBrewLabs.WPF.Spreadsheet
 
         public int MaxCapacity { get; set; } = 100;
 
+        public bool CanUndo => _undoStack.Count > 0;
+        public bool CanRedo => _redoStack.Count > 0;
+
         public UndoRedoManager(Spread spread)
         {
             _spread = spread;
