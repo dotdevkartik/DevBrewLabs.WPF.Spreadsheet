@@ -22,6 +22,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         private ZoomManager _zoomManager;
         private ClipboardManager _clipboardManager;
         private SelectionManager _selectionManager;
+        private AutoFillManager _autoFillManager;
         private EditingManager _editingManager;
         private RowResizeManager _rowResizeManager;
         private ColumnResizeManager _columnResizeManager;
@@ -623,6 +624,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             _headerHoverManager = new HeaderHoverManager(this);
             _cellInteractionManager = new CellInteractionManager(this);
             _zoomManager = new ZoomManager(this);
+            _autoFillManager = new AutoFillManager(this);
             SelectCell(0, 0);
             Loaded += OnLoaded;
         }
@@ -876,6 +878,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
             _headerHoverManager?.Dispose();
             _contextMenuManager?.Dispose();
             _cellInteractionManager?.Dispose();
+            _autoFillManager?.Dispose();
         }
     }
 
@@ -896,6 +899,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         internal FormulaSuggestionManager FormulaSuggestionManager => _formulaSuggestionManager;
         internal HeaderHoverManager HeaderHoverManager => _headerHoverManager;
         internal CellInteractionManager CellInteractionManager => _cellInteractionManager;
+        internal AutoFillManager AutoFillManager => _autoFillManager;
         internal FormulaTextBox FormulaTextBox { get; set; }
         internal Pen GridLinePen { get; private set; }
         internal Pen SelectionBorderPen { get; private set; }

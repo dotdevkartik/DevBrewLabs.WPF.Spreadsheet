@@ -1,41 +1,39 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using DevBrewLabs.Evalis;
 using DevBrewLabs.Parserly;
 using DevBrewLabs.Spreadsheet.CalcEngine.Evaluator;
 using DevBrewLabs.Spreadsheet.CalcEngine.Parsers;
 using DevBrewLabs.Spreadsheet.CalcEngine.Parsers.TokenParsers;
 using DevBrewLabs.Spreadsheet.CalcEngine.Utils;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace DevBrewLabs.Spreadsheet.CalcEngine
 {
     /// <summary>
-    /// Delegate for handling the event when a cell is recalculated.
+    /// Delegate for handling the <see cref="ICalcEngine.CellRecalculated"/> event.
     /// </summary>
     /// <param name="row">The row index of the recalculated cell.</param>
     /// <param name="column">The column index of the recalculated cell.</param>
     public delegate void CellRecalculatedEventHandler(int row, int column);
-    
+
     /// <summary>
-    /// The primary implementation of <see cref="ICalcEngine"/>, responsible for parsing, 
-    /// evaluating formulas, and managing spreadsheet state.
+    /// Primary implementation of <see cref="ICalcEngine"/> that evaluates spreadsheet formulas, manages cell dependencies, and handles automatic recalculation.
     /// </summary>
     public class SheetCalcEngine : ICalcEngine
     {
+        /// <inheritdoc />
+        public event CellRecalculatedEventHandler CellRecalculated;
         private readonly FormulaEngine _formulaEngine;
         private readonly CalcEngineContext _engineContext;
         private readonly IDataAdapter _provider;
         private readonly IDependencyManager _dependencyManager;
 
-        /// <inheritdoc />
-        public event CellRecalculatedEventHandler CellRecalculated;
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="SheetCalcEngine"/> class.
+        /// Initializes a new instance of the <see cref="SheetCalcEngine"/> class with a default dependency manager.
         /// </summary>
         /// <param name="dataProvider">The data provider for accessing cell values and metadata.</param>
-        public SheetCalcEngine(IDataAdapter dataProvider) 
+        public SheetCalcEngine(IDataAdapter dataProvider)
             : this(dataProvider, new DependencyManager(dataProvider))
         {
         }
@@ -111,6 +109,12 @@ namespace DevBrewLabs.Spreadsheet.CalcEngine
                 _provider.SetMetadata(sheetName, row, column, metaInfo);
             }
 
+            if (formula.IndexOf("#REF!", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                metaInfo.CalculatedValue = new CalcValue { Kind = CalcValueKind.Error, Value = "#REF!" };
+                return metaInfo.CalculatedValue;
+            }
+
             // Value not calculated yet, calculate value
             if (metaInfo.CalculatedValue == null)
             {
@@ -157,6 +161,8 @@ namespace DevBrewLabs.Spreadsheet.CalcEngine
         public List<object> GetRangesInFormulaString(string formula)
         {
             if (formula == null) throw new ArgumentNullException(nameof(formula));
+            if (formula.IndexOf("#REF!", StringComparison.OrdinalIgnoreCase) >= 0)
+                return new List<object>();
 
             var variables = _formulaEngine.ExtractVariables(GetPureFormula(formula));
             var ranges = new List<object>();
@@ -204,6 +210,15 @@ namespace DevBrewLabs.Spreadsheet.CalcEngine
 
             var curCell = new CellRef(row, column, sheetName);
             _dependencyManager.ClearDependencies(curCell);
+
+            if (formula.IndexOf("#REF!", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                metaInfo.Dependencies = new List<object>();
+                metaInfo.CalculatedValue = new CalcValue { Kind = CalcValueKind.Error, Value = "#REF!" };
+                _provider.SetMetadata(sheetName, row, column, metaInfo);
+                UpdateDependents(sheetName, row, column);
+                return;
+            }
 
             List<string> extractedVars;
             try
@@ -256,7 +271,7 @@ namespace DevBrewLabs.Spreadsheet.CalcEngine
             if (_provider.GetMetadata(sheetName, row, column) is CalcCellMetaInfo metaInfo)
             {
                 metaInfo.CalculatedValue = null;
-                metaInfo.Dependencies.Clear();
+                metaInfo.Dependencies?.Clear();
             }
 
             UpdateDependents(sheetName, row, column);
@@ -304,11 +319,28 @@ namespace DevBrewLabs.Spreadsheet.CalcEngine
                 _provider.SetMetadata(sheetName, row, column, metaInfo);
             }
 
-            // Has formula, update value
-            _engineContext.SetCurrentSheet(sheetName);
-            var result = _formulaEngine.Evaluate(GetPureFormula(formula));
-            var val = FormulaEngineConverter.ConvertToCalcValue(result);
-            metaInfo.CalculatedValue = val;
+            if (formula.IndexOf("#REF!", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                metaInfo.CalculatedValue = new CalcValue { Kind = CalcValueKind.Error, Value = "#REF!" };
+                return;
+            }
+
+            var prevSheet = _engineContext.CurrentSheetName;
+            try
+            {
+                _engineContext.SetCurrentSheet(sheetName);
+                var result = _formulaEngine.Evaluate(GetPureFormula(formula));
+                var val = FormulaEngineConverter.ConvertToCalcValue(result);
+                metaInfo.CalculatedValue = val;
+            }
+            catch (Exception)
+            {
+                metaInfo.CalculatedValue = new CalcValue { Kind = CalcValueKind.Error, Value = "#VALUE!" };
+            }
+            finally
+            {
+                _engineContext.SetCurrentSheet(prevSheet);
+            }
         }
 
         private string GetPureFormula(string formula)

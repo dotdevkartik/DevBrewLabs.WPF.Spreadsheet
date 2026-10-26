@@ -27,6 +27,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
         private int _lastActiveColumn = -1;
         private int _preferredColumn = -1;
         private int _preferredRow = -1;
+        private CellRange _dragFillRange;
+        private int _selectionEndRow = -1;
+        private int _selectionEndColumn = -1;
 
         public static readonly DependencyProperty AnimatedSelectionRectProperty =
             DependencyProperty.Register("AnimatedSelectionRect", typeof(Rect), typeof(CellsInteractionLayer),
@@ -106,6 +109,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
                 case SheetElement.DragFill:
                     _isDragging = true;
+                    _dragFillRange = SheetView.Selection;
                     break;
             }
         }
@@ -153,6 +157,14 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             {
                 _isDragging = false;
                 Cursor = null;
+
+                if (_dragFillRange.IsValid && _dragFillRange != SheetView.Selection)
+                {
+                    bool isCtrlPressed = (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control;
+                    SheetView.Spread.AutoFillManager?.ExecuteAutoFill(SheetView, SheetView.Selection, _dragFillRange, isCtrlPressed);
+                }
+                _dragFillRange = default;
+                InvalidateVisual();
             }
 
             var hitTest = HitTest();
@@ -179,6 +191,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
         #region Keyboard Selection
         private void MoveDownCellSelection()
         {
+            _selectionEndRow = -1; _selectionEndColumn = -1;
             UpdatePreferredCoordinatesBeforeMove();
             var workSheet = SheetView.WorkSheet;
             int rowSpan = Math.Max(1, workSheet.GetRowSpan(SheetView.ActiveRow, SheetView.ActiveColumn));
@@ -204,6 +217,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
         private void MoveUpCellSelection()
         {
+            _selectionEndRow = -1; _selectionEndColumn = -1;
             UpdatePreferredCoordinatesBeforeMove();
             if (SheetView.ActiveRow == 0)
                 return;
@@ -227,6 +241,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
         private void MoveRightCellSelection()
         {
+            _selectionEndRow = -1; _selectionEndColumn = -1;
             UpdatePreferredCoordinatesBeforeMove();
             var workSheet = SheetView.WorkSheet;
             int colSpan = Math.Max(1, workSheet.GetColumnSpan(SheetView.ActiveRow, SheetView.ActiveColumn));
@@ -252,6 +267,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
         private void MoveLeftCellSelection()
         {
+            _selectionEndRow = -1; _selectionEndColumn = -1;
             UpdatePreferredCoordinatesBeforeMove();
             if (SheetView.ActiveColumn == 0)
                 return;
@@ -272,6 +288,144 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             SheetView.SelectCell(_preferredRow, nextCol);
             CommitCoordinatesAfterMove(_preferredRow, nextCol);
         }
+        private void EnsureSelectionAnchor()
+        {
+            if (_selectionEndRow < 0 || _selectionEndColumn < 0)
+            {
+                _selectionEndRow = SheetView.ActiveRow;
+                _selectionEndColumn = SheetView.ActiveColumn;
+            }
+        }
+
+        private void ExpandSelectionDown()
+        {
+            EnsureSelectionAnchor();
+            var ws = SheetView.WorkSheet;
+            if (ws == null || _selectionEndRow >= ws.RowCount - 1) return;
+
+            _selectionEndRow++;
+            SelectRangeBetween(SheetView.ActiveRow, SheetView.ActiveColumn, _selectionEndRow, _selectionEndColumn);
+            ScrollIntoViewIfNeeded(_selectionEndRow, _selectionEndColumn);
+        }
+
+        private void ExpandSelectionUp()
+        {
+            EnsureSelectionAnchor();
+            if (_selectionEndRow <= 0) return;
+
+            _selectionEndRow--;
+            SelectRangeBetween(SheetView.ActiveRow, SheetView.ActiveColumn, _selectionEndRow, _selectionEndColumn);
+            ScrollIntoViewIfNeeded(_selectionEndRow, _selectionEndColumn);
+        }
+
+        private void ExpandSelectionRight()
+        {
+            EnsureSelectionAnchor();
+            var ws = SheetView.WorkSheet;
+            if (ws == null || _selectionEndColumn >= ws.ColumnCount - 1) return;
+
+            _selectionEndColumn++;
+            SelectRangeBetween(SheetView.ActiveRow, SheetView.ActiveColumn, _selectionEndRow, _selectionEndColumn);
+            ScrollIntoViewIfNeeded(_selectionEndRow, _selectionEndColumn);
+        }
+
+        private void ExpandSelectionLeft()
+        {
+            EnsureSelectionAnchor();
+            if (_selectionEndColumn <= 0) return;
+
+            _selectionEndColumn--;
+            SelectRangeBetween(SheetView.ActiveRow, SheetView.ActiveColumn, _selectionEndRow, _selectionEndColumn);
+            ScrollIntoViewIfNeeded(_selectionEndRow, _selectionEndColumn);
+        }
+
+        private void SelectRangeBetween(int r1, int c1, int r2, int c2)
+        {
+            int topRow = Math.Min(r1, r2);
+            int leftCol = Math.Min(c1, c2);
+            int botRow = Math.Max(r1, r2);
+            int rightCol = Math.Max(c1, c2);
+            SheetView.SelectRange(topRow, leftCol, botRow - topRow + 1, rightCol - leftCol + 1);
+        }
+
+        private void ScrollIntoViewIfNeeded(int row, int col)
+        {
+            var viewPort = SheetView.ViewPort;
+            if (viewPort == null) return;
+            var range = viewPort.ViewRange;
+            if (row >= range.BottomRow)
+                SheetView.Spread.ScrollToRow(row);
+            else if (row <= range.TopRow)
+                SheetView.Spread.ScrollToRow(row);
+
+            if (col >= range.RightColumn)
+                SheetView.Spread.ScrollToColumn(col);
+            else if (col <= range.LeftColumn)
+                SheetView.Spread.ScrollToColumn(col);
+        }
+
+        private void UpdateDragFillRange(SpreadHitTestResult hitTest)
+        {
+            if (hitTest == null || hitTest.Row < 0 || hitTest.Column < 0)
+                return;
+
+            var source = SheetView.Selection;
+            if (!source.IsValid) return;
+
+            int row = hitTest.Row;
+            int col = hitTest.Column;
+
+            if (row > source.BottomRow)
+            {
+                int deltaDown = row - source.BottomRow;
+                int deltaHoriz = col > source.RightColumn ? (col - source.RightColumn) : (col < source.LeftColumn ? (source.LeftColumn - col) : 0);
+                if (deltaDown >= deltaHoriz)
+                {
+                    _dragFillRange = new CellRange(source.TopRow, source.LeftColumn, source.RowCount + deltaDown, source.ColumnCount);
+                }
+                else if (col > source.RightColumn)
+                {
+                    _dragFillRange = new CellRange(source.TopRow, source.LeftColumn, source.RowCount, source.ColumnCount + (col - source.RightColumn));
+                }
+                else
+                {
+                    _dragFillRange = new CellRange(source.TopRow, col, source.RowCount, source.RightColumn - col + 1);
+                }
+            }
+            else if (row < source.TopRow)
+            {
+                int deltaUp = source.TopRow - row;
+                int deltaHoriz = col > source.RightColumn ? (col - source.RightColumn) : (col < source.LeftColumn ? (source.LeftColumn - col) : 0);
+                if (deltaUp >= deltaHoriz)
+                {
+                    _dragFillRange = new CellRange(row, source.LeftColumn, source.BottomRow - row + 1, source.ColumnCount);
+                }
+                else if (col > source.RightColumn)
+                {
+                    _dragFillRange = new CellRange(source.TopRow, source.LeftColumn, source.RowCount, source.ColumnCount + (col - source.RightColumn));
+                }
+                else
+                {
+                    _dragFillRange = new CellRange(source.TopRow, col, source.RowCount, source.RightColumn - col + 1);
+                }
+            }
+            else
+            {
+                if (col > source.RightColumn)
+                {
+                    _dragFillRange = new CellRange(source.TopRow, source.LeftColumn, source.RowCount, source.ColumnCount + (col - source.RightColumn));
+                }
+                else if (col < source.LeftColumn)
+                {
+                    _dragFillRange = new CellRange(source.TopRow, col, source.RowCount, source.RightColumn - col + 1);
+                }
+                else
+                {
+                    _dragFillRange = source;
+                }
+            }
+        }
+
         #endregion
 
         protected override void OnPreviewKeyDown(KeyEventArgs e)
@@ -318,31 +472,112 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                     }
                     break;
 
+                case Key.A:
+                    if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control && !editingManager.IsEditing)
+                    {
+                        e.Handled = true;
+                        _selectionEndRow = -1; _selectionEndColumn = -1;
+                        SheetView.SelectRange(0, 0, SheetView.WorkSheet.RowCount, SheetView.WorkSheet.ColumnCount);
+                    }
+                    break;
+
+                case Key.Home:
+                    if (editingManager.IsEditing) return;
+                    e.Handled = true;
+                    _selectionEndRow = -1; _selectionEndColumn = -1;
+                    if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+                    {
+                        SheetView.SelectCell(0, 0);
+                        SheetView.Spread.ScrollToRow(0);
+                        SheetView.Spread.ScrollToColumn(0);
+                    }
+                    else
+                    {
+                        SheetView.SelectCell(SheetView.ActiveRow, 0);
+                        SheetView.Spread.ScrollToColumn(0);
+                    }
+                    break;
+
+                case Key.End:
+                    if (editingManager.IsEditing) return;
+                    e.Handled = true;
+                    _selectionEndRow = -1; _selectionEndColumn = -1;
+                    if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+                    {
+                        int lastRow = Math.Max(0, SheetView.WorkSheet.RowCount - 1);
+                        int lastCol = Math.Max(0, SheetView.WorkSheet.ColumnCount - 1);
+                        SheetView.SelectCell(lastRow, lastCol);
+                        SheetView.Spread.ScrollToRow(lastRow);
+                        SheetView.Spread.ScrollToColumn(lastCol);
+                    }
+                    else
+                    {
+                        int lastCol = Math.Max(0, SheetView.WorkSheet.ColumnCount - 1);
+                        SheetView.SelectCell(SheetView.ActiveRow, lastCol);
+                        SheetView.Spread.ScrollToColumn(lastCol);
+                    }
+                    break;
+
+                case Key.PageUp:
+                    if (editingManager.IsEditing) return;
+                    e.Handled = true;
+                    _selectionEndRow = -1; _selectionEndColumn = -1;
+                    int pageUpCount = Math.Max(1, SheetView.ViewPort.ViewRange.RowCount - 1);
+                    int targetUpRow = Math.Max(0, SheetView.ActiveRow - pageUpCount);
+                    SheetView.SelectCell(targetUpRow, SheetView.ActiveColumn);
+                    SheetView.Spread.ScrollToRow(Math.Max(0, SheetView.ViewPort.ViewRange.TopRow - pageUpCount));
+                    break;
+
+                case Key.PageDown:
+                    if (editingManager.IsEditing) return;
+                    e.Handled = true;
+                    _selectionEndRow = -1; _selectionEndColumn = -1;
+                    int pageDownCount = Math.Max(1, SheetView.ViewPort.ViewRange.RowCount - 1);
+                    int targetDownRow = Math.Min(SheetView.WorkSheet.RowCount - 1, SheetView.ActiveRow + pageDownCount);
+                    SheetView.SelectCell(targetDownRow, SheetView.ActiveColumn);
+                    SheetView.Spread.ScrollToRow(Math.Min(SheetView.WorkSheet.RowCount - 1, SheetView.ViewPort.ViewRange.TopRow + pageDownCount));
+                    break;
+
                 case Key.Down:
                     e.Handled = true;
-                    MoveDownCellSelection();
+                    if ((Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift)
+                        ExpandSelectionDown();
+                    else
+                        MoveDownCellSelection();
                     break;
 
                 case Key.Up:
                     e.Handled = true;
-                    MoveUpCellSelection();
+                    if ((Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift)
+                        ExpandSelectionUp();
+                    else
+                        MoveUpCellSelection();
                     break;
 
                 case Key.Right:
                     e.Handled = true;
-                    MoveRightCellSelection();
+                    if ((Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift)
+                        ExpandSelectionRight();
+                    else
+                        MoveRightCellSelection();
                     break;
 
                 case Key.Left:
                     e.Handled = true;
-                    MoveLeftCellSelection();
+                    if ((Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift)
+                        ExpandSelectionLeft();
+                    else
+                        MoveLeftCellSelection();
                     break;
 
                 case Key.Tab:
                     if (!editingManager.IsShowingFormulaSuggestion)
                     {
                         e.Handled = true;
-                        MoveRightCellSelection();
+                        if ((Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift)
+                            MoveLeftCellSelection();
+                        else
+                            MoveRightCellSelection();
                     }
                     break;
 
@@ -356,7 +591,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                         if (editingManager.IsEditing && !editingManager.EndEdit(true))
                             return;
 
-                        MoveDownCellSelection();
+                        if ((Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift)
+                            MoveUpCellSelection();
+                        else
+                            MoveDownCellSelection();
                     }
                     break;
 
@@ -365,22 +603,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                         return;
 
                     e.Handled = true;
-                    SheetView.Spread.SuspendUpdates = true;
-                    for (int row = SheetView.Selection.TopRow; row <= SheetView.Selection.BottomRow; row++)
-                    {
-                        for (int column = SheetView.Selection.LeftColumn; column <= SheetView.Selection.RightColumn; column++)
-                        {
-                            var ws = SheetView.WorkSheet;
-                            ws.SetValue(row, column, null);
-                            ws.SetFormula(row, column, null);
-                        }
-                    }
-                    SheetView.Spread.SuspendUpdates = false;
-
-                    for (int row = SheetView.Selection.TopRow; row <= SheetView.Selection.BottomRow; row++)
-                    {
-                        SheetView.AutoSizeRow(row);
-                    }
+                    SheetView.ClearContents();
                     break;
 
                 case Key.Space:
@@ -537,6 +760,12 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 if (hitTest.Element == SheetElement.DragFill || _isDragging)
                 {
                     Cursor = SheetUtils.DragFillCursor;
+                    if (_isDragging && e.LeftButton == MouseButtonState.Pressed)
+                    {
+                        UpdateDragFillRange(hitTest);
+                        InvalidateVisual();
+                        return;
+                    }
                 }
                 else if (isElementHovered)
                 {
@@ -781,6 +1010,23 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
             // Give the handle a subtle white border so it pops out over the grid lines
             context.DrawRectangle(null, WpfResourceCache.GetPen(Brushes.White, 1), handleRect);
+
+            if (_isDragging && _dragFillRange.IsValid && _dragFillRange != SheetView.Selection)
+            {
+                var fillRangeAbsolute = SheetView.ViewPort.GetRangeRect(_dragFillRange);
+                var unscaledFill = ToSheetViewRect(fillRangeAbsolute);
+                var fillRect = new Rect(
+                    unscaledFill.X * zoom - 1,
+                    unscaledFill.Y * zoom - 0.5,
+                    unscaledFill.Width * zoom + 1,
+                    unscaledFill.Height * zoom + 1);
+
+                var dashPen = new Pen(Brushes.DarkGray, 1.5)
+                {
+                    DashStyle = DashStyles.Dash
+                };
+                context.DrawRectangle(null, dashPen, fillRect);
+            }
 
             context.Dispose();
         }

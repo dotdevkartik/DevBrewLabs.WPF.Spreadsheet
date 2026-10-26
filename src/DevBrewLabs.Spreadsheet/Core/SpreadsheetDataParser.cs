@@ -12,76 +12,22 @@ namespace DevBrewLabs.Spreadsheet.Core
             if (string.IsNullOrEmpty(text))
                 return null;
 
-            var lines = SplitIntoLines(text);
-            int lineCount = lines.Length;
-
-            if (lineCount > 1 && string.IsNullOrEmpty(lines[lineCount - 1]) && (text.EndsWith("\n") || text.EndsWith("\r")))
-            {
-                lineCount--;
-            }
-
-            if (lineCount == 0)
-                return null;
-
-            var parsedRows = new List<string[]>();
-            int maxColumns = 0;
-
-            for (int i = 0; i < lineCount; i++)
-            {
-                var rowCells = ParseLine(lines[i], delimiter);
-                
-                if (rowCells.Length > maxColumns)
-                    maxColumns = rowCells.Length;
-
-                parsedRows.Add(rowCells);
-            }
-
-            if (maxColumns == 0)
-                return null;
-
-            var data = new string[parsedRows.Count, maxColumns];
-            for (int r = 0; r < parsedRows.Count; r++)
-            {
-                var rowCells = parsedRows[r];
-                for (int c = 0; c < maxColumns; c++)
-                {
-                    if (c < rowCells.Length)
-                    {
-                        data[r, c] = rowCells[c];
-                    }
-                    else
-                    {
-                        data[r, c] = null;
-                    }
-                }
-            }
-
-            return data;
-        }
-
-        private static string[] SplitIntoLines(string text)
-        {
-            // Simple split by newline. 
-            // In a real CSV, newlines can exist inside quotes, but this is a simplified version.
-            return text.Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.None);
-        }
-
-        private static string[] ParseLine(string line, char delimiter)
-        {
-            var result = new List<string>();
+            var rows = new List<List<string>>();
+            var currentRow = new List<string>();
+            var currentCell = new StringBuilder();
             bool inQuotes = false;
-            var currentToken = new StringBuilder();
+            int len = text.Length;
 
-            for (int i = 0; i < line.Length; i++)
+            for (int i = 0; i < len; i++)
             {
-                char c = line[i];
+                char c = text[i];
 
                 if (c == '\"')
                 {
-                    if (inQuotes && i + 1 < line.Length && line[i + 1] == '\"')
+                    if (inQuotes && i + 1 < len && text[i + 1] == '\"')
                     {
-                        currentToken.Append('\"');
-                        i++;
+                        currentCell.Append('\"');
+                        i++; // Skip escaped quote
                     }
                     else
                     {
@@ -90,17 +36,63 @@ namespace DevBrewLabs.Spreadsheet.Core
                 }
                 else if (c == delimiter && !inQuotes)
                 {
-                    result.Add(currentToken.ToString());
-                    currentToken.Clear();
+                    currentRow.Add(currentCell.ToString());
+                    currentCell.Clear();
+                }
+                else if ((c == '\r' || c == '\n') && !inQuotes)
+                {
+                    // Handle \r\n
+                    if (c == '\r' && i + 1 < len && text[i + 1] == '\n')
+                    {
+                        i++;
+                    }
+
+                    currentRow.Add(currentCell.ToString());
+                    currentCell.Clear();
+                    rows.Add(currentRow);
+                    currentRow = new List<string>();
                 }
                 else
                 {
-                    currentToken.Append(c);
+                    currentCell.Append(c);
                 }
             }
-            
-            result.Add(currentToken.ToString());
-            return result.ToArray();
+
+            if (currentCell.Length > 0 || currentRow.Count > 0)
+            {
+                currentRow.Add(currentCell.ToString());
+                rows.Add(currentRow);
+            }
+
+            if (rows.Count > 1 && rows[rows.Count - 1].Count == 1 && string.IsNullOrEmpty(rows[rows.Count - 1][0]) && (text.EndsWith("\n") || text.EndsWith("\r")))
+            {
+                rows.RemoveAt(rows.Count - 1);
+            }
+
+            if (rows.Count == 0)
+                return null;
+
+            int maxCols = 0;
+            foreach (var row in rows)
+            {
+                if (row.Count > maxCols)
+                    maxCols = row.Count;
+            }
+
+            if (maxCols == 0)
+                return null;
+
+            var data = new string[rows.Count, maxCols];
+            for (int r = 0; r < rows.Count; r++)
+            {
+                var row = rows[r];
+                for (int c = 0; c < maxCols; c++)
+                {
+                    data[r, c] = c < row.Count ? row[c] : null;
+                }
+            }
+
+            return data;
         }
 
         public static string FormatTsvCell(string text)

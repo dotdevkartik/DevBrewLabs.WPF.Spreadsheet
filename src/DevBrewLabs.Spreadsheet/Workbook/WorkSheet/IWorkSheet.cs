@@ -125,6 +125,10 @@ namespace DevBrewLabs.Spreadsheet
         /// </summary>
         void Clear(WorkSheetClearMode mode);
         /// <summary>
+        /// Automatically fills target range from source range.
+        /// </summary>
+        void AutoFill(CellRange sourceRange, CellRange targetRange, bool isCtrlPressed = false);
+        /// <summary>
         /// Checks if the worksheet contains this range
         /// </summary>
         /// <param name="row"></param>

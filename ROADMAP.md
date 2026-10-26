@@ -3,18 +3,18 @@
 ```mermaid
 flowchart TD
     %% Phase 1
-    M1(["📦 v1.0.0 - Foundation Baseline (Now)"])
+    M1(["📦 v1.0.0 - Foundation Baseline (Released)"])
     D1["• 60 FPS Immediate-Mode Rendering\n• 1,000,000 Row Virtualization (< 300 MB)\n• Formula DAG Recalculation Engine\n• Built-in Interactive Cell Controls\n• Multi-Target NuGet (.NET 8/9/10 & 4.7.2)"]
     M1 --> D1
 
     %% Phase 2
-    M2(["⚡ v1.1.0 - Dynamic Grid & Fill (Q1)"])
-    D2["• Dynamic Row & Column Insert / Delete\n• Formula Coordinate Auto-Remapping\n• Drag-Fill Handle & Number Series\n• Header Context Action Menus"]
+    M2(["⚡ v1.1.0 - Dynamic Grid & Fill (Released)"])
+    D2["• Dynamic Row & Column Insert / Delete\n• Formula Coordinate Auto-Remapping ($ and #REF!)\n• Drag-Fill Handle & Auto-Fill Series\n• Merged Header Spans & Header Context Menus\n• RFC-4180 Multiline Clipboard & Complete Keyboard Navigation"]
     M2 --> D2
 
     %% Phase 3
     M3(["❄️ v1.2.0 - Viewport & Ergonomics (Q2)"])
-    D3["• Frozen Rows & Columns (Split Panes)\n• Off-Screen Spanned Cell Fix\n• RFC-4180 Multiline Copy-Paste\n• Touch Panning & Inertia Scrolling"]
+    D3["• Frozen Rows & Columns (Split Panes)\n• Off-Screen Spanned Cell Fix\n• Touch Panning & Inertia Scrolling"]
     M3 --> D3
 
     %% Phase 4

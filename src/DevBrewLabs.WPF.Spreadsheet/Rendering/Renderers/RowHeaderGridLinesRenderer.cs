@@ -40,6 +40,37 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Renderers
                     if (columnWidth == 0)
                         continue;
 
+                    var anchor = context.Worksheet.RowHeaders.GetSpanCellRange(row, col);
+                    if (anchor != default)
+                    {
+                        if (anchor.TopRow != row || anchor.LeftColumn != col)
+                            continue;
+
+                        // compute spanned snapped rect
+                        double totalHeight = 0;
+                        for (int r = 0; r < anchor.RowCount; r++)
+                        {
+                            if (context.Rows.IsRowVisible(row + r))
+                                totalHeight += context.Rows.GetRowHeight(row + r);
+                        }
+
+                        double totalWidth = 0;
+                        for (int c = 0; c < anchor.ColumnCount; c++)
+                        {
+                            totalWidth += context.RowHeaderColumns.GetColumnWidth(col + c);
+                        }
+
+                        var spanColLoc = context.ViewPort.GetHeaderColumnLocation(col);
+                        var spanRawX = spanColLoc * context.ZoomFactor;
+                        double spanX1 = (Math.Round((spanRawX + halfPenDip) * dpi, MidpointRounding.AwayFromZero) - halfPenPx) * invDpi;
+                        double spanX2 = (Math.Round((spanRawX + totalWidth * context.ZoomFactor + halfPenDip) * dpi, MidpointRounding.AwayFromZero) - halfPenPx) * invDpi;
+                        double spanY2 = (Math.Round((rawY + totalHeight * context.ZoomFactor + halfPenDip) * dpi, MidpointRounding.AwayFromZero) - halfPenPx) * invDpi;
+
+                        var spanRect = new Rect(spanX1, y1, spanX2 - spanX1, spanY2 - y1);
+                        context.DrawRectangle(null, context.GridLinePen, spanRect);
+                        continue;
+                    }
+
                     var colLocation = context.ViewPort.GetHeaderColumnLocation(col);
                     var rawX = colLocation * context.ZoomFactor;
                     var scaledColumnWidth = columnWidth * context.ZoomFactor;

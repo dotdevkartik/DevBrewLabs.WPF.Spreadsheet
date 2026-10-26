@@ -1,3 +1,5 @@
+using DevBrewLabs.Spreadsheet.CalcEngine.Utils;
+using System.Linq;
 using DevBrewLabs.Evalis;
 using DevBrewLabs.Spreadsheet.CalcEngine;
 using DevBrewLabs.Spreadsheet.Core;
@@ -666,8 +668,234 @@ namespace DevBrewLabs.Spreadsheet
 
         public void Clear(WorkSheetClearMode mode)
         {
-            throw new NotImplementedException();
+            if ((mode == WorkSheetClearMode.Formula || mode == WorkSheetClearMode.All) && _workBook != null && _dataStore != null)
+            {
+                foreach (var col in _dataStore.GetAllColumnData())
+                {
+                    foreach (var r in col.GetRowsWithFormulas().ToList())
+                    {
+                        string oldFormula = col.GetFormula(r);
+                        _workBook.RaiseFormulaChanged(new FormulaChangedEventArgs
+                        {
+                            SheetName = Name,
+                            Row = r,
+                            Column = col.ColumnIndex,
+                            OldFormula = oldFormula,
+                            NewFormula = null
+                        });
+                    }
+                }
+            }
+
+            _dataStore.Clear(mode);
+
+            if (mode == WorkSheetClearMode.Styles)
+            {
+                if (_rows != null)
+                {
+                    foreach (var r in _rows.GetItems())
+                    {
+                        r.Style = null;
+                        r.StyleName = null;
+                        r.Formatter = null;
+                    }
+                }
+                if (_columns != null)
+                {
+                    foreach (var c in _columns.GetItems())
+                    {
+                        c.Style = null;
+                        c.StyleName = null;
+                        c.Formatter = null;
+                    }
+                }
+            }
+            else if (mode == WorkSheetClearMode.All)
+            {
+                _spanManager?.Clear();
+                _rows?.Clear();
+                _columns?.Clear();
+                _autoFilter?.ClearAll();
+            }
+
+            OnRangeChanged(new RangeChangedEventArgs(
+                SheetRegion.Cells,
+                this,
+                new CellRange(0, 0, RowCount, ColumnCount),
+                null, null, RangeChangeType.Value));
         }
+
+        public void AutoFill(CellRange sourceRange, CellRange targetRange, bool isCtrlPressed = false)
+        {
+            DevBrewLabs.Spreadsheet.Core.AutoFillHelper.AutoFill(this, sourceRange, targetRange, isCtrlPressed);
+        }
+
+        internal void InsertRowsCore(int index, int count)
+        {
+            if (IsBound)
+                throw new InvalidOperationException("Cannot insert rows into a data-bound worksheet.");
+
+            if (count <= 0) return;
+
+            UnregisterWorkbookFormulas();
+
+            _dataStore.InsertRows(index, count);
+            _spanManager.InsertRows(index, count);
+            _rowHeaders.InsertRows(index, count);
+            _autoFilter?.InsertRows(index, count);
+
+            RemapFormulasOnRowChange(index, count, isInsert: true);
+            RowCount += count;
+        }
+
+        internal void RemoveRowsCore(int index, int count)
+        {
+            if (IsBound)
+                throw new InvalidOperationException("Cannot remove rows from a data-bound worksheet.");
+
+            if (count <= 0) return;
+
+            UnregisterWorkbookFormulas();
+
+            _dataStore.RemoveRows(index, count);
+            _spanManager.RemoveRows(index, count);
+            _rowHeaders.RemoveRows(index, count);
+            _autoFilter?.RemoveRows(index, count);
+
+            RemapFormulasOnRowChange(index, count, isInsert: false);
+            RowCount = Math.Max(0, RowCount - count);
+        }
+
+        internal void InsertColumnsCore(int index, int count)
+        {
+            if (count <= 0) return;
+
+            UnregisterWorkbookFormulas();
+
+            _dataStore.InsertColumns(index, count);
+            _spanManager.InsertColumns(index, count);
+            _columnHeaders.InsertColumns(index, count);
+            _autoFilter?.InsertColumns(index, count);
+
+            RemapFormulasOnColumnChange(index, count, isInsert: true);
+            ColumnCount += count;
+        }
+
+        internal void RemoveColumnsCore(int index, int count)
+        {
+            if (count <= 0) return;
+
+            UnregisterWorkbookFormulas();
+
+            _dataStore.RemoveColumns(index, count);
+            _spanManager.RemoveColumns(index, count);
+            _columnHeaders.RemoveColumns(index, count);
+            _autoFilter?.RemoveColumns(index, count);
+
+            RemapFormulasOnColumnChange(index, count, isInsert: false);
+            ColumnCount = Math.Max(0, ColumnCount - count);
+        }
+
+        private void UnregisterWorkbookFormulas()
+        {
+            if (_workBook?.WorkSheets == null) return;
+            foreach (var s in _workBook.WorkSheets)
+            {
+                if (s is Worksheet ws && ws._dataStore != null)
+                {
+                    foreach (var col in ws._dataStore.GetAllColumnData())
+                    {
+                        var rowsWithFormulas = col.GetRowsWithFormulas().ToList();
+                        foreach (var r in rowsWithFormulas)
+                        {
+                            string oldFormula = col.GetFormula(r);
+                            if (!string.IsNullOrEmpty(oldFormula))
+                            {
+                                _workBook.RaiseFormulaChanged(new FormulaChangedEventArgs
+                                {
+                                    SheetName = ws.Name,
+                                    Row = r,
+                                    Column = col.ColumnIndex,
+                                    OldFormula = oldFormula,
+                                    NewFormula = null
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void RemapFormulasOnRowChange(int index, int count, bool isInsert)
+        {
+            if (_workBook?.WorkSheets == null) return;
+            foreach (var s in _workBook.WorkSheets)
+            {
+                if (s is Worksheet ws && ws._dataStore != null)
+                {
+                    foreach (var col in ws._dataStore.GetAllColumnData())
+                    {
+                        var rowsWithFormulas = col.GetRowsWithFormulas().ToList();
+                        foreach (var r in rowsWithFormulas)
+                        {
+                            string oldFormula = col.GetFormula(r);
+                            if (!string.IsNullOrEmpty(oldFormula))
+                            {
+                                string remapped = FormulaRemapper.RemapOnRowChange(oldFormula, Name, ws.Name, index, count, isInsert);
+                                if (remapped != oldFormula)
+                                {
+                                    col.SetFormula(r, remapped);
+                                }
+                                _workBook.RaiseFormulaChanged(new FormulaChangedEventArgs
+                                {
+                                    SheetName = ws.Name,
+                                    Row = r,
+                                    Column = col.ColumnIndex,
+                                    OldFormula = null,
+                                    NewFormula = remapped
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void RemapFormulasOnColumnChange(int index, int count, bool isInsert)
+        {
+            if (_workBook?.WorkSheets == null) return;
+            foreach (var s in _workBook.WorkSheets)
+            {
+                if (s is Worksheet ws && ws._dataStore != null)
+                {
+                    foreach (var col in ws._dataStore.GetAllColumnData())
+                    {
+                        var rowsWithFormulas = col.GetRowsWithFormulas().ToList();
+                        foreach (var r in rowsWithFormulas)
+                        {
+                            string oldFormula = col.GetFormula(r);
+                            if (!string.IsNullOrEmpty(oldFormula))
+                            {
+                                string remapped = FormulaRemapper.RemapOnColumnChange(oldFormula, Name, ws.Name, index, count, isInsert);
+                                if (remapped != oldFormula)
+                                {
+                                    col.SetFormula(r, remapped);
+                                }
+                                _workBook.RaiseFormulaChanged(new FormulaChangedEventArgs
+                                {
+                                    SheetName = ws.Name,
+                                    Row = r,
+                                    Column = col.ColumnIndex,
+                                    OldFormula = null,
+                                    NewFormula = remapped
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
 
         public bool ContainsRange(int row, int column, int rowCount, int columnCount)
         {
@@ -1126,6 +1354,102 @@ namespace DevBrewLabs.Spreadsheet
                 {
                     colData.SetValue(dataRow, value);
                     colData.SetFormatter(dataRow, null);
+                }
+            }
+
+            public IEnumerable<ColumnData> GetAllColumnData() => _columnStore.Values;
+
+            public void Clear(WorkSheetClearMode mode)
+            {
+                if (_columnStore == null) return;
+                foreach (var col in _columnStore.Values)
+                {
+                    switch (mode)
+                    {
+                        case WorkSheetClearMode.Data:
+                            col.ClearValues();
+                            break;
+                        case WorkSheetClearMode.Formula:
+                            col.ClearFormulas();
+                            break;
+                        case WorkSheetClearMode.Styles:
+                            col.ClearStyles();
+                            break;
+                        case WorkSheetClearMode.All:
+                            col.Clear();
+                            break;
+                    }
+                }
+
+                if (mode == WorkSheetClearMode.All)
+                {
+                    _rowMap = null;
+                }
+            }
+
+            public void InsertRows(int index, int count)
+            {
+                if (count <= 0) return;
+                _rowMap = null;
+                foreach (var col in _columnStore.Values)
+                {
+                    col.InsertRow(index, count);
+                }
+            }
+
+            public void RemoveRows(int index, int count)
+            {
+                if (count <= 0) return;
+                _rowMap = null;
+                foreach (var col in _columnStore.Values)
+                {
+                    col.RemoveRow(index, count);
+                }
+            }
+
+            public void InsertColumns(int index, int count)
+            {
+                if (count <= 0) return;
+                var keysToShift = new List<int>(_columnStore.Keys);
+                keysToShift.Sort((a, b) => b.CompareTo(a));
+                foreach (var k in keysToShift)
+                {
+                    if (k >= index)
+                    {
+                        var cd = _columnStore[k];
+                        _columnStore.Remove(k);
+                        cd.ColumnIndex = k + count;
+                        _columnStore[k + count] = cd;
+                    }
+                }
+            }
+
+            public void RemoveColumns(int index, int count)
+            {
+                if (count <= 0) return;
+                var keysToRemove = new List<int>();
+                var keysToShift = new List<int>();
+                foreach (var k in _columnStore.Keys)
+                {
+                    if (k >= index && k < index + count)
+                        keysToRemove.Add(k);
+                    else if (k >= index + count)
+                        keysToShift.Add(k);
+                }
+
+                foreach (var k in keysToRemove)
+                {
+                    _columnStore[k].Clear();
+                    _columnStore.Remove(k);
+                }
+
+                keysToShift.Sort();
+                foreach (var k in keysToShift)
+                {
+                    var cd = _columnStore[k];
+                    _columnStore.Remove(k);
+                    cd.ColumnIndex = k - count;
+                    _columnStore[k - count] = cd;
                 }
             }
 

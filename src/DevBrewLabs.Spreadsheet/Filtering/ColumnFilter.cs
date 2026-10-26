@@ -18,7 +18,7 @@ namespace DevBrewLabs.Spreadsheet.Filtering
     /// </summary>
     public sealed class ColumnFilter
     {
-        public int ColumnIndex { get; }
+        public int ColumnIndex { get; internal set; }
         private readonly List<IFilterCondition> _conditions = new List<IFilterCondition>();
 
         public IList<IFilterCondition> Conditions => _conditions;

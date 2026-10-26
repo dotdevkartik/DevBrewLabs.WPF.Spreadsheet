@@ -120,5 +120,151 @@ namespace DevBrewLabs.Spreadsheet.Core
             }
             return range;
         }
+
+        public void InsertRows(int index, int count)
+        {
+            if (count <= 0 || _anchors.Count == 0) return;
+
+            var existingSpans = new List<CellRange>(_anchors.Values);
+            Clear();
+
+            foreach (var span in existingSpans)
+            {
+                if (span.TopRow >= index)
+                {
+                    AddSpan(span.TopRow + count, span.LeftColumn, span.RowCount, span.ColumnCount);
+                }
+                else if (span.BottomRow >= index)
+                {
+                    AddSpan(span.TopRow, span.LeftColumn, span.RowCount + count, span.ColumnCount);
+                }
+                else
+                {
+                    AddSpan(span.TopRow, span.LeftColumn, span.RowCount, span.ColumnCount);
+                }
+            }
+        }
+
+        public void RemoveRows(int index, int count)
+        {
+            if (count <= 0 || _anchors.Count == 0) return;
+
+            int removeEnd = index + count - 1;
+            var existingSpans = new List<CellRange>(_anchors.Values);
+            Clear();
+
+            foreach (var span in existingSpans)
+            {
+                if (span.TopRow >= index && span.BottomRow <= removeEnd)
+                {
+                    // Completely deleted
+                    continue;
+                }
+
+                if (span.TopRow > removeEnd)
+                {
+                    AddSpan(span.TopRow - count, span.LeftColumn, span.RowCount, span.ColumnCount);
+                }
+                else if (span.BottomRow < index)
+                {
+                    AddSpan(span.TopRow, span.LeftColumn, span.RowCount, span.ColumnCount);
+                }
+                else
+                {
+                    // Intersecting
+                    int overlapTop = Math.Max(span.TopRow, index);
+                    int overlapBottom = Math.Min(span.BottomRow, removeEnd);
+                    int overlapCount = overlapBottom - overlapTop + 1;
+                    int newRowCount = span.RowCount - overlapCount;
+
+                    int newTopRow = span.TopRow;
+                    if (span.TopRow >= index)
+                    {
+                        newTopRow = index;
+                    }
+
+                    if (newRowCount > 1 || span.ColumnCount > 1)
+                    {
+                        AddSpan(newTopRow, span.LeftColumn, Math.Max(1, newRowCount), span.ColumnCount);
+                    }
+                }
+            }
+        }
+
+        public void InsertColumns(int index, int count)
+        {
+            if (count <= 0 || _anchors.Count == 0) return;
+
+            var existingSpans = new List<CellRange>(_anchors.Values);
+            Clear();
+
+            foreach (var span in existingSpans)
+            {
+                if (span.LeftColumn >= index)
+                {
+                    AddSpan(span.TopRow, span.LeftColumn + count, span.RowCount, span.ColumnCount);
+                }
+                else if (span.RightColumn >= index)
+                {
+                    AddSpan(span.TopRow, span.LeftColumn, span.RowCount, span.ColumnCount + count);
+                }
+                else
+                {
+                    AddSpan(span.TopRow, span.LeftColumn, span.RowCount, span.ColumnCount);
+                }
+            }
+        }
+
+        public void RemoveColumns(int index, int count)
+        {
+            if (count <= 0 || _anchors.Count == 0) return;
+
+            int removeEnd = index + count - 1;
+            var existingSpans = new List<CellRange>(_anchors.Values);
+            Clear();
+
+            foreach (var span in existingSpans)
+            {
+                if (span.LeftColumn >= index && span.RightColumn <= removeEnd)
+                {
+                    // Completely deleted
+                    continue;
+                }
+
+                if (span.LeftColumn > removeEnd)
+                {
+                    AddSpan(span.TopRow, span.LeftColumn - count, span.RowCount, span.ColumnCount);
+                }
+                else if (span.RightColumn < index)
+                {
+                    AddSpan(span.TopRow, span.LeftColumn, span.RowCount, span.ColumnCount);
+                }
+                else
+                {
+                    // Intersecting
+                    int overlapLeft = Math.Max(span.LeftColumn, index);
+                    int overlapRight = Math.Min(span.RightColumn, removeEnd);
+                    int overlapCount = overlapRight - overlapLeft + 1;
+                    int newColCount = span.ColumnCount - overlapCount;
+
+                    int newLeftCol = span.LeftColumn;
+                    if (span.LeftColumn >= index)
+                    {
+                        newLeftCol = index;
+                    }
+
+                    if (span.RowCount > 1 || newColCount > 1)
+                    {
+                        AddSpan(span.TopRow, newLeftCol, span.RowCount, Math.Max(1, newColCount));
+                    }
+                }
+            }
+        }
+
+        public void Clear()
+        {
+            _anchors.Clear();
+            _coveredCells.Clear();
+        }
     }
 }

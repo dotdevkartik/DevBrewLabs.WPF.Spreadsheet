@@ -14,6 +14,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Menus
 
             Items.Add(CreateSeparator());
 
+            Items.Add(CreateMenuItem("Insert Columns", null, "AddSheetGeometry", InsertBrush, new InsertColumnsCommand(Spread), sheetView));
+            Items.Add(CreateMenuItem("Delete Columns", null, "DeleteSheetGeometry", DeleteBrush, new DeleteColumnsCommand(Spread), sheetView));
             Items.Add(CreateMenuItem("Clear Contents", "Del", "ClearIconGeometry", ClearBrush, new ClearContentsCommand(Spread), sheetView));
 
             Items.Add(CreateSeparator());
@@ -28,6 +30,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Menus
             Items.Add(CreateSeparator());
 
             Items.Add(CreateMenuItem("Sort A to Z", null, "SortAscGeometry", SortBrush, new SortCommand(Spread), new Tuple<SheetView, bool>(sheetView, true)));
-            Items.Add(CreateMenuItem("Sort Z to A", null, "SortDescGeometry", SortBrush, new SortCommand(Spread), new Tuple<SheetView, bool>(sheetView, false)));        }
+            Items.Add(CreateMenuItem("Sort Z to A", null, "SortDescGeometry", SortBrush, new SortCommand(Spread), new Tuple<SheetView, bool>(sheetView, false)));
+        }
     }
 }

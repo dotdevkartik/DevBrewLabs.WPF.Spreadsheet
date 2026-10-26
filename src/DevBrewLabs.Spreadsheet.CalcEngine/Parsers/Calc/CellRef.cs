@@ -5,27 +5,43 @@ namespace DevBrewLabs.Spreadsheet.CalcEngine.Parsers
 {
     internal class CellRef : IEquatable<CellRef>
     {
-        private readonly string _rangeName;
-
-        public string Name => string.IsNullOrEmpty(SheetName) ? _rangeName : SheetName + "!" + _rangeName;
-
         public int Column { get; }
         public int Row { get; }
         public string SheetName { get; }
+        public bool IsRowAbsolute { get; }
+        public bool IsColumnAbsolute { get; }
+
+        public string Name
+        {
+            get
+            {
+                string colStr = (IsColumnAbsolute ? "$" : "") + GetColumnLetterFromNumber(Column + 1);
+                string rowStr = (IsRowAbsolute ? "$" : "") + (Row + 1).ToString();
+                string refStr = colStr + rowStr;
+
+                if (string.IsNullOrEmpty(SheetName))
+                    return refStr;
+
+                if (SheetName.Contains(" ") || SheetName.Contains("!"))
+                    return $"'{SheetName}'!{refStr}";
+
+                return $"{SheetName}!{refStr}";
+            }
+        }
 
         public CellRef(string name)
         {
             if (string.IsNullOrEmpty(name))
                 throw new ArgumentNullException(nameof(name));
 
-            string cellRef = name;
+            string cellRef = name.Trim();
             string sheetName = string.Empty;
 
-            int exclamationIdx = name.LastIndexOf('!');
+            int exclamationIdx = cellRef.LastIndexOf('!');
             if (exclamationIdx >= 0)
             {
-                sheetName = name.Substring(0, exclamationIdx);
-                cellRef = name.Substring(exclamationIdx + 1);
+                sheetName = cellRef.Substring(0, exclamationIdx).Trim('\'');
+                cellRef = cellRef.Substring(exclamationIdx + 1).Trim();
             }
 
             int digitIdx = -1;
@@ -43,19 +59,36 @@ namespace DevBrewLabs.Spreadsheet.CalcEngine.Parsers
                 throw new ArgumentException($"Invalid cell reference format: '{name}'", nameof(name));
             }
 
-            string colLetter = cellRef.Substring(0, digitIdx);
-            _rangeName = colLetter.ToUpperInvariant() + rowNumber.ToString();
+            bool isRowAbs = false;
+            if (digitIdx > 0 && cellRef[digitIdx - 1] == '$')
+            {
+                isRowAbs = true;
+            }
+
+            int colEndIdx = isRowAbs ? digitIdx - 1 : digitIdx;
+            bool isColAbs = false;
+            int colStartIdx = 0;
+            if (cellRef.Length > 0 && cellRef[0] == '$')
+            {
+                isColAbs = true;
+                colStartIdx = 1;
+            }
+
+            string colLetter = cellRef.Substring(colStartIdx, colEndIdx - colStartIdx);
             Column = GetColumnNumberFromLetter(colLetter) - 1;
             Row = rowNumber - 1;
             SheetName = sheetName;
+            IsRowAbsolute = isRowAbs;
+            IsColumnAbsolute = isColAbs;
         }
 
-        public CellRef(int row, int col, string sheetName = "")
+        public CellRef(int row, int col, string sheetName = "", bool isRowAbsolute = false, bool isColumnAbsolute = false)
         {
             Row = row;
             Column = col;
-            _rangeName = GetColumnLetterFromNumber(col + 1) + (row + 1).ToString();
             SheetName = sheetName ?? string.Empty;
+            IsRowAbsolute = isRowAbsolute;
+            IsColumnAbsolute = isColumnAbsolute;
         }
 
         public static int GetColumnNumberFromLetter(string letter)

@@ -25,6 +25,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Menus
         protected static readonly SolidColorBrush DeleteSheetBrush = new SolidColorBrush(Color.FromRgb(239, 68, 68)); // Red
         protected static readonly SolidColorBrush DuplicateSheetBrush = new SolidColorBrush(Color.FromRgb(37, 99, 235)); // Blue
         protected static readonly SolidColorBrush FilterBrush = new SolidColorBrush(Color.FromRgb(37, 99, 235)); // Azure Blue
+        protected static readonly SolidColorBrush InsertBrush = new SolidColorBrush(Color.FromRgb(16, 124, 65));  // Green
+        protected static readonly SolidColorBrush DeleteBrush = new SolidColorBrush(Color.FromRgb(239, 68, 68));  // Red
 
         static SpreadContextMenu()
         {
@@ -41,6 +43,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Menus
             DeleteSheetBrush.Freeze();
             DuplicateSheetBrush.Freeze();
             FilterBrush.Freeze();
+            InsertBrush.Freeze();
+            DeleteBrush.Freeze();
         }
 
         private static ResourceDictionary _themeDictionary;

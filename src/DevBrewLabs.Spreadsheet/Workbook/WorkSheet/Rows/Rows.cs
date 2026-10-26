@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace DevBrewLabs.Spreadsheet
 {
@@ -42,12 +42,18 @@ namespace DevBrewLabs.Spreadsheet
 
         public override void Insert(int index, int count)
         {
-            throw new System.NotImplementedException("Row insertion is not yet implemented.");
+            if (WorkSheet.IsBound)
+                throw new InvalidOperationException("Cannot insert rows into a data-bound worksheet.");
+            base.Insert(index, count);
+            WorkSheet.InsertRowsCore(index, count);
         }
 
         public override void Remove(int index, int count)
         {
-            throw new System.NotImplementedException("Row removal is not yet implemented.");
+            if (WorkSheet.IsBound)
+                throw new InvalidOperationException("Cannot remove rows from a data-bound worksheet.");
+            base.Remove(index, count);
+            WorkSheet.RemoveRowsCore(index, count);
         }
     }
 }

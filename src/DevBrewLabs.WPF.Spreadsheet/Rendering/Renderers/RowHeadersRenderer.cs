@@ -2,7 +2,7 @@ using DevBrewLabs.Spreadsheet;
 using DevBrewLabs.Spreadsheet.Drawing;
 using DevBrewLabs.WPF.Spreadsheet.Rendering.Text;
 using DevBrewLabs.WPF.Spreadsheet.Styling;
-using System.Data.Common;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Media;
 
@@ -14,6 +14,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
         {
             AdjustHeaderWidth(context, topRow, leftColumn, bottomRow, rightColumn);
 
+            var renderedSkippedAnchors = new HashSet<(int Row, int Col)>();
+
             for (int row = topRow; row <= bottomRow; row++)
             {
                 if (!context.Rows.IsRowVisible(row)) continue;
@@ -22,31 +24,57 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                 if (rowHeight == 0)
                     continue;
 
-                var sheetRow = context.Rows.GetItem(row);
-                double rowLocation = context.ViewPort.GetRowLocation(row);
-
-                var y = (rowLocation - context.ViewPort.TopRowLocation) * context.ZoomFactor;
-                var scaledRowHeight = rowHeight * context.ZoomFactor;
-
                 for (int col = leftColumn; col <= rightColumn; col++)
                 {
                     var columnWidth = context.RowHeaderColumns.GetColumnWidth(col);
-
                     if (columnWidth == 0)
                         continue;
 
-                    var sheetColumn = context.RowHeaderColumns.GetItem(col);
-                    var colLocation = context.ViewPort.GetHeaderColumnLocation(col);
-                    var x = colLocation * context.ZoomFactor;
-                    var scaledColumnWidth = columnWidth * context.ZoomFactor;
+                    var anchor = context.RowHeaders.GetSpanCellRange(row, col);
+                    if (anchor != default)
+                    {
+                        if (!renderedSkippedAnchors.Add((anchor.TopRow, anchor.LeftColumn)))
+                            continue;
 
-                    var cellRect = new Rect(x, y, scaledColumnWidth, scaledRowHeight);
-                    var style = context.Worksheet.GetRowHeaderCellStyle(row, col, sheetRow, sheetColumn);
-                    var cellValue = context.RowHeaders.GetValue(row, col);
+                        RenderCell(context, anchor.TopRow, anchor.LeftColumn, anchor.RowCount, anchor.ColumnCount);
+                        continue;
+                    }
 
-                    DrawRowHeaderCell(context, row, cellValue, style, cellRect);
+                    RenderCell(context, row, col, 1, 1);
                 }
             }
+        }
+
+        private void RenderCell(RenderContext context, int row, int col, int rowSpan, int colSpan)
+        {
+            var sheetRow = context.Rows.GetItem(row);
+            var sheetColumn = context.RowHeaderColumns.GetItem(col);
+            double rowLocation = context.ViewPort.GetRowLocation(row);
+            var y = (rowLocation - context.ViewPort.TopRowLocation) * context.ZoomFactor;
+
+            double totalHeight = 0;
+            for (int r = 0; r < rowSpan; r++)
+            {
+                if (context.Rows.IsRowVisible(row + r))
+                    totalHeight += context.Rows.GetRowHeight(row + r);
+            }
+            var scaledRowHeight = totalHeight * context.ZoomFactor;
+
+            var colLocation = context.ViewPort.GetHeaderColumnLocation(col);
+            var x = colLocation * context.ZoomFactor;
+
+            double totalWidth = 0;
+            for (int c = 0; c < colSpan; c++)
+            {
+                totalWidth += context.RowHeaderColumns.GetColumnWidth(col + c);
+            }
+            var scaledColumnWidth = totalWidth * context.ZoomFactor;
+
+            var cellRect = new Rect(x, y, scaledColumnWidth, scaledRowHeight);
+            var style = context.Worksheet.GetRowHeaderCellStyle(row, col, sheetRow, sheetColumn);
+            var cellValue = context.RowHeaders.GetValue(row, col);
+
+            DrawRowHeaderCell(context, row, cellValue, style, cellRect);
         }
 
         private void AdjustHeaderWidth(RenderContext context, int topRow, int leftColumn, int bottomRow, int rightColumn)

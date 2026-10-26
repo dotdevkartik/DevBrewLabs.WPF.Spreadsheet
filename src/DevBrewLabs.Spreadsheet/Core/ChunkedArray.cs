@@ -49,9 +49,80 @@ namespace DevBrewLabs.Spreadsheet.Core
             return false;
         }
 
+        public IEnumerable<int> GetPopulatedIndices()
+        {
+            foreach (var kvp in _chunks)
+            {
+                int baseIdx = kvp.Key * ChunkSize;
+                var chunk = kvp.Value;
+                for (int i = 0; i < ChunkSize; i++)
+                {
+                    if (!EqualityComparer<T>.Default.Equals(chunk[i], default))
+                    {
+                        yield return baseIdx + i;
+                    }
+                }
+            }
+        }
+
         public void Remove(int index)
         {
             SetValue(index, default);
+        }
+
+        public void Insert(int index, int count)
+        {
+            if (count <= 0) return;
+
+            var entriesToShift = new List<KeyValuePair<int, T>>();
+            foreach (var kvp in _chunks)
+            {
+                int baseIdx = kvp.Key * ChunkSize;
+                var chunk = kvp.Value;
+                for (int i = 0; i < ChunkSize; i++)
+                {
+                    int rowIdx = baseIdx + i;
+                    if (rowIdx >= index && !EqualityComparer<T>.Default.Equals(chunk[i], default))
+                    {
+                        entriesToShift.Add(new KeyValuePair<int, T>(rowIdx, chunk[i]));
+                        chunk[i] = default;
+                    }
+                }
+            }
+
+            foreach (var entry in entriesToShift)
+            {
+                SetValue(entry.Key + count, entry.Value);
+            }
+        }
+
+        public void RemoveRange(int index, int count)
+        {
+            if (count <= 0) return;
+
+            var entriesToShift = new List<KeyValuePair<int, T>>();
+            foreach (var kvp in _chunks)
+            {
+                int baseIdx = kvp.Key * ChunkSize;
+                var chunk = kvp.Value;
+                for (int i = 0; i < ChunkSize; i++)
+                {
+                    int rowIdx = baseIdx + i;
+                    if (rowIdx >= index)
+                    {
+                        if (rowIdx >= index + count && !EqualityComparer<T>.Default.Equals(chunk[i], default))
+                        {
+                            entriesToShift.Add(new KeyValuePair<int, T>(rowIdx, chunk[i]));
+                        }
+                        chunk[i] = default;
+                    }
+                }
+            }
+
+            foreach (var entry in entriesToShift)
+            {
+                SetValue(entry.Key - count, entry.Value);
+            }
         }
 
         public void Clear()

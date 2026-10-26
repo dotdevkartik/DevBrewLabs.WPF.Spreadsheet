@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 
 namespace DevBrewLabs.Spreadsheet
@@ -54,12 +54,14 @@ namespace DevBrewLabs.Spreadsheet
 
         public override void Insert(int index, int count)
         {
-            throw new System.NotImplementedException("Column insertion is not yet implemented.");
+            base.Insert(index, count);
+            WorkSheet.InsertColumnsCore(index, count);
         }
 
         public override void Remove(int index, int count)
         {
-            throw new System.NotImplementedException("Column removal is not yet implemented.");
+            base.Remove(index, count);
+            WorkSheet.RemoveColumnsCore(index, count);
         }
     }
 }

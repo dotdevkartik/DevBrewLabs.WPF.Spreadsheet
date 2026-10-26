@@ -322,6 +322,121 @@ namespace DevBrewLabs.Spreadsheet.Filtering
             _worksheet.SortRange(_range, options);
             Apply(); // Re-apply filter after sorting in case rows moved around
         }
+        internal void InsertRows(int index, int count)
+        {
+            if (!IsEnabled || count <= 0) return;
+            if (index <= _range.TopRow)
+            {
+                _range = new CellRange(_range.TopRow + count, _range.LeftColumn, _range.RowCount, _range.ColumnCount);
+            }
+            else if (index <= _range.BottomRow)
+            {
+                _range = new CellRange(_range.TopRow, _range.LeftColumn, _range.RowCount + count, _range.ColumnCount);
+            }
+        }
+
+        internal void RemoveRows(int index, int count)
+        {
+            if (!IsEnabled || count <= 0) return;
+            int delEnd = index + count - 1;
+            if (delEnd < _range.TopRow)
+            {
+                _range = new CellRange(_range.TopRow - count, _range.LeftColumn, _range.RowCount, _range.ColumnCount);
+            }
+            else if (index <= _range.BottomRow)
+            {
+                if (index <= _range.TopRow && delEnd >= _range.BottomRow)
+                {
+                    _range = default;
+                    _columnFilters.Clear();
+                    return;
+                }
+                int overlapStart = Math.Max(index, _range.TopRow);
+                int overlapEnd = Math.Min(delEnd, _range.BottomRow);
+                int removedInRange = Math.Max(0, overlapEnd - overlapStart + 1);
+                int removedBefore = Math.Max(0, _range.TopRow - index);
+                int newRowCount = _range.RowCount - removedInRange;
+                if (newRowCount <= 0)
+                {
+                    _range = default;
+                    _columnFilters.Clear();
+                }
+                else
+                {
+                    _range = new CellRange(_range.TopRow - removedBefore, _range.LeftColumn, newRowCount, _range.ColumnCount);
+                }
+            }
+        }
+
+        internal void InsertColumns(int index, int count)
+        {
+            if (!IsEnabled || count <= 0) return;
+            if (index <= _range.LeftColumn)
+            {
+                _range = new CellRange(_range.TopRow, _range.LeftColumn + count, _range.RowCount, _range.ColumnCount);
+            }
+            else if (index <= _range.RightColumn)
+            {
+                _range = new CellRange(_range.TopRow, _range.LeftColumn, _range.RowCount, _range.ColumnCount + count);
+            }
+
+            var keysToShift = _columnFilters.Keys.Where(k => k >= index).OrderByDescending(k => k).ToList();
+            foreach (var k in keysToShift)
+            {
+                var cf = _columnFilters[k];
+                _columnFilters.Remove(k);
+                cf.ColumnIndex = k + count;
+                _columnFilters[k + count] = cf;
+            }
+        }
+
+        internal void RemoveColumns(int index, int count)
+        {
+            if (!IsEnabled || count <= 0) return;
+            int delEnd = index + count - 1;
+
+            var keysToRemove = _columnFilters.Keys.Where(k => k >= index && k <= delEnd).ToList();
+            foreach (var k in keysToRemove)
+                _columnFilters.Remove(k);
+
+            var keysToShift = _columnFilters.Keys.Where(k => k > delEnd).OrderBy(k => k).ToList();
+            foreach (var k in keysToShift)
+            {
+                var cf = _columnFilters[k];
+                _columnFilters.Remove(k);
+                cf.ColumnIndex = k - count;
+                _columnFilters[k - count] = cf;
+            }
+
+            if (delEnd < _range.LeftColumn)
+            {
+                _range = new CellRange(_range.TopRow, _range.LeftColumn - count, _range.RowCount, _range.ColumnCount);
+            }
+            else if (index <= _range.RightColumn)
+            {
+                if (index <= _range.LeftColumn && delEnd >= _range.RightColumn)
+                {
+                    _range = default;
+                    _columnFilters.Clear();
+                    return;
+                }
+                int overlapStart = Math.Max(index, _range.LeftColumn);
+                int overlapEnd = Math.Min(delEnd, _range.RightColumn);
+                int removedInRange = Math.Max(0, overlapEnd - overlapStart + 1);
+                int removedBefore = Math.Max(0, _range.LeftColumn - index);
+                int newColCount = _range.ColumnCount - removedInRange;
+                if (newColCount <= 0)
+                {
+                    _range = default;
+                    _columnFilters.Clear();
+                }
+                else
+                {
+                    _range = new CellRange(_range.TopRow, _range.LeftColumn - removedBefore, _range.RowCount, newColCount);
+                }
+            }
+        }
+
     }
 }
 

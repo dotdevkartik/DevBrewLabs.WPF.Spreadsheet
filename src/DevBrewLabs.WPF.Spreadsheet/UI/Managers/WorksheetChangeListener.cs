@@ -35,13 +35,23 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
         public void OnWorksheetChanged(WorksheetChangedEventArgs args)
         {
-            if (!CanInvalidate())
+            var sheetView = (SheetView)_spread.Sheets?.GetSheetView(args.Worksheet);
+            if (sheetView != null)
             {
-                return;
+                switch (args.ChangeType)
+                {
+                    case WorksheetChangeType.RowCount:
+                    case WorksheetChangeType.DefaultRowHeight:
+                        sheetView.ViewPort.ResetRowLocations();
+                        break;
+                    case WorksheetChangeType.ColumnCount:
+                    case WorksheetChangeType.DefaultColumnWidth:
+                        sheetView.ViewPort.ResetColumnLocations();
+                        break;
+                }
             }
 
-            var sheetView = (SheetView)_spread.Sheets.GetSheetView(args.Worksheet);
-            if(sheetView == null)
+            if (!CanInvalidate() || sheetView == null)
             {
                 return;
             }

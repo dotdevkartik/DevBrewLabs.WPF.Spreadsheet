@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Windows;
 using DevBrewLabs.Spreadsheet.Core;
+using DevBrewLabs.Spreadsheet.CalcEngine.Utils;
 
 namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 {
@@ -53,8 +54,18 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             _spread.SuspendUpdates = true;
             try
             {
+                string[,] oldFormulas = new string[range.RowCount, range.ColumnCount];
+                for (int r = 0; r < range.RowCount; r++)
+                {
+                    for (int c = 0; c < range.ColumnCount; c++)
+                    {
+                        oldFormulas[r, c] = concreteSheetView.WorkSheet.GetFormula(range.TopRow + r, range.LeftColumn + c);
+                    }
+                }
+
                 var pasteAction = new ClipboardPasteAction { SheetView = concreteSheetView };
                 pasteAction.OldState.Value = concreteSheetView.WorkSheet.GetData(range.TopRow, range.LeftColumn, range.RowCount, range.ColumnCount);
+                pasteAction.OldState.Formulas = oldFormulas;
                 pasteAction.OldState.Row = range.TopRow;
                 pasteAction.OldState.Column = range.LeftColumn;
                 pasteAction.OldState.Selection = concreteSheetView.Selection.Clone();
@@ -139,11 +150,25 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                     stringBuilder.Append(SheetUtils.NextLine);
             }
 
+            var formulas = new string[range.RowCount, range.ColumnCount];
+            for (int r = 0; r < range.RowCount; r++)
+            {
+                for (int c = 0; c < range.ColumnCount; c++)
+                {
+                    if (!sheetView.WorkSheet.IsCovered(range.TopRow + r, range.LeftColumn + c))
+                    {
+                        formulas[r, c] = sheetView.WorkSheet.GetFormula(range.TopRow + r, range.LeftColumn + c);
+                    }
+                }
+            }
+
             var dataObject = new DataObject();
             var textContent = stringBuilder.ToString();
             dataObject.SetData(DataFormats.UnicodeText, textContent);
             dataObject.SetData(DataFormats.Text, textContent);
             dataObject.SetData("InternalDataObject", data);
+            dataObject.SetData("InternalFormulasObject", formulas);
+            dataObject.SetData("InternalSourceOrigin", new int[] { range.TopRow, range.LeftColumn });
 
             ExecuteWithRetry(() => Clipboard.SetDataObject(dataObject));
         }
@@ -191,12 +216,31 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 pasteAction.OldState.Column = activeColumn;
                 pasteAction.OldState.Selection = concreteSheetView.Selection.Clone();
 
+                var internalFormulas = dataObject.GetDataPresent("InternalFormulasObject")
+                    ? dataObject.GetData("InternalFormulasObject") as string[,]
+                    : null;
+                var sourceOrigin = dataObject.GetDataPresent("InternalSourceOrigin")
+                    ? dataObject.GetData("InternalSourceOrigin") as int[]
+                    : null;
+                int rowDelta = sourceOrigin != null && sourceOrigin.Length == 2 ? activeRow - sourceOrigin[0] : 0;
+                int colDelta = sourceOrigin != null && sourceOrigin.Length == 2 ? activeColumn - sourceOrigin[1] : 0;
+
                 for (int row = 0; row < data.GetLength(0); row++)
                 {
                     for (int column = 0; column < data.GetLength(1); column++)
                     {
                         if (workSheet.IsCovered(activeRow + row, activeColumn + column))
                         {
+                            continue;
+                        }
+
+                        if (internalFormulas != null &&
+                            row < internalFormulas.GetLength(0) &&
+                            column < internalFormulas.GetLength(1) &&
+                            !string.IsNullOrEmpty(internalFormulas[row, column]))
+                        {
+                            string shiftedFormula = FormulaRemapper.ShiftFormula(internalFormulas[row, column], rowDelta, colDelta);
+                            workSheet.SetFormula(activeRow + row, activeColumn + column, shiftedFormula);
                             continue;
                         }
 

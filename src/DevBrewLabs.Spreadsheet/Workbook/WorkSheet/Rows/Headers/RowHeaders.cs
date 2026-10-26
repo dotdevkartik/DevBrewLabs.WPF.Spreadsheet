@@ -10,13 +10,14 @@ namespace DevBrewLabs.Spreadsheet
         private RowHeaderCells _cells;
         private RowHeaderColumns _columns;
         private Dictionary<int, ColumnData> _columnStore;
+        private readonly SpanManager _spanManager;
 
         public int ColumnCount { get; set; }
         public int DefaultColumnWidth { get; set; }
         public IRange Cells => _cells;
         public IColumns Columns => _columns;
 
-        public bool HasSpans { get; }
+        public bool HasSpans => _spanManager.HasSpans;
 
         internal RowHeaders(Worksheet workSheet) : base(workSheet)
         {
@@ -25,6 +26,7 @@ namespace DevBrewLabs.Spreadsheet
             _cells = new RowHeaderCells(this);
             _columns = new RowHeaderColumns(this);
             _columnStore = new Dictionary<int, ColumnData>();
+            _spanManager = new SpanManager();
         }
 
         internal ColumnData GetColumnData(int column, bool createIfNotExists = true)
@@ -146,7 +148,6 @@ namespace DevBrewLabs.Spreadsheet
                    null,
                    null,
                    CellChangeType.Formula));
-
         }
 
         public IFormatter GetFormatter(int row, int column)
@@ -206,32 +207,96 @@ namespace DevBrewLabs.Spreadsheet
 
         public void AddSpan(int row, int column, int rowCount, int columnCount)
         {
-            throw new NotImplementedException();
+            if (rowCount <= 1 && columnCount <= 1)
+                return;
+
+            _spanManager.RemoveSpan(row, column);
+            _spanManager.AddSpan(row, column, rowCount, columnCount);
+
+            var colData = GetColumnData(column, true);
+            colData.SetRowSpan(row, rowCount);
+            colData.SetColumnSpan(row, columnCount);
+
+            ClearCoveredCells(row, column, rowCount, columnCount);
+
+            WorkSheet.OnRangeChanged(new RangeChangedEventArgs(
+                SheetRegion.RowHeader,
+                WorkSheet,
+                new CellRange(row, column, rowCount, columnCount),
+                null, null,
+                RangeChangeType.Value));
         }
 
         public void RemoveSpan(int row, int column)
         {
-            throw new NotImplementedException();
+            var range = _spanManager.GetSpanRange(row, column);
+            if (range == default)
+                return;
+
+            _spanManager.RemoveSpan(row, column);
+
+            var colData = GetColumnData(column, true);
+            colData.SetRowSpan(row, 0);
+            colData.SetColumnSpan(row, 0);
+
+            WorkSheet.OnRangeChanged(new RangeChangedEventArgs(
+                SheetRegion.RowHeader,
+                WorkSheet,
+                range,
+                null, null,
+                RangeChangeType.Value));
         }
 
         public void SetRawValue(int row, int column, string value)
         {
-            throw new NotImplementedException();
+            SetValue(row, column, value);
         }
 
         public CellRange GetSpanCellRange(int row, int column)
         {
-            throw new NotImplementedException();
+            return _spanManager.GetSpanRange(row, column);
         }
 
         public CellRange ExpandSpanRange(CellRange range)
         {
-            throw new NotImplementedException();
+            return _spanManager.ExpandRange(range);
         }
 
         public bool IsCovered(int row, int column)
         {
-            throw new NotImplementedException();
+            return _spanManager.IsCovered(row, column);
+        }
+
+        private void ClearCoveredCells(int row, int column, int rowCount, int colCount)
+        {
+            for (int r = row; r < row + rowCount; r++)
+            {
+                for (int c = column; c < column + colCount; c++)
+                {
+                    if (r == row && c == column) continue;
+                    SetValue(r, c, null);
+                }
+            }
+        }
+
+        internal void InsertRows(int index, int count)
+        {
+            if (count <= 0) return;
+            _spanManager.InsertRows(index, count);
+            foreach (var col in _columnStore.Values)
+            {
+                col.InsertRow(index, count);
+            }
+        }
+
+        internal void RemoveRows(int index, int count)
+        {
+            if (count <= 0) return;
+            _spanManager.RemoveRows(index, count);
+            foreach (var col in _columnStore.Values)
+            {
+                col.RemoveRow(index, count);
+            }
         }
 
         public override void Dispose()
@@ -245,7 +310,7 @@ namespace DevBrewLabs.Spreadsheet
             }
             _columnStore.Clear();
             _columnStore = null;
+            _spanManager.Clear();
         }
-
     }
 }

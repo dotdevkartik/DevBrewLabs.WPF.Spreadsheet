@@ -4,7 +4,7 @@
 
 ![Target Frameworks](https://img.shields.io/badge/.NET-10.0_%7C_9.0_%7C_8.0_%7C_4.7.2-512BD4?style=flat-square&logo=dotnet)
 ![Platform WPF](https://img.shields.io/badge/Platform-WPF-0078D7?style=flat-square&logo=windows)
-![Tests Status](https://img.shields.io/badge/Tests-185%20Passed-107C41?style=flat-square)
+![Tests Status](https://img.shields.io/badge/Tests-209%20Passed-107C41?style=flat-square)
 [![MIT License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](https://github.com/dotdevkartik/DevBrewLabs.WPF.Spreadsheet/blob/main/LICENSE)
 
 ---
@@ -57,8 +57,14 @@ This project solves those limitations by pairing a **platform-agnostic core data
 ### ✏️ Editing, Selection & Workflow
 - **In-Place Editors**: Floating cell editors (`TextCellEditor`, `NumericCellEditor`, `DateCellEditor`, `ComboBoxCellEditor`) positioned precisely over active cells.
 - **Formula Bar Component**: Standalone `FormulaTextBox` control that links to the active spreadsheet selection with formula autocompletion suggestions.
-- **Rich Selection Model**: Multi-cell range selection, whole-row/whole-column selection, range drag-and-drop, and Excel-style fill handle.
-- **Undo / Redo Stack**: Comprehensive `UndoRedoManager` tracking cell value changes, range pastes, dimension resizing, and span modifications.
+- **Dynamic Rows & Columns**: Insert and delete rows or columns on unbound sheets with full Undo/Redo tracking and context menu commands (`InsertRowsCommand`, `DeleteRowsCommand`, `InsertColumnsCommand`, `DeleteColumnsCommand`).
+- **Formula Coordinate Auto-Remapping**: Automatically remaps cell and range references across sheets on row/column shift, preserving absolute reference anchors (`$`) and generating `#REF!` when referenced ranges are deleted.
+- **Drag-Fill Handle & Auto-Fill Series**: Excel-style corner drag-fill handle supporting linear numeric progressions, date series, day/month sequences, alphanumeric series (`"Item 01"` -> `"Item 02"`), formula relative replication, dashed drag previews, and `Ctrl` copy toggling.
+- **Merged Header Spans**: Multi-level hierarchical spans for row and column headers (`ColumnHeaders.AddSpan`, `RowHeaders.AddSpan`) with integrated grid line rendering.
+- **Complete Keyboard Navigation**: Shift+Arrow range expansion, Shift+Enter, Shift+Tab, Ctrl+A (Select All), Home/End, PageUp/PageDown, and Delete key content clearing with Undo/Redo.
+- **RFC-4180 Multiline Clipboard**: Full clipboard fidelity supporting newline-containing and quote-escaped cells during TSV and CSV copy/paste operations.
+- **Rich Selection Model**: Multi-cell range selection, whole-row/whole-column selection, range drag-and-drop, and animated selection borders.
+- **Undo / Redo Stack**: Comprehensive `UndoRedoManager` tracking cell value changes, range pastes, dimension resizing, row/column insertion/deletion, auto-fill, and span modifications.
 - **Two-Way Data Binding**: Direct binding to custom object lists (`IList<T>` via `PropertyDataMap`) or ADO.NET tables (`DataTable` via `DataColumnDataMap`).
 
 ---
@@ -376,7 +382,7 @@ public class ProgressBarCellType : BaseCellType
 │   ├── DevBrewLabs.Spreadsheet/             # Core platform-agnostic spreadsheet model (ChunkedArray, Styles, Spans, Data)
 │   ├── DevBrewLabs.Spreadsheet.CalcEngine/  # Multi-sheet formula evaluation, token parser, and dependency DAG graph
 │   ├── DevBrewLabs.WPF.Spreadsheet/         # Main WPF Spread control, DrawingGroup render engine, editors, and UI managers
-│   ├── DevBrewLabs.WPF.Spreadsheet.Tests/   # NUnit unit test suite (155+ automated tests)
+│   ├── DevBrewLabs.WPF.Spreadsheet.Tests/   # NUnit unit test suite (209+ automated tests)
 │   ├── SpreadsheetSampleExplorer/           # Interactive sample explorer showcasing all features and benchmarks
 │   └── DevBrewLabs.WPF.Spreadsheet.sln      # Main Visual Studio Solution
 ├── docs/

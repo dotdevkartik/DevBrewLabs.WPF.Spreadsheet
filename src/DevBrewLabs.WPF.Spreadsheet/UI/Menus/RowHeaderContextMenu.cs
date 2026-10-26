@@ -13,6 +13,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Menus
 
             Items.Add(CreateSeparator());
 
+            Items.Add(CreateMenuItem("Insert Rows", null, "AddSheetGeometry", InsertBrush, new InsertRowsCommand(Spread), sheetView));
+            Items.Add(CreateMenuItem("Delete Rows", null, "DeleteSheetGeometry", DeleteBrush, new DeleteRowsCommand(Spread), sheetView));
             Items.Add(CreateMenuItem("Clear Contents", "Del", "ClearIconGeometry", ClearBrush, new ClearContentsCommand(Spread), sheetView));
 
             Items.Add(CreateSeparator());

@@ -6,7 +6,19 @@ namespace DevBrewLabs.Spreadsheet.CalcEngine.Parsers
     {
         public CellRef Start { get; }
         public CellRef End { get; }
-        public string Name => Start.Name + ":" + End.Name;
+
+        public string Name
+        {
+            get
+            {
+                if (string.Equals(Start.SheetName, End.SheetName, StringComparison.OrdinalIgnoreCase) || string.IsNullOrEmpty(End.SheetName))
+                {
+                    string endRefStr = (End.IsColumnAbsolute ? "$" : "") + CellRef.GetColumnLetterFromNumber(End.Column + 1) + (End.IsRowAbsolute ? "$" : "") + (End.Row + 1);
+                    return Start.Name + ":" + endRefStr;
+                }
+                return Start.Name + ":" + End.Name;
+            }
+        }
 
         public string SheetName => Start.SheetName;
 
@@ -29,7 +41,11 @@ namespace DevBrewLabs.Spreadsheet.CalcEngine.Parsers
             Start = new CellRef(res[0]);
             if (!string.IsNullOrEmpty(Start.SheetName) && !res[1].Contains("!"))
             {
-                End = new CellRef(Start.SheetName + "!" + res[1]);
+                string endPart = res[1].Trim();
+                if (Start.SheetName.Contains(" ") || Start.SheetName.Contains("!"))
+                    End = new CellRef($"'{Start.SheetName}'!{endPart}");
+                else
+                    End = new CellRef($"{Start.SheetName}!{endPart}");
             }
             else
             {
@@ -38,10 +54,11 @@ namespace DevBrewLabs.Spreadsheet.CalcEngine.Parsers
             FillRowColInfo();
         }
 
-        public CellRangeRef(int startRow, int startColumn, int endRow, int endColumn, string sheetName = "")
+        public CellRangeRef(int startRow, int startColumn, int endRow, int endColumn, string sheetName = "",
+            bool startRowAbs = false, bool startColAbs = false, bool endRowAbs = false, bool endColAbs = false)
         {
-            Start = new CellRef(startRow, startColumn, sheetName);
-            End = new CellRef(endRow, endColumn, sheetName);
+            Start = new CellRef(startRow, startColumn, sheetName, startRowAbs, startColAbs);
+            End = new CellRef(endRow, endColumn, sheetName, endRowAbs, endColAbs);
             FillRowColInfo();
         }
 

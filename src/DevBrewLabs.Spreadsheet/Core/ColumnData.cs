@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using DevBrewLabs.Spreadsheet.Formatters;
 
 namespace DevBrewLabs.Spreadsheet.Core
@@ -26,7 +27,7 @@ namespace DevBrewLabs.Spreadsheet.Core
     /// </summary>
     internal class ColumnData
     {
-        public int ColumnIndex { get; }
+        public int ColumnIndex { get; internal set; }
 
         private readonly ChunkedArray<object> _values;
         private readonly ChunkedArray<string> _formulas;
@@ -218,6 +219,58 @@ namespace DevBrewLabs.Spreadsheet.Core
                    _styleNames.ContainsKey(row) || _formatters.ContainsKey(row) || _cellTypes.ContainsKey(row) ||
                    _dataMaps.ContainsKey(row) || _rowSpans.ContainsKey(row) || _columnSpans.ContainsKey(row) ||
                    _locked.ContainsKey(row) || _metaData.ContainsKey(row);
+        }
+
+        public void ClearValues()
+        {
+            _values.Clear();
+        }
+
+        public void ClearFormulas()
+        {
+            _formulas.Clear();
+        }
+
+        public IEnumerable<int> GetRowsWithFormulas()
+        {
+            return _formulas.GetPopulatedIndices();
+        }
+
+        public void ClearStyles()
+        {
+            _styleIds.Clear();
+            _styleNames.Clear();
+            _formatters.Clear();
+        }
+
+        public void InsertRow(int index, int count)
+        {
+            _values.Insert(index, count);
+            _formulas.Insert(index, count);
+            _styleIds.Insert(index, count);
+            _styleNames.Insert(index, count);
+            _formatters.Insert(index, count);
+            _cellTypes.Insert(index, count);
+            _dataMaps.Insert(index, count);
+            _rowSpans.Insert(index, count);
+            _columnSpans.Insert(index, count);
+            _locked.Insert(index, count);
+            _metaData.Insert(index, count);
+        }
+
+        public void RemoveRow(int index, int count)
+        {
+            _values.RemoveRange(index, count);
+            _formulas.RemoveRange(index, count);
+            _styleIds.RemoveRange(index, count);
+            _styleNames.RemoveRange(index, count);
+            _formatters.RemoveRange(index, count);
+            _cellTypes.RemoveRange(index, count);
+            _dataMaps.RemoveRange(index, count);
+            _rowSpans.RemoveRange(index, count);
+            _columnSpans.RemoveRange(index, count);
+            _locked.RemoveRange(index, count);
+            _metaData.RemoveRange(index, count);
         }
 
         public void Clear()

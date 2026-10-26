@@ -5,7 +5,7 @@ namespace DevBrewLabs.Spreadsheet.CalcEngine.Parsers.TokenParsers
 {
     internal class CellRangeTokenParser : Parser<StringResult>
     {
-        private static readonly Regex _rangeRegex = new Regex(@"^([A-Za-z0-9_ ]+!)?[a-zA-Z]+[0-9]+:[a-zA-Z]+[0-9]+", RegexOptions.Compiled);
+        private static readonly Regex _rangeRegex = new Regex(@"^(('([^']+)'|([A-Za-z0-9_ ]+))!)?\$?[a-zA-Z]+\$?[0-9]+:\$?[a-zA-Z]+\$?[0-9]+", RegexOptions.Compiled);
 
         protected override IParserState ParseInput(IParserState inputState)
         {
