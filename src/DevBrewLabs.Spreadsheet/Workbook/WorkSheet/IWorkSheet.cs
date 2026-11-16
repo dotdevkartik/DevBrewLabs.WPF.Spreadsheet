@@ -142,5 +142,33 @@ namespace DevBrewLabs.Spreadsheet
         /// </summary>
         /// <param name="options">Options for the sort operation.</param>
         void Sort(SortOptions options);
+
+        /// <summary>
+        /// Gets a read-only collection of all merged cell spans in this worksheet.
+        /// </summary>
+        /// <returns>All merged cell span ranges.</returns>
+        IReadOnlyCollection<CellRange> GetAllSpans();
+
+        /// <summary>
+        /// Enumerates all populated cell coordinates within the specified row range.
+        /// </summary>
+        /// <param name="startRow">The zero-based starting row index.</param>
+        /// <param name="rowCount">The number of rows in the range.</param>
+        /// <returns>An enumerable of populated (Row, Column) coordinate pairs.</returns>
+        IEnumerable<(int Row, int Column)> GetPopulatedCellsInRowRange(int startRow, int rowCount);
+
+        /// <summary>
+        /// Enumerates all populated cell coordinates within the specified column range.
+        /// </summary>
+        /// <param name="startColumn">The zero-based starting column index.</param>
+        /// <param name="columnCount">The number of columns in the range.</param>
+        /// <returns>An enumerable of populated (Row, Column) coordinate pairs.</returns>
+        IEnumerable<(int Row, int Column)> GetPopulatedCellsInColumnRange(int startColumn, int columnCount);
+
+        /// <summary>
+        /// Enumerates all cells in this worksheet that contain a formula.
+        /// </summary>
+        /// <returns>An enumerable of (Row, Column, Formula) tuples.</returns>
+        IEnumerable<(int Row, int Column, string Formula)> GetAllFormulaCells();
     }
 }

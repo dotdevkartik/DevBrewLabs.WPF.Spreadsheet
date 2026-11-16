@@ -17,7 +17,7 @@ namespace DevBrewLabs.Spreadsheet.Core
         public StylePalette()
         {
             _idToStyleMap = new Dictionary<ushort, IStyle>();
-            _styleToIdMap = new Dictionary<IStyle, ushort>();
+            _styleToIdMap = new Dictionary<IStyle, ushort>(StyleValueComparer.Instance);
             _nextId = 1;
 
             _idToStyleMap[DefaultStyleId] = null;
@@ -60,6 +60,53 @@ namespace DevBrewLabs.Spreadsheet.Core
             _styleToIdMap.Clear();
             _idToStyleMap[DefaultStyleId] = null;
             _nextId = 1;
+        }
+
+        private sealed class StyleValueComparer : IEqualityComparer<IStyle>
+        {
+            public static readonly StyleValueComparer Instance = new StyleValueComparer();
+
+            public bool Equals(IStyle x, IStyle y)
+            {
+                if (ReferenceEquals(x, y)) return true;
+                if (x == null || y == null) return false;
+
+                return x.ForeColor.Equals(y.ForeColor) &&
+                       x.BackColor.Equals(y.BackColor) &&
+                       x.FontSize.Equals(y.FontSize) &&
+                       Equals(x.FontFamily, y.FontFamily) &&
+                       x.FontWeight == y.FontWeight &&
+                       x.FontStyle == y.FontStyle &&
+                       x.Padding.Equals(y.Padding) &&
+                       x.VerticalAlignment == y.VerticalAlignment &&
+                       x.HorizontalAlignment == y.HorizontalAlignment &&
+                       x.AllowMultiLineText == y.AllowMultiLineText &&
+                       x.TextTrimming == y.TextTrimming &&
+                       x.TextWrapping == y.TextWrapping;
+            }
+
+            public int GetHashCode(IStyle obj)
+            {
+                if (obj == null) return 0;
+
+                unchecked
+                {
+                    int hash = 17;
+                    hash = hash * 31 + obj.ForeColor.GetHashCode();
+                    hash = hash * 31 + obj.BackColor.GetHashCode();
+                    hash = hash * 31 + obj.FontSize.GetHashCode();
+                    hash = hash * 31 + (obj.FontFamily != null ? obj.FontFamily.GetHashCode() : 0);
+                    hash = hash * 31 + (int)obj.FontWeight;
+                    hash = hash * 31 + (int)obj.FontStyle;
+                    hash = hash * 31 + obj.Padding.GetHashCode();
+                    hash = hash * 31 + (int)obj.VerticalAlignment;
+                    hash = hash * 31 + (int)obj.HorizontalAlignment;
+                    hash = hash * 31 + obj.AllowMultiLineText.GetHashCode();
+                    hash = hash * 31 + (int)obj.TextTrimming;
+                    hash = hash * 31 + (int)obj.TextWrapping;
+                    return hash;
+                }
+            }
         }
     }
 }

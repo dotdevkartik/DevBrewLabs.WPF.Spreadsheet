@@ -19,13 +19,36 @@ namespace DevBrewLabs.WPF.Spreadsheet.Commands
         {
             var sheetView = parameter as SheetView;
             if (sheetView == null || !sheetView.Selection.IsValid) return;
+
+            var ws = sheetView.WorkSheet;
             int start = Math.Max(0, sheetView.Selection.LeftColumn - 1);
-            int end = Math.Min(sheetView.WorkSheet.ColumnCount - 1, sheetView.Selection.RightColumn + 1);
-            for (int c = start; c <= end; c++)
+            int end = Math.Min(ws.ColumnCount - 1, sheetView.Selection.RightColumn + 1);
+            var action = new ColumnResizedAction { SheetView = sheetView };
+
+            Spread.SuspendUpdates = true;
+            try
             {
-                var col = sheetView.WorkSheet.Columns[c];
-                if (col.Width == 0) col.Width = sheetView.WorkSheet.DefaultColumnWidth;
+                for (int c = start; c <= end; c++)
+                {
+                    var col = ws.Columns.GetItem(c);
+                    if (col != null && col.Width == 0)
+                    {
+                        action.OldWidths[c] = 0;
+                        action.NewWidths[c] = ws.DefaultColumnWidth;
+                        col.Width = ws.DefaultColumnWidth;
+                    }
+                }
             }
+            finally
+            {
+                Spread.SuspendUpdates = false;
+            }
+
+            if (action.NewWidths.Count > 0)
+            {
+                Spread.UndoRedoManager?.AddAction(action);
+            }
+
             Spread.Refresh();
         }
     }

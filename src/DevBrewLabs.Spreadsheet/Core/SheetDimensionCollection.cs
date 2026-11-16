@@ -6,7 +6,7 @@ namespace DevBrewLabs.Spreadsheet
 {
     internal abstract class SheetDimensionCollection<T> : IDimensionCollection<T>, IDisposable where T : class
     {
-        private SortedDictionary<int, T> _collection;
+        private Dictionary<int, T> _collection;
 
         public T this[int index]
         {
@@ -20,7 +20,7 @@ namespace DevBrewLabs.Spreadsheet
 
         internal SheetDimensionCollection()
         {
-            _collection = new SortedDictionary<int, T>();
+            _collection = new Dictionary<int, T>();
         }
 
         public virtual void Insert(int index, int count)

@@ -132,7 +132,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
                 align,
                 style.VerticalAlignment,
                 style.TextTrimming,
-                style.AllowMultiLineText);
+                style.AllowMultiLineText,
+                padding: style.Padding);
         }
 
         public override ICellEditor CreateEditor(IEditorContext context)

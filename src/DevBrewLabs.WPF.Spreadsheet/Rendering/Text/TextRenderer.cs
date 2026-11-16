@@ -22,7 +22,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
             CellVerticalAlignment verticalAlignment = CellVerticalAlignment.Bottom,
             CellTextTrimming textTrimming = CellTextTrimming.None,
             bool allowMultiLineText = false,
-            bool underline = false)
+            bool underline = false,
+            DrawingThickness? padding = null)
         {
             if (string.IsNullOrEmpty(text))
                 return;
@@ -32,8 +33,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
                 text = TextUtils.NormalizeToSingleLine(text);
             }
 
-            double textPadding = renderContext.TextPadding * renderContext.ZoomFactor;
-            double availableWidth = bounds.Width - (2 * textPadding);
+            double padLeft = (padding.HasValue ? padding.Value.Left : renderContext.TextPadding) * renderContext.ZoomFactor;
+            double padRight = (padding.HasValue ? padding.Value.Right : renderContext.TextPadding) * renderContext.ZoomFactor;
+            double padTop = (padding.HasValue ? padding.Value.Top : renderContext.TextPadding) * renderContext.ZoomFactor;
+            double padBottom = (padding.HasValue ? padding.Value.Bottom : renderContext.TextPadding) * renderContext.ZoomFactor;
+            double availableWidth = bounds.Width - (padLeft + padRight);
             if (availableWidth <= 0)
                 return;
 
@@ -84,7 +88,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
             switch (verticalAlignment)
             {
                 case CellVerticalAlignment.Top:
-                    startY = bounds.Top + textPadding;
+                    startY = bounds.Top + padTop;
                     break;
                 case CellVerticalAlignment.Center:
                     startY = bounds.Top + (bounds.Height - totalHeight) / 2;
@@ -92,7 +96,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
                         startY = bounds.Top;
                     break;
                 default: // Bottom
-                    startY = bounds.Bottom - textPadding - totalHeight;
+                    startY = bounds.Bottom - padBottom - totalHeight;
                     if (startY < bounds.Top)
                         startY = bounds.Top;
                     break;
@@ -114,15 +118,15 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
                             x = bounds.Left + (bounds.Width - layout.Width) / 2;
                             break;
                         case CellHorizontalAlignment.Right:
-                            x = bounds.Right - textPadding - layout.Width;
+                            x = bounds.Right - padRight - layout.Width;
                             break;
                         default: // Left
-                            x = bounds.Left + textPadding;
+                            x = bounds.Left + padLeft;
                             break;
                     }
 
-                    if (x < bounds.Left + textPadding)
-                        x = bounds.Left + textPadding;
+                    if (x < bounds.Left + padLeft)
+                        x = bounds.Left + padLeft;
 
                     x = PixelSnapper.Snap(x, renderContext.PixelPerDip);
 
@@ -161,7 +165,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
             CellVerticalAlignment verticalAlignment = CellVerticalAlignment.Bottom,
             CellTextTrimming textTrimming = CellTextTrimming.None,
             bool allowMultiLineText = false,
-            bool underline = false)
+            bool underline = false,
+            DrawingThickness? padding = null)
         {
             DrawText(
                 renderContext,
@@ -176,7 +181,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering.Text
                 verticalAlignment,
                 textTrimming,
                 allowMultiLineText,
-                underline);
+                underline,
+                padding);
         }
     }
 }

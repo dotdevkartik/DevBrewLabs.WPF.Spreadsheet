@@ -19,10 +19,35 @@ namespace DevBrewLabs.WPF.Spreadsheet.Commands
         {
             var sheetView = parameter as SheetView;
             if (sheetView == null || !sheetView.Selection.IsValid) return;
-            for (int r = sheetView.Selection.TopRow; r <= sheetView.Selection.BottomRow; r++)
+
+            var ws = sheetView.WorkSheet;
+            var action = new RowResizedAction { SheetView = sheetView };
+
+            Spread.SuspendUpdates = true;
+            try
             {
-                sheetView.AutoSizeRow(r);
+                for (int r = sheetView.Selection.TopRow; r <= sheetView.Selection.BottomRow; r++)
+                {
+                    int oldHeight = ws.Rows.GetRowHeight(r);
+                    sheetView.AutoSizeRow(r);
+                    int newHeight = ws.Rows.GetRowHeight(r);
+                    if (newHeight != oldHeight)
+                    {
+                        action.OldHeights[r] = oldHeight;
+                        action.NewHeights[r] = newHeight;
+                    }
+                }
             }
+            finally
+            {
+                Spread.SuspendUpdates = false;
+            }
+
+            if (action.NewHeights.Count > 0)
+            {
+                Spread.UndoRedoManager?.AddAction(action);
+            }
+
             Spread.Refresh();
         }
     }

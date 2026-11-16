@@ -237,7 +237,7 @@ namespace DevBrewLabs.Spreadsheet
             var colData = _dataStore.GetColumnData(column, false);
             ushort? styleId = colData?.GetStyleId(dataRow);
 
-            if (!styleId.HasValue)
+            if (!styleId.HasValue || styleId.Value == StylePalette.DefaultStyleId)
             {
                 return null;
             }
@@ -248,12 +248,12 @@ namespace DevBrewLabs.Spreadsheet
         public void SetStyle(int row, int column, IStyle style)
         {
             var existingStyle = GetStyle(row, column);
-            if (existingStyle == style)
+            if (Equals(existingStyle, style))
             {
                 return;
             }
 
-            ushort styleId = _workBook.StylePalette.GetOrAdd(style);
+            ushort styleId = style != null ? _workBook.StylePalette.GetOrAdd(style) : StylePalette.DefaultStyleId;
             int dataRow = _dataStore.GetDataRowIndex(row);
             var colData = _dataStore.GetColumnData(column, true);
             colData.SetStyleId(dataRow, styleId);
@@ -728,6 +728,73 @@ namespace DevBrewLabs.Spreadsheet
         public void AutoFill(CellRange sourceRange, CellRange targetRange, bool isCtrlPressed = false)
         {
             DevBrewLabs.Spreadsheet.Core.AutoFillHelper.AutoFill(this, sourceRange, targetRange, isCtrlPressed);
+        }
+
+        public IReadOnlyCollection<CellRange> GetAllSpans()
+        {
+            return new List<CellRange>(_spanManager.GetAllSpans());
+        }
+
+        public IEnumerable<(int Row, int Column)> GetPopulatedCellsInRowRange(int startRow, int rowCount)
+        {
+            if (_dataStore == null || rowCount <= 0)
+                yield break;
+
+            int endRow = startRow + rowCount - 1;
+            foreach (var colData in _dataStore.GetAllColumnData())
+            {
+                foreach (int dataRow in colData.GetPopulatedRows())
+                {
+                    int visualRow = _dataStore.GetVisualRowIndex(dataRow);
+                    if (visualRow >= startRow && visualRow <= endRow)
+                    {
+                        yield return (visualRow, colData.ColumnIndex);
+                    }
+                }
+            }
+        }
+
+        public IEnumerable<(int Row, int Column)> GetPopulatedCellsInColumnRange(int startColumn, int columnCount)
+        {
+            if (_dataStore == null || columnCount <= 0)
+                yield break;
+
+            for (int c = startColumn; c < startColumn + columnCount; c++)
+            {
+                var colData = _dataStore.GetColumnData(c, false);
+                if (colData == null) continue;
+
+                foreach (int dataRow in colData.GetPopulatedRows())
+                {
+                    int visualRow = _dataStore.GetVisualRowIndex(dataRow);
+                    if (visualRow >= 0 && visualRow < RowCount)
+                    {
+                        yield return (visualRow, c);
+                    }
+                }
+            }
+        }
+
+        public IEnumerable<(int Row, int Column, string Formula)> GetAllFormulaCells()
+        {
+            if (_dataStore == null)
+                yield break;
+
+            foreach (var colData in _dataStore.GetAllColumnData())
+            {
+                foreach (int dataRow in colData.GetRowsWithFormulas())
+                {
+                    int visualRow = _dataStore.GetVisualRowIndex(dataRow);
+                    if (visualRow >= 0)
+                    {
+                        string formula = colData.GetFormula(dataRow);
+                        if (!string.IsNullOrEmpty(formula))
+                        {
+                            yield return (visualRow, colData.ColumnIndex, formula);
+                        }
+                    }
+                }
+            }
         }
 
         internal void InsertRowsCore(int index, int count)
@@ -1266,7 +1333,6 @@ namespace DevBrewLabs.Spreadsheet
 
                 if (value != null)
                 {
-                    value = DataTypeConverter.ConvertType(value);
                     return value;
                 }
 

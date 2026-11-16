@@ -27,8 +27,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
         void DrawRectangle(DrawingColor? color, DrawingPen? pen, Rect rect);
         void DrawRectangle(Brush color, Pen pen, Rect rect);
         void DrawRoundedRectangle(Brush brush, Pen pen, Rect rect, int radiusX, int radiusY);
-        void DrawText(string text, Rect bounds, DrawingFontFamily fontFamily, double fontSize, DrawingFontWeight fontWeight, DrawingFontStyle fontStyle, DrawingColor foreColor, CellHorizontalAlignment horizontalAlignment = CellHorizontalAlignment.Left, CellVerticalAlignment verticalAlignment = CellVerticalAlignment.Bottom, CellTextTrimming textTrimming = CellTextTrimming.None, bool allowMultiLineText = false, bool underline = false);
-        void DrawText(string text, Rect bounds, DrawingFontFamily fontFamily, double fontSize, DrawingFontWeight fontWeight, DrawingFontStyle fontStyle, Brush foreBrush, CellHorizontalAlignment horizontalAlignment = CellHorizontalAlignment.Left, CellVerticalAlignment verticalAlignment = CellVerticalAlignment.Bottom, CellTextTrimming textTrimming = CellTextTrimming.None, bool allowMultiLineText = false, bool underline = false);
+        void DrawText(string text, Rect bounds, DrawingFontFamily fontFamily, double fontSize, DrawingFontWeight fontWeight, DrawingFontStyle fontStyle, DrawingColor foreColor, CellHorizontalAlignment horizontalAlignment = CellHorizontalAlignment.Left, CellVerticalAlignment verticalAlignment = CellVerticalAlignment.Bottom, CellTextTrimming textTrimming = CellTextTrimming.None, bool allowMultiLineText = false, bool underline = false, DrawingThickness? padding = null);
+        void DrawText(string text, Rect bounds, DrawingFontFamily fontFamily, double fontSize, DrawingFontWeight fontWeight, DrawingFontStyle fontStyle, Brush foreBrush, CellHorizontalAlignment horizontalAlignment = CellHorizontalAlignment.Left, CellVerticalAlignment verticalAlignment = CellVerticalAlignment.Bottom, CellTextTrimming textTrimming = CellTextTrimming.None, bool allowMultiLineText = false, bool underline = false, DrawingThickness? padding = null);
         Rect GetCellRect(int row, int col);
         void Pop();
         void PushClip(Geometry clipGeometry);
@@ -229,7 +229,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             CellVerticalAlignment verticalAlignment = CellVerticalAlignment.Bottom,
             CellTextTrimming textTrimming = CellTextTrimming.None,
             bool allowMultiLineText = false,
-            bool underline = false)
+            bool underline = false,
+            DrawingThickness? padding = null)
         {
             if (_disposed || _drawingContext == null) return;
 
@@ -246,7 +247,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                 verticalAlignment,
                 textTrimming,
                 allowMultiLineText,
-                underline);
+                underline,
+                padding);
         }
 
         public void DrawText(
@@ -261,7 +263,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             CellVerticalAlignment verticalAlignment = CellVerticalAlignment.Bottom,
             CellTextTrimming textTrimming = CellTextTrimming.None,
             bool allowMultiLineText = false,
-            bool underline = false)
+            bool underline = false,
+            DrawingThickness? padding = null)
         {
             if (_disposed || _drawingContext == null) return;
 
@@ -278,7 +281,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                 verticalAlignment,
                 textTrimming,
                 allowMultiLineText,
-                underline);
+                underline,
+                padding);
         }
 
         public void DrawLine(DrawingPen pen, Point point0, Point point1)

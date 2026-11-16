@@ -66,7 +66,7 @@ namespace DevBrewLabs.Spreadsheet.Core
         public void SetValue(int row, object value)
         {
             if (value == null) _values.Remove(row);
-            else _values.SetValue(row, value);
+            else _values.SetValue(row, DataTypeConverter.ConvertType(value));
         }
         #endregion
 
@@ -234,6 +234,19 @@ namespace DevBrewLabs.Spreadsheet.Core
         public IEnumerable<int> GetRowsWithFormulas()
         {
             return _formulas.GetPopulatedIndices();
+        }
+
+        public IEnumerable<int> GetPopulatedRows()
+        {
+            var rows = new HashSet<int>(_values.GetPopulatedIndices());
+            rows.UnionWith(_formulas.GetPopulatedIndices());
+            rows.UnionWith(_styleIds.GetPopulatedIndices());
+            rows.UnionWith(_styleNames.GetPopulatedIndices());
+            rows.UnionWith(_formatters.GetPopulatedIndices());
+            rows.UnionWith(_cellTypes.GetPopulatedIndices());
+            rows.UnionWith(_dataMaps.GetPopulatedIndices());
+            rows.UnionWith(_locked.GetPopulatedIndices());
+            return rows;
         }
 
         public void ClearStyles()

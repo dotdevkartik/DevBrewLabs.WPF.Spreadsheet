@@ -16,8 +16,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
     /// </summary>
     internal class ClipboardManager
     {
+        private static IDataObject _lastCopiedDataObject;
         private readonly Spread _spread;
-        private const int MaxClipboardRetries = 5;
+        private const int MaxClipboardRetries = 1;
         private const int ClipboardRetryDelayMs = 30;
 
         public ClipboardManager(Spread spread)
@@ -54,40 +55,66 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             _spread.SuspendUpdates = true;
             try
             {
+                var ws = concreteSheetView.WorkSheet;
+                var rows = ws.Rows;
+                var columns = ws.Columns;
+                var colCache = new IColumn[range.ColumnCount];
+                for (int c = 0; c < range.ColumnCount; c++)
+                {
+                    colCache[c] = columns.GetItem(range.LeftColumn + c);
+                }
+
                 string[,] oldFormulas = new string[range.RowCount, range.ColumnCount];
-                for (int r = 0; r < range.RowCount; r++)
-                {
-                    for (int c = 0; c < range.ColumnCount; c++)
-                    {
-                        oldFormulas[r, c] = concreteSheetView.WorkSheet.GetFormula(range.TopRow + r, range.LeftColumn + c);
-                    }
-                }
-
-                var pasteAction = new ClipboardPasteAction { SheetView = concreteSheetView };
-                pasteAction.OldState.Value = concreteSheetView.WorkSheet.GetData(range.TopRow, range.LeftColumn, range.RowCount, range.ColumnCount);
-                pasteAction.OldState.Formulas = oldFormulas;
-                pasteAction.OldState.Row = range.TopRow;
-                pasteAction.OldState.Column = range.LeftColumn;
-                pasteAction.OldState.Selection = concreteSheetView.Selection.Clone();
-
-                object[,] emptyData = new object[range.RowCount, range.ColumnCount];
+                string[,] newFormulas = new string[range.RowCount, range.ColumnCount];
+                object[,] oldValues = ws.GetData(range.TopRow, range.LeftColumn, range.RowCount, range.ColumnCount);
+                object[,] newValues = new object[range.RowCount, range.ColumnCount];
+                bool anyCleared = false;
 
                 for (int r = 0; r < range.RowCount; r++)
                 {
+                    int actualRow = range.TopRow + r;
+                    var sheetRow = rows.GetItem(actualRow);
+
                     for (int c = 0; c < range.ColumnCount; c++)
                     {
-                        var ws = concreteSheetView.WorkSheet;
-                        ws.SetValue(range.TopRow + r, range.LeftColumn + c, null);
-                        ws.SetFormula(range.TopRow + r, range.LeftColumn + c, null);
+                        int actualCol = range.LeftColumn + c;
+                        string oldFormula = ws.GetFormula(actualRow, actualCol);
+                        oldFormulas[r, c] = oldFormula;
+
+                        if (ws.IsCellLocked(actualRow, actualCol, sheetRow, colCache[c]))
+                        {
+                            newValues[r, c] = oldValues[r, c];
+                            newFormulas[r, c] = oldFormula;
+                            continue;
+                        }
+
+                        if (oldValues[r, c] != null || !string.IsNullOrEmpty(oldFormula))
+                        {
+                            anyCleared = true;
+                        }
+
+                        ws.SetValue(actualRow, actualCol, null);
+                        ws.SetFormula(actualRow, actualCol, null);
                     }
                 }
 
-                pasteAction.NewState.Value = emptyData;
-                pasteAction.NewState.Row = range.TopRow;
-                pasteAction.NewState.Column = range.LeftColumn;
-                pasteAction.NewState.Selection = concreteSheetView.Selection.Clone();
+                if (anyCleared)
+                {
+                    var pasteAction = new ClipboardPasteAction { SheetView = concreteSheetView };
+                    pasteAction.OldState.Value = oldValues;
+                    pasteAction.OldState.Formulas = oldFormulas;
+                    pasteAction.OldState.Row = range.TopRow;
+                    pasteAction.OldState.Column = range.LeftColumn;
+                    pasteAction.OldState.Selection = concreteSheetView.Selection.Clone();
 
-                _spread.UndoRedoManager.AddAction(pasteAction);
+                    pasteAction.NewState.Value = newValues;
+                    pasteAction.NewState.Formulas = newFormulas;
+                    pasteAction.NewState.Row = range.TopRow;
+                    pasteAction.NewState.Column = range.LeftColumn;
+                    pasteAction.NewState.Selection = concreteSheetView.Selection.Clone();
+
+                    _spread.UndoRedoManager.AddAction(pasteAction);
+                }
             }
             finally
             {
@@ -170,6 +197,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             dataObject.SetData("InternalFormulasObject", formulas);
             dataObject.SetData("InternalSourceOrigin", new int[] { range.TopRow, range.LeftColumn });
 
+            _lastCopiedDataObject = dataObject;
             ExecuteWithRetry(() => Clipboard.SetDataObject(dataObject));
         }
 
@@ -178,11 +206,16 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
             if (sheetView == null || sheetView.WorkSheet == null)
                 return;
 
-            var dataObject = ExecuteWithRetry(() => Clipboard.GetDataObject());
+            var dataObject = ExecuteWithRetry(() => Clipboard.GetDataObject()) ?? _lastCopiedDataObject;
             if (dataObject == null)
                 return;
 
             object[,] data = ExtractClipboardData(dataObject);
+            if (data == null && !ReferenceEquals(dataObject, _lastCopiedDataObject) && _lastCopiedDataObject != null)
+            {
+                dataObject = _lastCopiedDataObject;
+                data = ExtractClipboardData(dataObject);
+            }
             if (data == null)
                 return;
 
@@ -225,14 +258,31 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                 int rowDelta = sourceOrigin != null && sourceOrigin.Length == 2 ? activeRow - sourceOrigin[0] : 0;
                 int colDelta = sourceOrigin != null && sourceOrigin.Length == 2 ? activeColumn - sourceOrigin[1] : 0;
 
-                for (int row = 0; row < data.GetLength(0); row++)
+                var rows = workSheet.Rows;
+                var columns = workSheet.Columns;
+                var colCache = new IColumn[pasteCols];
+                for (int c = 0; c < pasteCols; c++)
                 {
-                    for (int column = 0; column < data.GetLength(1); column++)
+                    colCache[c] = columns.GetItem(activeColumn + c);
+                }
+
+                bool anyModified = false;
+
+                for (int row = 0; row < pasteRows; row++)
+                {
+                    int targetRow = activeRow + row;
+                    var sheetRow = rows.GetItem(targetRow);
+
+                    for (int column = 0; column < pasteCols; column++)
                     {
-                        if (workSheet.IsCovered(activeRow + row, activeColumn + column))
+                        int targetCol = activeColumn + column;
+                        if (workSheet.IsCovered(targetRow, targetCol) ||
+                            workSheet.IsCellLocked(targetRow, targetCol, sheetRow, colCache[column]))
                         {
                             continue;
                         }
+
+                        anyModified = true;
 
                         if (internalFormulas != null &&
                             row < internalFormulas.GetLength(0) &&
@@ -240,7 +290,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                             !string.IsNullOrEmpty(internalFormulas[row, column]))
                         {
                             string shiftedFormula = FormulaRemapper.ShiftFormula(internalFormulas[row, column], rowDelta, colDelta);
-                            workSheet.SetFormula(activeRow + row, activeColumn + column, shiftedFormula);
+                            workSheet.SetFormula(targetRow, targetCol, shiftedFormula);
                             continue;
                         }
 
@@ -249,38 +299,41 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
                         {
                             try
                             {
-                                workSheet.SetRawValue(activeRow + row, activeColumn + column, strVal);
+                                workSheet.SetRawValue(targetRow, targetCol, strVal);
                             }
                             catch
                             {
-                                workSheet.SetValue(activeRow + row, activeColumn + column,  strVal);
+                                workSheet.SetValue(targetRow, targetCol, strVal);
                             }
                         }
                         else
                         {
-                            workSheet.SetValue(activeRow + row, activeColumn + column, value);
+                            workSheet.SetValue(targetRow, targetCol, value);
                         }
                     }
                 }
 
                 _spread.SelectionManager.SelectRange(sheetView, activeRow, activeColumn, data.GetLength(0), data.GetLength(1));
 
-                string[,] newFormulas = new string[pasteRows, pasteCols];
-                for (int r = 0; r < pasteRows; r++)
+                if (anyModified)
                 {
-                    for (int c = 0; c < pasteCols; c++)
+                    string[,] newFormulas = new string[pasteRows, pasteCols];
+                    for (int r = 0; r < pasteRows; r++)
                     {
-                        newFormulas[r, c] = concreteSheetView.WorkSheet.GetFormula(activeRow + r, activeColumn + c);
+                        for (int c = 0; c < pasteCols; c++)
+                        {
+                            newFormulas[r, c] = concreteSheetView.WorkSheet.GetFormula(activeRow + r, activeColumn + c);
+                        }
                     }
+
+                    pasteAction.NewState.Value = concreteSheetView.WorkSheet.GetData(activeRow, activeColumn, pasteRows, pasteCols);
+                    pasteAction.NewState.Formulas = newFormulas;
+                    pasteAction.NewState.Row = activeRow;
+                    pasteAction.NewState.Column = activeColumn;
+                    pasteAction.NewState.Selection = concreteSheetView.Selection.Clone();
+
+                    _spread.UndoRedoManager.AddAction(pasteAction);
                 }
-
-                pasteAction.NewState.Value = data;
-                pasteAction.NewState.Formulas = newFormulas;
-                pasteAction.NewState.Row = activeRow;
-                pasteAction.NewState.Column = activeColumn;
-                pasteAction.NewState.Selection = concreteSheetView.Selection.Clone();
-
-                _spread.UndoRedoManager.AddAction(pasteAction);
             }
             finally
             {
@@ -300,7 +353,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Managers
 
         public bool CanPaste(ISheetView sheetView)
         {
-            var dataObject = ExecuteWithRetry(() => Clipboard.GetDataObject());
+            var dataObject = ExecuteWithRetry(() => Clipboard.GetDataObject()) ?? _lastCopiedDataObject;
             if (dataObject == null)
                 return false;
 

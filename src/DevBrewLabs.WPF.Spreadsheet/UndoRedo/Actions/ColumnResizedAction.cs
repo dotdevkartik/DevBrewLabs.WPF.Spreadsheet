@@ -17,22 +17,33 @@ namespace DevBrewLabs.WPF.Spreadsheet
 
         public override void Undo()
         {
-            foreach (var kvp in OldWidths)
-            {
-                SheetView.WorkSheet.Columns[kvp.Key].Width = kvp.Value;
-            }
-
-            SheetView.Spread.Refresh();
+            ApplyWidths(OldWidths);
         }
 
         public override void Redo()
         {
-            foreach (var kvp in NewWidths)
+            ApplyWidths(NewWidths);
+        }
+
+        private void ApplyWidths(Dictionary<int, int> widths)
+        {
+            if (SheetView?.WorkSheet == null) return;
+
+            var spread = SheetView.Spread;
+            if (spread != null) spread.SuspendUpdates = true;
+            try
             {
-                SheetView.WorkSheet.Columns[kvp.Key].Width = kvp.Value;
+                foreach (var kvp in widths)
+                {
+                    SheetView.WorkSheet.Columns[kvp.Key].Width = kvp.Value;
+                }
+            }
+            finally
+            {
+                if (spread != null) spread.SuspendUpdates = false;
             }
 
-            SheetView.Spread.Refresh();
+            spread?.Refresh();
         }
     }
 }

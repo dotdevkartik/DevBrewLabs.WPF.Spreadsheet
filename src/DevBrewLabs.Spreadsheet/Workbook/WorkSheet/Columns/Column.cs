@@ -85,23 +85,20 @@ namespace DevBrewLabs.Spreadsheet
             {
                 var oldStyle = _style;
 
-                if (oldStyle == _style)
+                if (Equals(oldStyle, value))
                 {
                     return;
                 }
 
-                if (_style != value)
-                {
-                    _parent.WorkSheet?.OnColumnChanged(new ColumnChangedEventArgs(
-                       SheetRegion.Cells,
-                       _parent.WorkSheet,
-                       Index,
-                       oldStyle,
-                       value,
-                       ColumnChangeType.Style));
-                }
-
                 _style = value;
+
+                _parent.WorkSheet?.OnColumnChanged(new ColumnChangedEventArgs(
+                   SheetRegion.Cells,
+                   _parent.WorkSheet,
+                   Index,
+                   oldStyle,
+                   value,
+                   ColumnChangeType.Style));
             }
         }
 

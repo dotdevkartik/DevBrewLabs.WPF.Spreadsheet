@@ -19,10 +19,34 @@ namespace DevBrewLabs.WPF.Spreadsheet.Commands
         {
             var sheetView = parameter as SheetView;
             if (sheetView == null || !sheetView.Selection.IsValid) return;
-            for (int r = sheetView.Selection.TopRow; r <= sheetView.Selection.BottomRow; r++)
+
+            var ws = sheetView.WorkSheet;
+            var action = new RowResizedAction { SheetView = sheetView };
+
+            Spread.SuspendUpdates = true;
+            try
             {
-                sheetView.WorkSheet.Rows[r].IsHidden = true;
+                for (int r = sheetView.Selection.TopRow; r <= sheetView.Selection.BottomRow; r++)
+                {
+                    var row = ws.Rows[r];
+                    if (!row.IsHidden)
+                    {
+                        action.OldHidden[r] = false;
+                        action.NewHidden[r] = true;
+                        row.IsHidden = true;
+                    }
+                }
             }
+            finally
+            {
+                Spread.SuspendUpdates = false;
+            }
+
+            if (action.NewHidden.Count > 0)
+            {
+                Spread.UndoRedoManager?.AddAction(action);
+            }
+
             Spread.Refresh();
         }
     }

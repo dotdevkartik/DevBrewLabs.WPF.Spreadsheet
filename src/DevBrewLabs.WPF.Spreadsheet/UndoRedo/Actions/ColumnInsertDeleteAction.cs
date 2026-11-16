@@ -10,46 +10,76 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public int Count { get; set; }
         public bool IsInsert { get; set; }
         public CellRange PreviousSelection { get; set; }
-        public object[,] DeletedValues { get; set; }
-        public string[,] DeletedFormulas { get; set; }
-        public Dictionary<int, int> DeletedColWidths { get; set; }
+        public Dictionary<(int Row, int Col), CellSnapshot> DeletedCells { get; set; }
+        public Dictionary<int, ColumnDimensionSnapshot> DeletedColumnSnapshots { get; set; }
+        public List<CellRange> PreOperationSpans { get; set; }
+        public List<(string SheetName, int Row, int Col, string Formula)> PreOperationWorkbookFormulas { get; set; }
 
         public override void Undo()
         {
             if (SheetView?.WorkSheet == null) return;
             var ws = SheetView.WorkSheet;
+            var spread = SheetView.Spread;
 
-            if (IsInsert)
+            if (spread != null) spread.SuspendUpdates = true;
+            try
             {
-                ws.Columns.Remove(Index, Count);
-            }
-            else
-            {
-                ws.Columns.Insert(Index, Count);
-                if (DeletedValues != null)
+                if (IsInsert)
                 {
-                    for (int r = 0; r < DeletedValues.GetLength(0); r++)
+                    ws.Columns.Remove(Index, Count);
+                    GridSnapshotHelper.RestoreSpans(ws, PreOperationSpans);
+                    GridSnapshotHelper.RestoreWorkbookFormulas(ws.WorkBook, PreOperationWorkbookFormulas);
+                }
+                else
+                {
+                    ws.Columns.Insert(Index, Count);
+                    GridSnapshotHelper.RestoreSpans(ws, PreOperationSpans);
+
+                    if (DeletedColumnSnapshots != null)
                     {
-                        for (int c = 0; c < DeletedValues.GetLength(1); c++)
+                        foreach (var kvp in DeletedColumnSnapshots)
                         {
-                            if (DeletedFormulas != null && !string.IsNullOrEmpty(DeletedFormulas[r, c]))
-                                ws.SetFormula(r, Index + c, DeletedFormulas[r, c]);
-                            else if (DeletedValues[r, c] != null)
-                                ws.SetValue(r, Index + c, DeletedValues[r, c]);
+                            var col = ws.Columns[kvp.Key];
+                            var snap = kvp.Value;
+                            if (snap.Width != ws.DefaultColumnWidth)
+                                col.Width = snap.Width;
+                            if (snap.Style != null)
+                                col.Style = snap.Style;
+                            if (!string.IsNullOrEmpty(snap.StyleName))
+                                col.StyleName = snap.StyleName;
+                            if (snap.Formatter != null)
+                                col.Formatter = snap.Formatter;
+                            if (snap.CellType != null)
+                                col.CellType = snap.CellType;
+                            if (snap.DataMap != null)
+                                col.DataMap = snap.DataMap;
+                            if (snap.Locked)
+                                col.Locked = true;
+                            if (!snap.AllowFiltering)
+                                col.AllowFiltering = false;
                         }
                     }
+
+                    if (DeletedCells != null)
+                    {
+                        foreach (var kvp in DeletedCells)
+                        {
+                            GridSnapshotHelper.RestoreCellSnapshot(ws, kvp.Key.Row, kvp.Key.Col, kvp.Value);
+                        }
+                    }
+
+                    GridSnapshotHelper.RestoreWorkbookFormulas(ws.WorkBook, PreOperationWorkbookFormulas);
                 }
-                if (DeletedColWidths != null)
-                {
-                    foreach (var kvp in DeletedColWidths)
-                        ws.Columns[kvp.Key].Width = kvp.Value;
-                }
+
+                if (PreviousSelection.IsValid)
+                    SheetView.SelectRange(PreviousSelection);
+            }
+            finally
+            {
+                if (spread != null) spread.SuspendUpdates = false;
             }
 
-            if (PreviousSelection.IsValid)
-                SheetView.SelectRange(PreviousSelection);
-
-            SheetView.Spread?.Refresh();
+            spread?.Refresh();
         }
 
         public override void Redo()

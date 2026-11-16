@@ -15,34 +15,30 @@ namespace DevBrewLabs.WPF.Spreadsheet.CellTypes
         {
             base.DrawCell(renderContext, value, style, formatter, cellRect);
 
-            if (value != null && !string.IsNullOrEmpty(value.ToString()))
+            if (value != null)
             {
-                var align = style.HorizontalAlignment;
-                if (value is string)
+                bool isString = value is string;
+                string text = isString ? (string)value : (formatter != null ? formatter.Format(value) : value.ToString());
+                if (!string.IsNullOrEmpty(text))
                 {
+                    var align = style.HorizontalAlignment;
                     if (align == CellHorizontalAlignment.Auto)
-                        align = CellHorizontalAlignment.Left;           
-                }
-                else
-                {
-                    if (align == CellHorizontalAlignment.Auto)
-                        align = CellHorizontalAlignment.Right;
+                        align = isString ? CellHorizontalAlignment.Left : CellHorizontalAlignment.Right;
 
-                    value = formatter.Format(value);
+                    renderContext.DrawText(
+                        text,
+                        cellRect,
+                        style.FontFamily,
+                        style.FontSize,
+                        style.FontWeight,
+                        style.FontStyle,
+                        style.ForeColor,
+                        align,
+                        style.VerticalAlignment,
+                        style.TextTrimming,
+                        style.AllowMultiLineText,
+                        padding: style.Padding);
                 }
-
-                renderContext.DrawText(
-                    (string)value,
-                    cellRect,
-                    style.FontFamily,
-                    style.FontSize,
-                    style.FontWeight,
-                    style.FontStyle,
-                    style.ForeColor,
-                    align,
-                    style.VerticalAlignment,
-                    style.TextTrimming,
-                    style.AllowMultiLineText);
             }
         }
 

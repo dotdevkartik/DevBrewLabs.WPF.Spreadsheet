@@ -125,40 +125,66 @@ namespace DevBrewLabs.WPF.Spreadsheet
             try
             {
                 string[,] oldFormulas = new string[range.RowCount, range.ColumnCount];
-                for (int r = 0; r < range.RowCount; r++)
+                string[,] newFormulas = new string[range.RowCount, range.ColumnCount];
+                object[,] oldData = new object[range.RowCount, range.ColumnCount];
+                object[,] newData = new object[range.RowCount, range.ColumnCount];
+                bool anyChanged = false;
+
+                var rows = WorkSheet.Rows;
+                var columns = WorkSheet.Columns;
+                var colCache = new IColumn[range.ColumnCount];
+                for (int c = 0; c < range.ColumnCount; c++)
                 {
-                    for (int c = 0; c < range.ColumnCount; c++)
-                    {
-                        oldFormulas[r, c] = WorkSheet.GetFormula(range.TopRow + r, range.LeftColumn + c);
-                    }
+                    colCache[c] = columns.GetItem(range.LeftColumn + c);
                 }
-
-                var pasteAction = new ClipboardPasteAction { SheetView = this };
-                pasteAction.OldState.Value = WorkSheet.GetData(range.TopRow, range.LeftColumn, range.RowCount, range.ColumnCount);
-                pasteAction.OldState.Formulas = oldFormulas;
-                pasteAction.OldState.Row = range.TopRow;
-                pasteAction.OldState.Column = range.LeftColumn;
-                pasteAction.OldState.Selection = Selection.Clone();
-
-                object[,] emptyData = new object[range.RowCount, range.ColumnCount];
 
                 for (int r = 0; r < range.RowCount; r++)
                 {
+                    int actualRow = range.TopRow + r;
+                    var sheetRow = rows.GetItem(actualRow);
+
                     for (int c = 0; c < range.ColumnCount; c++)
                     {
-                        var ws = WorkSheet;
-                        ws.SetValue(range.TopRow + r, range.LeftColumn + c, null);
-                        ws.SetFormula(range.TopRow + r, range.LeftColumn + c, null);
+                        int actualCol = range.LeftColumn + c;
+                        var oldVal = WorkSheet.GetValue(actualRow, actualCol);
+                        var oldFormula = WorkSheet.GetFormula(actualRow, actualCol);
+                        oldData[r, c] = oldVal;
+                        oldFormulas[r, c] = oldFormula;
+
+                        if (WorkSheet.IsCellLocked(actualRow, actualCol, sheetRow, colCache[c]))
+                        {
+                            newData[r, c] = oldVal;
+                            newFormulas[r, c] = oldFormula;
+                            continue;
+                        }
+
+                        if (oldVal != null || !string.IsNullOrEmpty(oldFormula))
+                        {
+                            anyChanged = true;
+                        }
+
+                        WorkSheet.SetValue(actualRow, actualCol, null);
+                        WorkSheet.SetFormula(actualRow, actualCol, null);
                     }
                 }
 
-                pasteAction.NewState.Value = emptyData;
-                pasteAction.NewState.Formulas = new string[range.RowCount, range.ColumnCount];
-                pasteAction.NewState.Row = range.TopRow;
-                pasteAction.NewState.Column = range.LeftColumn;
-                pasteAction.NewState.Selection = Selection.Clone();
+                if (anyChanged)
+                {
+                    var pasteAction = new ClipboardPasteAction { SheetView = this };
+                    pasteAction.OldState.Value = oldData;
+                    pasteAction.OldState.Formulas = oldFormulas;
+                    pasteAction.OldState.Row = range.TopRow;
+                    pasteAction.OldState.Column = range.LeftColumn;
+                    pasteAction.OldState.Selection = Selection.Clone();
 
-                Spread.UndoRedoManager.AddAction(pasteAction);
+                    pasteAction.NewState.Value = newData;
+                    pasteAction.NewState.Formulas = newFormulas;
+                    pasteAction.NewState.Row = range.TopRow;
+                    pasteAction.NewState.Column = range.LeftColumn;
+                    pasteAction.NewState.Selection = Selection.Clone();
+
+                    Spread.UndoRedoManager.AddAction(pasteAction);
+                }
             }
             finally
             {
@@ -194,7 +220,8 @@ namespace DevBrewLabs.WPF.Spreadsheet
                     OldColumnSpan = WorkSheet.GetColumnSpan(range.TopRow, range.LeftColumn),
                     NewRowSpan = range.RowCount,
                     NewColumnSpan = range.ColumnCount,
-                    OldValues = new object[range.RowCount, range.ColumnCount]
+                    OldValues = new object[range.RowCount, range.ColumnCount],
+                    OldFormulas = new string[range.RowCount, range.ColumnCount]
                 };
 
                 for (int r = 0; r < range.RowCount; r++)
@@ -202,6 +229,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
                     for (int c = 0; c < range.ColumnCount; c++)
                     {
                         action.OldValues[r, c] = WorkSheet.GetValue(range.TopRow + r, range.LeftColumn + c);
+                        action.OldFormulas[r, c] = WorkSheet.GetFormula(range.TopRow + r, range.LeftColumn + c);
                     }
                 }
 

@@ -14,6 +14,7 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public int NewColumnSpan { get; set; }
 
         public object[,] OldValues { get; set; }
+        public string[,] OldFormulas { get; set; }
 
         public SheetView SheetView { get; set; }
 
@@ -33,7 +34,11 @@ namespace DevBrewLabs.WPF.Spreadsheet
                     {
                         for (int c = 0; c < colCount; c++)
                         {
-                            workSheet.SetValue(Row + r, Column + c, OldValues[r, c]);
+                            string oldFormula = OldFormulas != null ? OldFormulas[r, c] : null;
+                            if (!string.IsNullOrEmpty(oldFormula))
+                                workSheet.SetFormula(Row + r, Column + c, oldFormula);
+                            else
+                                workSheet.SetValue(Row + r, Column + c, OldValues[r, c]);
                         }
                     }
                 }

@@ -23,23 +23,28 @@ namespace DevBrewLabs.WPF.Spreadsheet.Commands
             int count = sheetView.Selection.RowCount;
             var ws = sheetView.WorkSheet;
 
-            var deletedValues = new object[count, ws.ColumnCount];
-            var deletedFormulas = new string[count, ws.ColumnCount];
-            var deletedHeights = new Dictionary<int, int>();
+            var deletedCells = new Dictionary<(int Row, int Col), CellSnapshot>();
+            foreach (var pos in ws.GetPopulatedCellsInRowRange(topRow, count))
+            {
+                deletedCells[pos] = GridSnapshotHelper.CaptureCellSnapshot(ws, pos.Row, pos.Column);
+            }
 
+            var deletedRowSnapshots = new Dictionary<int, RowDimensionSnapshot>();
             for (int r = 0; r < count; r++)
             {
                 int actualRow = topRow + r;
                 var rowObj = ws.Rows.GetItem(actualRow);
                 if (rowObj != null)
                 {
-                    deletedHeights[actualRow] = rowObj.Height;
-                }
-
-                for (int c = 0; c < ws.ColumnCount; c++)
-                {
-                    deletedValues[r, c] = ws.GetValue(actualRow, c);
-                    deletedFormulas[r, c] = ws.GetFormula(actualRow, c);
+                    deletedRowSnapshots[actualRow] = new RowDimensionSnapshot
+                    {
+                        Height = rowObj.Height,
+                        IsHidden = rowObj.IsHidden,
+                        Style = rowObj.Style,
+                        StyleName = rowObj.StyleName,
+                        Formatter = rowObj.Formatter,
+                        Locked = rowObj.Locked
+                    };
                 }
             }
 
@@ -50,9 +55,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.Commands
                 Count = count,
                 IsInsert = false,
                 PreviousSelection = sheetView.Selection.Clone(),
-                DeletedValues = deletedValues,
-                DeletedFormulas = deletedFormulas,
-                DeletedRowHeights = deletedHeights
+                DeletedCells = deletedCells,
+                DeletedRowSnapshots = deletedRowSnapshots,
+                PreOperationSpans = new List<CellRange>(ws.GetAllSpans()),
+                PreOperationWorkbookFormulas = GridSnapshotHelper.CaptureWorkbookFormulas(ws.WorkBook)
             };
 
             ws.Rows.Remove(topRow, count);

@@ -28,20 +28,23 @@ namespace DevBrewLabs.WPF.Spreadsheet
         public static IStyle GetCellStyle(this IWorksheet workSheet, int rowIndex, int columnIndex, IRow row, IColumn column)
         {
             IStyle style = workSheet.GetStyle(rowIndex, columnIndex);
+            string styleName = style == null ? workSheet.GetStyleName(rowIndex, columnIndex) : null;
+            return GetCellStyle(workSheet, rowIndex, columnIndex, row, column, style, styleName);
+        }
 
-            if (style != null)
+        public static IStyle GetCellStyle(this IWorksheet workSheet, int rowIndex, int columnIndex, IRow row, IColumn column, IStyle preFetchedStyle, string preFetchedStyleName)
+        {
+            if (preFetchedStyle != null)
             {
-                return style;
+                return preFetchedStyle;
             }
 
-            var styleName = workSheet.GetStyleName(rowIndex, columnIndex);
-
-            if (!string.IsNullOrEmpty(styleName))
+            if (!string.IsNullOrEmpty(preFetchedStyleName))
             {
-                return workSheet.WorkBook.GetNamedStyle(styleName);
+                return workSheet.WorkBook.GetNamedStyle(preFetchedStyleName);
             }
 
-            if(column?.Style != null)
+            if (column?.Style != null)
             {
                 return column.Style;
             }
@@ -62,6 +65,19 @@ namespace DevBrewLabs.WPF.Spreadsheet
             }
 
             return workSheet.WorkBook.GetNamedStyle(StyleKeys.DefaultSheetStyleKey);
+        }
+
+        public static bool IsCellLocked(this IWorksheet workSheet, int rowIndex, int columnIndex, IRow row = null, IColumn column = null)
+        {
+            if (workSheet.GetLocked(rowIndex, columnIndex))
+                return true;
+
+            row = row ?? workSheet.Rows.GetItem(rowIndex);
+            if (row != null && row.Locked)
+                return true;
+
+            column = column ?? workSheet.Columns.GetItem(columnIndex);
+            return column != null && column.Locked;
         }
 
         /// <summary>

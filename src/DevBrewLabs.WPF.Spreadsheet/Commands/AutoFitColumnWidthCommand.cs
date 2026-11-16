@@ -19,9 +19,25 @@ namespace DevBrewLabs.WPF.Spreadsheet.Commands
         {
             var sheetView = parameter as SheetView;
             if (sheetView == null || !sheetView.Selection.IsValid) return;
+
+            var ws = sheetView.WorkSheet;
+            var action = new ColumnResizedAction { SheetView = sheetView };
+
             for (int c = sheetView.Selection.LeftColumn; c <= sheetView.Selection.RightColumn; c++)
             {
+                int oldWidth = ws.Columns.GetColumnWidth(c);
                 sheetView.AutoSizeColumn(c);
+                int newWidth = ws.Columns.GetColumnWidth(c);
+                if (newWidth != oldWidth)
+                {
+                    action.OldWidths[c] = oldWidth;
+                    action.NewWidths[c] = newWidth;
+                }
+            }
+
+            if (action.NewWidths.Count > 0)
+            {
+                Spread.UndoRedoManager?.AddAction(action);
             }
         }
     }

@@ -99,11 +99,19 @@ namespace DevBrewLabs.Spreadsheet.Core
             }
         }
 
+        private static bool IsTargetCellLocked(IWorksheet ws, int row, int col, IRow sheetRow, IColumn sheetCol)
+        {
+            return ws.GetLocked(row, col) ||
+                   (sheetRow != null && sheetRow.Locked) ||
+                   (sheetCol != null && sheetCol.Locked);
+        }
+
         private static void FillVertical(IWorksheet ws, CellRange source, int stepCount, bool isDown, bool isCtrlPressed)
         {
             int n = source.RowCount;
             for (int c = source.LeftColumn; c <= source.RightColumn; c++)
             {
+                var sheetCol = ws.Columns.GetItem(c);
                 var formulas = new string[n];
                 var values = new object[n];
                 var styles = new IStyle[n];
@@ -121,6 +129,10 @@ namespace DevBrewLabs.Spreadsheet.Core
                 for (int k = 1; k <= stepCount; k++)
                 {
                     int targetRow = isDown ? (source.BottomRow + k) : (source.TopRow - k);
+                    var sheetRow = ws.Rows.GetItem(targetRow);
+                    if (IsTargetCellLocked(ws, targetRow, c, sheetRow, sheetCol))
+                        continue;
+
                     int srcIndex = isDown ? ((k - 1) % n) : ((n - (k % n)) % n);
                     int srcRow = source.TopRow + srcIndex;
 
@@ -151,6 +163,7 @@ namespace DevBrewLabs.Spreadsheet.Core
             int n = source.ColumnCount;
             for (int r = source.TopRow; r <= source.BottomRow; r++)
             {
+                var sheetRow = ws.Rows.GetItem(r);
                 var formulas = new string[n];
                 var values = new object[n];
                 var styles = new IStyle[n];
@@ -168,6 +181,10 @@ namespace DevBrewLabs.Spreadsheet.Core
                 for (int k = 1; k <= stepCount; k++)
                 {
                     int targetCol = isRight ? (source.RightColumn + k) : (source.LeftColumn - k);
+                    var sheetCol = ws.Columns.GetItem(targetCol);
+                    if (IsTargetCellLocked(ws, r, targetCol, sheetRow, sheetCol))
+                        continue;
+
                     int srcIndex = isRight ? ((k - 1) % n) : ((n - (k % n)) % n);
                     int srcCol = source.LeftColumn + srcIndex;
 

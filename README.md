@@ -50,6 +50,9 @@ This project solves those limitations by pairing a **platform-agnostic core data
   - `DateCellType`: Formatted date rendering with interactive calendar picker popup dropdowns.
   - `ProgressBarCellType`: Scaled progress bars with customizable track/fill brushes, percent labels, and dynamic auto-color thresholds.
   - `HyperlinkCellType`: Interactive links with hover styling, Hand cursor, visited tracking, underline modes, and browser/command dispatch.
+  - `SliderCellType`: Interactive in-cell draggable slider for real-time parameter tuning and numeric adjustments.
+  - `SparklineCellType`: In-cell micro-chart supporting Line, Column, Win/Loss, and Area sparklines with highlight markers.
+  - `SpinnerCellType`: Extensible abstract base class adding interactive up/down spinner controls to custom cell types.
 - **Interactive Cell Sub-Elements (`CellElement`)**: Lightweight visual and clickable sub-elements inside cells with independent bounding boxes, hover states, mouse events, and cursor switching.
 - **Cell Merging & Spanning**: Arbitrary row and column span merging (`SpanManager`) with automatic layout recalculation and boundary clipping.
 - **Flyweight Style Architecture**: Style palette pooling (`StylePalette`) sharing brush and font definitions across millions of cells.
@@ -413,7 +416,7 @@ Contributions are welcome! Whether you are optimizing low-level rendering perfor
    ```
 
 ### Recommended Areas for Contribution
-- **New Cell Types & Elements**: Color pickers, tag/badge chips, sparklines, image/avatar cells.
+- **New Cell Types & Elements**: Color pickers, tag/badge chips, image/avatar cells.
 - **Extended Formula Functions**: Additional mathematical, statistical, financial, and string functions.
 - **Excel (.xlsx) Import/Export**: OpenXML-based stream readers/writers.
 - **Performance & Text Metrics**: Further glyph cache optimizations and HarfBuzz text shaping integration.

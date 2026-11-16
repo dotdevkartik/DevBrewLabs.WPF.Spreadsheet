@@ -1,5 +1,6 @@
 using DevBrewLabs.Spreadsheet;
 using System;
+using System.Collections.Generic;
 
 namespace DevBrewLabs.WPF.Spreadsheet.Commands
 {
@@ -18,6 +19,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.Commands
             var sheetView = parameter as SheetView;
             if (sheetView == null || !sheetView.Selection.IsValid) return;
 
+            var ws = sheetView.WorkSheet;
             int leftCol = sheetView.Selection.LeftColumn;
             int count = sheetView.Selection.ColumnCount;
 
@@ -27,10 +29,12 @@ namespace DevBrewLabs.WPF.Spreadsheet.Commands
                 Index = leftCol,
                 Count = count,
                 IsInsert = true,
-                PreviousSelection = sheetView.Selection.Clone()
+                PreviousSelection = sheetView.Selection.Clone(),
+                PreOperationSpans = new List<CellRange>(ws.GetAllSpans()),
+                PreOperationWorkbookFormulas = GridSnapshotHelper.CaptureWorkbookFormulas(ws.WorkBook)
             };
 
-            sheetView.WorkSheet.Columns.Insert(leftCol, count);
+            ws.Columns.Insert(leftCol, count);
             Spread.UndoRedoManager?.AddAction(action);
             sheetView.SelectColumns(leftCol, count);
             Spread.Refresh();

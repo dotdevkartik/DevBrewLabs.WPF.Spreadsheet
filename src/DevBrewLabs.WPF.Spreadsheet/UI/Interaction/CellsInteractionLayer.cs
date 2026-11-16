@@ -18,6 +18,18 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 {
     internal class CellsInteractionLayer : InteractionLayer
     {
+        private static readonly Pen DragFillDashPen = CreateDragFillDashPen();
+
+        private static Pen CreateDragFillDashPen()
+        {
+            var pen = new Pen(Brushes.DarkGray, 1.5)
+            {
+                DashStyle = DashStyles.Dash
+            };
+            pen.Freeze();
+            return pen;
+        }
+
         private bool _scrolling = false;
         private bool _isDragging = false;
         private Rect _targetSelectionRect;
@@ -197,6 +209,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             int rowSpan = Math.Max(1, workSheet.GetRowSpan(SheetView.ActiveRow, SheetView.ActiveColumn));
             int nextRow = SheetView.ActiveRow + rowSpan;
 
+            while (nextRow < workSheet.RowCount && !workSheet.Rows.IsRowVisible(nextRow))
+                nextRow++;
+
             if (nextRow >= workSheet.RowCount)
                 return;
 
@@ -223,6 +238,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 return;
 
             int nextRow = SheetView.ActiveRow - 1;
+            while (nextRow >= 0 && !SheetView.WorkSheet.Rows.IsRowVisible(nextRow))
+                nextRow--;
+
+            if (nextRow < 0)
+                return;
 
             if (nextRow <= SheetView.ViewPort.ViewRange.TopRow)
             {
@@ -231,7 +251,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
                 if (renderedRowHeight < rowRect.Height)
                 {
-                    SheetView.Spread.ScrollToRow(SheetView.ViewPort.ViewRange.TopRow - 1);
+                    SheetView.Spread.ScrollToRow(nextRow);
                 }
             }
 
@@ -246,6 +266,9 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             var workSheet = SheetView.WorkSheet;
             int colSpan = Math.Max(1, workSheet.GetColumnSpan(SheetView.ActiveRow, SheetView.ActiveColumn));
             int nextCol = SheetView.ActiveColumn + colSpan;
+
+            while (nextCol < workSheet.ColumnCount && !workSheet.Columns.IsColumnVisible(nextCol))
+                nextCol++;
 
             if (nextCol >= workSheet.ColumnCount)
                 return;
@@ -273,6 +296,11 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                 return;
 
             int nextCol = SheetView.ActiveColumn - 1;
+            while (nextCol >= 0 && !SheetView.WorkSheet.Columns.IsColumnVisible(nextCol))
+                nextCol--;
+
+            if (nextCol < 0)
+                return;
 
             if (nextCol <= SheetView.ViewPort.ViewRange.LeftColumn)
             {
@@ -281,7 +309,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
 
                 if (renderedColumnWidth < colRect.Width)
                 {
-                    SheetView.Spread.ScrollToColumn(SheetView.ViewPort.ViewRange.LeftColumn - 1);
+                    SheetView.Spread.ScrollToColumn(nextCol);
                 }
             }
 
@@ -297,44 +325,66 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             }
         }
 
-        private void ExpandSelectionDown()
+        internal void ExpandSelectionDown()
         {
             EnsureSelectionAnchor();
             var ws = SheetView.WorkSheet;
-            if (ws == null || _selectionEndRow >= ws.RowCount - 1) return;
+            if (ws == null) return;
 
-            _selectionEndRow++;
+            int nextRow = _selectionEndRow + 1;
+            while (nextRow < ws.RowCount && !ws.Rows.IsRowVisible(nextRow))
+                nextRow++;
+            if (nextRow >= ws.RowCount) return;
+
+            _selectionEndRow = nextRow;
             SelectRangeBetween(SheetView.ActiveRow, SheetView.ActiveColumn, _selectionEndRow, _selectionEndColumn);
             ScrollIntoViewIfNeeded(_selectionEndRow, _selectionEndColumn);
         }
 
-        private void ExpandSelectionUp()
-        {
-            EnsureSelectionAnchor();
-            if (_selectionEndRow <= 0) return;
-
-            _selectionEndRow--;
-            SelectRangeBetween(SheetView.ActiveRow, SheetView.ActiveColumn, _selectionEndRow, _selectionEndColumn);
-            ScrollIntoViewIfNeeded(_selectionEndRow, _selectionEndColumn);
-        }
-
-        private void ExpandSelectionRight()
+        internal void ExpandSelectionUp()
         {
             EnsureSelectionAnchor();
             var ws = SheetView.WorkSheet;
-            if (ws == null || _selectionEndColumn >= ws.ColumnCount - 1) return;
+            if (ws == null) return;
 
-            _selectionEndColumn++;
+            int nextRow = _selectionEndRow - 1;
+            while (nextRow >= 0 && !ws.Rows.IsRowVisible(nextRow))
+                nextRow--;
+            if (nextRow < 0) return;
+
+            _selectionEndRow = nextRow;
             SelectRangeBetween(SheetView.ActiveRow, SheetView.ActiveColumn, _selectionEndRow, _selectionEndColumn);
             ScrollIntoViewIfNeeded(_selectionEndRow, _selectionEndColumn);
         }
 
-        private void ExpandSelectionLeft()
+        internal void ExpandSelectionRight()
         {
             EnsureSelectionAnchor();
-            if (_selectionEndColumn <= 0) return;
+            var ws = SheetView.WorkSheet;
+            if (ws == null) return;
 
-            _selectionEndColumn--;
+            int nextCol = _selectionEndColumn + 1;
+            while (nextCol < ws.ColumnCount && !ws.Columns.IsColumnVisible(nextCol))
+                nextCol++;
+            if (nextCol >= ws.ColumnCount) return;
+
+            _selectionEndColumn = nextCol;
+            SelectRangeBetween(SheetView.ActiveRow, SheetView.ActiveColumn, _selectionEndRow, _selectionEndColumn);
+            ScrollIntoViewIfNeeded(_selectionEndRow, _selectionEndColumn);
+        }
+
+        internal void ExpandSelectionLeft()
+        {
+            EnsureSelectionAnchor();
+            var ws = SheetView.WorkSheet;
+            if (ws == null) return;
+
+            int nextCol = _selectionEndColumn - 1;
+            while (nextCol >= 0 && !ws.Columns.IsColumnVisible(nextCol))
+                nextCol--;
+            if (nextCol < 0) return;
+
+            _selectionEndColumn = nextCol;
             SelectRangeBetween(SheetView.ActiveRow, SheetView.ActiveColumn, _selectionEndRow, _selectionEndColumn);
             ScrollIntoViewIfNeeded(_selectionEndRow, _selectionEndColumn);
         }
@@ -1021,11 +1071,7 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
                     unscaledFill.Width * zoom + 1,
                     unscaledFill.Height * zoom + 1);
 
-                var dashPen = new Pen(Brushes.DarkGray, 1.5)
-                {
-                    DashStyle = DashStyles.Dash
-                };
-                context.DrawRectangle(null, dashPen, fillRect);
+                context.DrawRectangle(null, DragFillDashPen, fillRect);
             }
 
             context.Dispose();
@@ -1036,26 +1082,54 @@ namespace DevBrewLabs.WPF.Spreadsheet.UI.Interaction
             var cellInteractionManager = SheetView.Spread?.CellInteractionManager;
             if (cellInteractionManager == null) return;
 
+            var workSheet = context.Worksheet;
+            if (workSheet == null) return;
+
             var viewRange = context.ViewPort.ViewRange;
+            var autoFilter = workSheet.AutoFilter;
+            bool allowFiltering = SheetView.Spread.AllowFiltering && autoFilter != null && autoFilter.IsEnabled;
+            var columns = workSheet.Columns;
+            var rows = workSheet.Rows;
 
             for (int row = viewRange.TopRow; row <= viewRange.BottomRow; row++)
             {
+                if (!rows.IsRowVisible(row)) continue;
+                bool isFilterRow = allowFiltering && row == autoFilter.Range.TopRow;
+
                 for (int col = viewRange.LeftColumn; col <= viewRange.RightColumn; col++)
                 {
-                    var elements = cellInteractionManager.GetCellElements(SheetView, row, col);
-                    Rect? scaledCellRect = null;
+                    if (!columns.IsColumnVisible(col)) continue;
 
-                    foreach (var element in elements)
+                    var sheetColumn = columns.GetItem(col);
+                    bool hasFilterButton = isFilterRow &&
+                                           col >= autoFilter.Range.LeftColumn &&
+                                           col <= autoFilter.Range.RightColumn &&
+                                           (sheetColumn == null || sheetColumn.AllowFiltering);
+
+                    var cellType = (workSheet.GetCellType(row, col) ?? sheetColumn?.CellType) as BaseCellType;
+                    bool hasCustomCellType = cellType != null && cellType.GetType() != typeof(TextCellType);
+
+                    if (!hasFilterButton && !hasCustomCellType)
+                        continue;
+
+                    Rect scaledCellRect = context.GetCellRect(row, col);
+
+                    if (hasFilterButton)
                     {
-                        if (!scaledCellRect.HasValue)
+                        var filterElement = Elements.FilterButton.Instance;
+                        var bounds = filterElement.GetBounds(scaledCellRect, context.ZoomFactor);
+                        var state = cellInteractionManager.GetElementState(row, col, filterElement);
+                        filterElement.Draw(context, bounds, state, row, col);
+                    }
+
+                    if (hasCustomCellType)
+                    {
+                        foreach (var element in cellType.GetElements(SheetView, row, col))
                         {
-                            scaledCellRect = context.GetCellRect(row, col);
+                            var bounds = element.GetBounds(scaledCellRect, context.ZoomFactor);
+                            var state = cellInteractionManager.GetElementState(row, col, element);
+                            element.Draw(context, bounds, state, row, col);
                         }
-
-                        var bounds = element.GetBounds(scaledCellRect.Value, context.ZoomFactor);
-                        var state = cellInteractionManager.GetElementState(row, col, element);
-
-                        element.Draw(context, bounds, state, row, col);
                     }
                 }
             }

@@ -23,23 +23,30 @@ namespace DevBrewLabs.WPF.Spreadsheet.Commands
             int count = sheetView.Selection.ColumnCount;
             var ws = sheetView.WorkSheet;
 
-            var deletedValues = new object[ws.RowCount, count];
-            var deletedFormulas = new string[ws.RowCount, count];
-            var deletedWidths = new Dictionary<int, int>();
+            var deletedCells = new Dictionary<(int Row, int Col), CellSnapshot>();
+            foreach (var pos in ws.GetPopulatedCellsInColumnRange(leftCol, count))
+            {
+                deletedCells[pos] = GridSnapshotHelper.CaptureCellSnapshot(ws, pos.Row, pos.Column);
+            }
 
+            var deletedColSnapshots = new Dictionary<int, ColumnDimensionSnapshot>();
             for (int c = 0; c < count; c++)
             {
                 int actualCol = leftCol + c;
                 var colObj = ws.Columns.GetItem(actualCol);
                 if (colObj != null)
                 {
-                    deletedWidths[actualCol] = colObj.Width;
-                }
-
-                for (int r = 0; r < ws.RowCount; r++)
-                {
-                    deletedValues[r, c] = ws.GetValue(r, actualCol);
-                    deletedFormulas[r, c] = ws.GetFormula(r, actualCol);
+                    deletedColSnapshots[actualCol] = new ColumnDimensionSnapshot
+                    {
+                        Width = colObj.Width,
+                        Style = colObj.Style,
+                        StyleName = colObj.StyleName,
+                        Formatter = colObj.Formatter,
+                        CellType = colObj.CellType,
+                        DataMap = colObj.DataMap,
+                        Locked = colObj.Locked,
+                        AllowFiltering = colObj.AllowFiltering
+                    };
                 }
             }
 
@@ -50,9 +57,10 @@ namespace DevBrewLabs.WPF.Spreadsheet.Commands
                 Count = count,
                 IsInsert = false,
                 PreviousSelection = sheetView.Selection.Clone(),
-                DeletedValues = deletedValues,
-                DeletedFormulas = deletedFormulas,
-                DeletedColWidths = deletedWidths
+                DeletedCells = deletedCells,
+                DeletedColumnSnapshots = deletedColSnapshots,
+                PreOperationSpans = new List<CellRange>(ws.GetAllSpans()),
+                PreOperationWorkbookFormulas = GridSnapshotHelper.CaptureWorkbookFormulas(ws.WorkBook)
             };
 
             ws.Columns.Remove(leftCol, count);

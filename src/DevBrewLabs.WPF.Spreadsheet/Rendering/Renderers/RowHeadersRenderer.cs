@@ -83,17 +83,41 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
             {
                 int headerWidth = context.RowHeaderColumns.GetColumnWidth(col);
                 int defaultColumnWidth = context.RowHeaders.DefaultColumnWidth;
+                var sheetColumn = context.RowHeaderColumns.GetItem(col);
+                int maxDefaultRow = -1;
 
                 for (int row = topRow; row <= bottomRow; row++)
                 {
                     if (!context.Rows.IsRowVisible(row)) continue;
 
-                    var sheetColumn = context.RowHeaderColumns.GetItem(col);
-                    var sheetRow = context.Rows.GetItem(row);
-                    var style = context.Worksheet.GetRowHeaderCellStyle(row, col, sheetRow, sheetColumn);
                     var cellValue = context.RowHeaders.GetValue(row, col);
+                    var sheetRow = context.Rows.GetItem(row);
+                    bool hasCustomRowStyle = context.RowHeaders.GetStyle(row, col) != null ||
+                                             !string.IsNullOrEmpty(context.RowHeaders.GetStyleName(row, col)) ||
+                                             sheetRow?.Style != null ||
+                                             !string.IsNullOrEmpty(sheetRow?.StyleName);
+
+                    if (cellValue == null && !hasCustomRowStyle)
+                    {
+                        if (row > maxDefaultRow)
+                            maxDefaultRow = row;
+                        continue;
+                    }
+
+                    var style = context.Worksheet.GetRowHeaderCellStyle(row, col, sheetRow, sheetColumn);
                     var textWidth = TextMeasurer
                         .MeasureWidth(cellValue != null ? cellValue.ToString() : (row + 1).ToString(), style.FontSize, Styling.WpfResourceCache.GetFontResources(style).GlyphMetrics);
+                    textWidth += 10;
+
+                    if (textWidth > headerWidth || (textWidth < headerWidth && textWidth > defaultColumnWidth))
+                        headerWidth = (int)System.Math.Ceiling(textWidth);
+                }
+
+                if (maxDefaultRow >= 0)
+                {
+                    var defaultStyle = context.Worksheet.GetRowHeaderCellStyle(maxDefaultRow, col, null, sheetColumn);
+                    var textWidth = TextMeasurer
+                        .MeasureWidth((maxDefaultRow + 1).ToString(), defaultStyle.FontSize, Styling.WpfResourceCache.GetFontResources(defaultStyle).GlyphMetrics);
                     textWidth += 10;
 
                     if (textWidth > headerWidth || (textWidth < headerWidth && textWidth > defaultColumnWidth))
@@ -166,7 +190,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                 style.HorizontalAlignment,
                 style.VerticalAlignment,
                 style.TextTrimming,
-                style.AllowMultiLineText);
+                style.AllowMultiLineText,
+                padding: style.Padding);
         }
     }
 }

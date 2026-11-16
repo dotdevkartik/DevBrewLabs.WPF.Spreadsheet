@@ -130,7 +130,8 @@ namespace DevBrewLabs.WPF.Spreadsheet.Rendering
                 style.HorizontalAlignment,
                 style.VerticalAlignment,
                 style.TextTrimming,
-                style.AllowMultiLineText);
+                style.AllowMultiLineText,
+                padding: style.Padding);
         }      
     }
 }
